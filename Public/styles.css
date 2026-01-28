@@ -1,0 +1,213 @@
+:root{
+  --bg:#070b10;
+  --surface:#0e141b;
+  --text:#e6edf3;
+  --sub:#a7b5c6;
+  --primary:#4da3ff;
+  --primary-ghost:#1a3350;
+  --border:#243349;
+  --shadow-lg:0 12px 40px rgba(0,0,0,.35);
+  --muted: var(--sub);
+}
+
+/* ---------- Base layout ---------- */
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  background:
+    radial-gradient(1200px 600px at 20% -10%, #132030 0%, transparent 50%),
+    radial-gradient(1000px 800px at 120% 0%, #101c2a 0%, transparent 60%),
+    var(--bg);
+  color:var(--text);
+  font:16px/1.6 system-ui, Segoe UI, Roboto, sans-serif;
+}
+
+.container{max-width:1100px; margin:0 auto; padding:24px}
+.page--home .site-header{padding:80px 0 20px}
+.site-header h1{margin:0 0 8px; font-size:36px}
+.subtitle{margin:0; color:var(--sub)}
+.back{color:var(--sub); text-decoration:none; margin-right:8px}
+.site-footer{padding:24px 0; color:var(--sub); border-top:1px solid var(--border)}
+
+.card{background:var(--surface); border:1px solid var(--border);
+  border-radius:16px; padding:20px; box-shadow:var(--shadow-lg)}
+.card-grid{display:grid; gap:20px; grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.grid-2{display:grid; gap:16px; grid-template-columns:repeat(2,1fr)}
+.grid-3{display:grid; gap:16px; grid-template-columns:repeat(3,1fr)}
+@media (max-width:900px){.grid-2,.grid-3{grid-template-columns:1fr}}
+
+.btn{
+  display:inline-flex; align-items:center; gap:8px;
+  padding:10px 16px; border:1px solid var(--border);
+  border-radius:12px; color:var(--text); text-decoration:none;
+  background:var(--primary-ghost); transition:.2s;
+}
+.btn:hover{transform:translateY(-1px); border-color:#38506d}
+.btn--primary{background:var(--primary); color:#0c1218; border-color:transparent}
+.btn-row{display:flex; gap:10px; flex-wrap:wrap}
+
+.tabs{display:flex; gap:8px; border-bottom:1px solid var(--border); margin:8px 0 16px}
+.tab{padding:8px 12px; border-radius:10px 10px 0 0; background:#0b1117;
+  color:var(--sub); text-decoration:none; border:1px solid transparent}
+.tab.active{color:var(--text); background:var(--surface); border-color:var(--border); border-bottom-color:var(--surface)}
+
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+textarea{
+  width:100%; min-height:240px; resize:vertical; padding:12px;
+  border-radius:12px; border:1px solid var(--border);
+  background:#0b1117; color:var(--text);
+  font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+.mono{font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; white-space:pre-wrap}
+.label{display:block; color:var(--sub); margin-bottom:6px}
+.note,.muted{color:var(--sub)}
+.info-row{display:flex; justify-content:space-between; align-items:center; gap:16px}
+
+/* ---------- Grid / subphase timeline ---------- */
+.phase-bar {
+  position: relative;
+  width: 100%;
+  height: 22px;
+  border: 1px solid var(--border, #555);
+  border-radius: 6px;
+  background: rgba(255,255,255,0.04);
+  overflow: hidden;
+}
+.phase-chunk {
+  position: absolute;
+  top: 0; bottom: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; color: #fff;
+  white-space: nowrap; padding: 0 6px;
+  opacity: .9; z-index:1;
+}
+.phase-chunk::after {
+  content: attr(data-label);
+  pointer-events: none;
+  text-shadow: 0 1px 2px rgba(0,0,0,.5);
+}
+.phase-chunk:not(:last-child){
+  box-shadow: inset -1px 0 0 rgba(255,255,255,.08);
+}
+
+.grid-legend {
+  margin-top: 8px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 6px 10px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.grid-legend .dot {
+  display: inline-block;
+  width: 10px; height: 10px;
+  border-radius: 999px;
+  margin-right: 6px;
+  vertical-align: -1px;
+}
+
+/* ---------- Seed Variables Tables ---------- */
+.seed-wrap{ margin:14px 0 24px; }
+.seed-title{ margin:0 0 8px; font-weight:600; color:var(--text); }
+
+.seed-matrix{
+  width:100%;
+  border-collapse:collapse;
+  table-layout:fixed;
+}
+.seed-matrix th,
+.seed-matrix td{
+  padding:6px 8px;
+  border-bottom:1px solid var(--border);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.seed-matrix th{
+  background:#0b1117;
+  color:var(--sub);
+  font-weight:600;
+}
+.seed-matrix th:first-child,
+.seed-matrix td:first-child{ width:90px; }
+.seed-matrix td:last-child{ width:54px; text-align:center; }
+
+.seed-matrix input[data-cell],
+.seed-matrix input[data-kind]{
+  width:100%; height:28px; padding:2px 8px;
+  border:1px solid var(--border);
+  border-radius:8px;
+  background:#0b1117;
+  color:var(--text);
+  font:13px/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+/* Header controls for +Col / – buttons */
+th[data-col="1"]{ position:relative; }
+th[data-col="1"] .btn-slim{ margin-left:8px; }
+.btn-slim{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:2px 8px;
+  height:24px;
+  font-size:12px;
+  border:1px solid var(--border);
+  border-radius:8px;
+  background:#0b1117;
+  color:var(--text);
+  transition:transform .12s ease, border-color .12s ease;
+}
+.btn-slim:hover{
+  transform:translateY(-1px);
+  border-color:#38506d;
+}
+
+.col-controls{
+  display:flex; gap:8px; justify-content:flex-end; margin:6px 0 8px;
+}
+.col-controls .btn-slim{ padding:4px 10px; height:26px; }
+
+/* Space below +Row button */
+.wiz-card .btn-row{ margin-top:10px; }
+
+/* one full-width card per seed variable */
+.seed-wrap {
+  margin: 20px 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 20px;
+  box-shadow: var(--shadow-lg);
+}
+
+/* compact toolbar for Add/Delete column */
+.col-controls {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin: 6px 0 10px;
+}
+
+/* horizontally scrollable wide tables */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.table-scroll .seed-matrix {
+  width: max-content;
+  min-width: 100%;
+  table-layout: auto;
+}
+
+/* keep Index visible while scrolling */
+.seed-matrix th:first-child,
+.seed-matrix td:first-child {
+  position: sticky;
+  left: 0;
+  background: #0b1117;
+  z-index: 2;
+}

@@ -1,0 +1,1959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>AMPL Playground - Builder (Wizard)</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* Wizard visuals (dark theme-friendly) */
+    .wizard { max-width: 1100px; margin: 0 auto; }
+    .steps { display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
+    .step-dot { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+      background: rgba(255,255,255,.08); color:#cfd8dc; font-size:13px; }
+    .step-dot.active { background:#8ab4f8; color:#0b1220; font-weight:700; }
+    .step-title { margin:6px 0 16px; opacity:.9 }
+    .wiz-card { border:1px solid rgba(255,255,255,.12); border-radius:14px; padding:16px; background: rgba(255,255,255,.03); }
+    .wiz-row { display:grid; gap:12px; }
+    .g2 { grid-template-columns: 1fr 1fr; }
+    .g3 { grid-template-columns: 1fr 1fr 1fr; }
+    .label { font-size:12px; opacity:.8; margin-bottom:6px; display:block; }
+    .btn-row { display:flex; gap:8px; margin-top:14px; flex-wrap:wrap; }
+    .btn { background: rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); color:#e3f2fd; border-radius:10px; padding:10px 14px; cursor:pointer; }
+    .btn:hover { background: rgba(255,255,255,.1); }
+    .btn--primary { background:#8ab4f8; color:#0b1220; border-color:transparent; }
+    .btn--primary:hover { filter: brightness(1.05); }
+    .muted { opacity:.75; font-size: 13px; }
+    textarea, input[type="number"], input[type="text"], input[type="email"], select {
+      width:100%; background: rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.16);
+      color:#e3f2fd; border-radius:10px; padding:8px 10px; outline:none;
+    }
+    textarea.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Roboto Mono", monospace; }
+    table { width:100%; border-collapse: collapse; }
+    th, td { border:1px solid rgba(255,255,255,.12); padding:6px; font-size: 13px; text-align:center; }
+    th { background: rgba(255,255,255,.06); }
+    .small { width:80px; }
+    .right { text-align:right; }
+    .toggle { display:flex; gap:8px; align-items:center; }
+    .radio { display:flex; gap:10px; align-items:center; }
+    .hide { display:none !important; }
+    .site-header .back { color:#8ab4f8; text-decoration:none; }
+    .phase-bar{position:relative;height:12px;background:#e6e6e6;border-radius:6px;overflow:hidden}
+    .phase-chunk{position:absolute;top:0;bottom:0;border-radius:6px}
+    .grid-legend .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:middle}
+    .grid-legend > div{margin-top:6px}
+    /* --- Robot Parameters (Dark Theme) --- */
+    .wiz-card[data-step="4"] {
+      background: #11161e; /* subtle deep gray-blue background */
+      color: #f1f1f1;
+      border: 1px solid #222b35;
+      border-radius: 10px;
+    }
+
+    .wiz-card[data-step="4"] h3,
+    .wiz-card[data-step="4"] h4 {
+      color: #ffffff;
+    }
+
+    .wiz-card[data-step="4"] .muted {
+      color: #aaa;
+    }
+
+    .wiz-card[data-step="4"] .toggle label {
+      color: #ddd;
+    }
+
+    .wiz-card[data-step="4"] input[type="radio"] {
+      accent-color: #3b82f6; /* blue highlight */
+    }
+
+    /* Table wrapper and table */
+    .wiz-card[data-step="4"] .table-wrapper {
+      border: 1px solid #222b35;
+      background: #0f141c;
+      border-radius: 8px;
+      overflow-x: auto;
+      box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.3);
+    }
+
+    .wiz-card[data-step="4"] .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      color: #e0e0e0;
+      font-size: 0.9rem;
+    }
+
+    .wiz-card[data-step="4"] .data-table th {
+      background: #1a2029;
+      color: #ccc;
+      font-weight: 600;
+      border-bottom: 1px solid #2a3240;
+    }
+
+    .wiz-card[data-step="4"] .data-table td {
+      border-bottom: 1px solid #222b35;
+      background: #0f141c;
+    }
+
+    .wiz-card[data-step="4"] input[type="text"],
+    .wiz-card[data-step="4"] input[type="number"] {
+      background: #1b2431;
+      color: #f1f1f1;
+      border: 1px solid #2c3a4a;
+      border-radius: 5px;
+      text-align: center;
+    }
+
+    .wiz-card[data-step="4"] input[type="text"]:focus,
+    .wiz-card[data-step="4"] input[type="number"]:focus {
+      outline: none;
+      border-color: #3b82f6;
+      background: #202a39;
+    }
+
+    /* Buttons */
+    .wiz-card[data-step="4"] .btn {
+      background: #3b82f6;
+      color: #fff;
+      border: none;
+      transition: background 0.2s ease;
+    }
+
+    .wiz-card[data-step="4"] .btn:hover {
+      background: #2563eb;
+    }
+
+    /* Secondary helper areas */
+    .wiz-card[data-step="4"] .card-sub {
+      background: #1a2029;
+      border: 1px solid #2a3240;
+      color: #ddd;
+    }
+
+  </style>
+</head>
+<body class="page">
+  <header class="site-header">
+    <div class="container">
+      <a class="back" href="index.html">← Home</a>
+      <h1>Manual Builder - Wizard</h1>
+      <p class="subtitle">Fill the steps, auto-compose <code>test.dat</code>/<code>test.mod</code>/<code>test.run</code>, and submit.</p>
+    </div>
+  </header>
+
+  <main class="container wizard">
+    <!-- Step indicators -->
+    <div class="steps" id="steps"></div>
+
+    <!-- Step 0: Model type -->
+    <section class="wiz-card" data-step="0">
+      <h3 class="step-title">Model Type</h3>
+      <div class="radio">
+        <label><input type="radio" name="modelType" value="moving" /> Moving Block</label>
+        <label><input type="radio" name="modelType" value="five" checked /> Five-Linked Robot</label>
+      </div>
+      <p class="muted">This sets defaults like <code>nq</code> and enables robot/constraints sections.</p>
+    </section>
+
+    <!-- Step 1: GRID -->
+    <section class="wiz-card" data-step="1" id="gridStep">
+      <h3 class="step-title">Grid</h3>
+
+      <div class="g3 wiz-row">
+        <div>
+          <label class="label" for="gridMax">param GRID_MAX</label>
+          <input type="number" id="gridMax" value="29" min="1" />
+        </div>
+        <div>
+          <label class="label" for="gravity">Gravity (spat_ag[5])</label>
+          <input type="number" id="gravity" value="9.81" step="0.01" />
+        </div>
+        <div>
+          <label class="label" for="pimSet">PIM indices (optional)</label>
+          <input type="text" id="pimSet" placeholder="e.g. 6, 7" />
+        </div>
+      </div>
+
+      <p class="muted">
+        Use PIM for momentum constraints (e.g., <code>(6, 7)</code> in five-link).
+      </p>
+
+      <!-- === Subphase table === -->
+      <div class="row" style="margin-top:1rem">
+        <label class="label">Subphases</label>
+        <table class="table">
+          <thead>
+            <tr>
+              <th style="width:140px">LABEL (e.g., 1.1)</th>
+              <th>BEG</th>
+              <th>END</th>
+              <th style="width:56px"></th>
+            </tr>
+          </thead>
+          <tbody id="subphaseBody">
+            <tr>
+              <td><input type="text" value="1.1" placeholder="e.g., 1.1" /></td>
+              <td><input type="number" value="0" step="1" /></td>
+              <td><input type="number" value="29" step="1" /></td>
+              <td><button type="button" class="btn btn--ghost" onclick="removeRow(this)">✕</button></td>
+            </tr>
+          </tbody>
+        </table>
+        <button type="button" class="btn" id="btnAddSubphase">+ Add Subphase</button>
+      </div>
+
+      <!-- === Grid Visualization === -->
+      <div class="row" style="margin-top:1rem">
+        <label class="label">Grid visualization</label>
+        <div id="gridVizWrap" class="card" style="padding:12px">
+          <div class="muted" style="margin-bottom:.5rem">
+            0 → GRID_MAX timeline (scaled). Hover a segment to see details.
+          </div>
+          <!-- Timeline bar -->
+          <div id="gridBar" class="phase-bar" aria-label="grid timeline"></div>
+          <!-- Legend / breakdown -->
+          <div id="gridLegend" class="grid-legend"></div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- Step 2: Bézier -->
+    <section class="wiz-card hide" data-step="2">
+      <h3 class="step-title">Bézier Curve Data</h3>
+
+      <div class="wiz-row g2">
+        <div>
+          <label class="label">set BEZ_LBLS</label>
+          <input type="text" id="bezLbls" value="0 1" />
+          <p class="muted">Space-separated labels (e.g., <code>0 1</code>).</p>
+        </div>
+        <div>
+          <label class="label">set BEZ_SUBGRID for each label (comma list)</label>
+          <input type="text" id="bezSubgridSets" value="1,1" />
+          <p class="muted">One integer per label (same order), e.g. <code>1,1</code>.</p>
+        </div>
+      </div>
+
+      <h4 style="margin-top:12px;">param bez := [*,:]</h4>
+      <div class="muted">Columns: <code>DER</code>, <code>CP_ROW</code>, <code>CP_COL</code></div>
+      <table id="bezTable">
+        <thead>
+          <tr><th>Index</th><th>DER</th><th>CP_ROW</th><th>CP_COL</th><th>—</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <div class="btn-row"><button class="btn" id="btnAddBez">+ Row</button></div>
+
+      <h4 style="margin-top:12px;">param bez_subgrid := [*,*,:] : BEG END :=</h4>
+      <table id="bezSGTable">
+        <thead><tr><th>LBL</th><th>IDX</th><th>BEG</th><th>END</th><th>—</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <div class="btn-row"><button class="btn" id="btnAddBezSG">+ Row</button></div>
+
+      <div class="btn-row" style="margin-top: 1rem;">
+        <button class="btn" id="btnGenerateBez">🎨 Generate Curve</button>
+      </div>
+
+      <canvas id="bezierCanvas" width="600" height="300"
+        style="margin-top:10px; background:#1e1e1e; border-radius:8px; width:100%;"></canvas>
+    </section>
+
+    <!-- Step 3: q, v, t, u -->
+    <section class="wiz-card hide" data-step="3">
+      <h3 class="step-title">Seed Variables</h3>
+
+      <!-- q -->
+      <div class="seed-wrap">
+        <h4>var q [:,*]</h4>
+        <div class="col-controls" data-table="q">
+          <button type="button" class="btn btn-slim" data-action="add-col">+ Col</button>
+          <button type="button" class="btn btn-slim" data-action="del-col">– Col</button>
+        </div>
+        <div class="table-scroll">
+          <table id="qTable" class="seed-matrix">
+            <thead>
+              <tr id="qHeader">
+                <th style="width:80px;">Index</th>
+                <th data-col="1">:1</th>
+              </tr>
+            </thead>
+            <tbody id="qBody"></tbody>
+          </table>
+        </div>
+        <div class="btn-row"><button class="btn" onclick="addRow('q')">+ Row</button></div>
+      </div>
+
+      <!-- v -->
+      <div class="seed-wrap">
+        <h4>var v [:,*]</h4>
+        <div class="col-controls" data-table="v">
+          <button type="button" class="btn btn-slim" data-action="add-col">+ Col</button>
+          <button type="button" class="btn btn-slim" data-action="del-col">– Col</button>
+        </div>
+        <div class="table-scroll">
+          <table id="vTable" class="seed-matrix">
+            <thead>
+              <tr id="vHeader">
+                <th style="width:80px;">Index</th>
+                <th data-col="1">:1</th>
+              </tr>
+            </thead>
+            <tbody id="vBody"></tbody>
+          </table>
+        </div>
+        <div class="btn-row"><button class="btn" onclick="addRow('v')">+ Row</button></div>
+      </div>
+
+      <!-- u -->
+      <div class="seed-wrap">
+        <h4>var u [:,*]</h4>
+        <div class="col-controls" data-table="u">
+          <button type="button" class="btn btn-slim" data-action="add-col">+ Col</button>
+          <button type="button" class="btn btn-slim" data-action="del-col">– Col</button>
+        </div>
+        <div class="table-scroll">
+          <table id="uTable" class="seed-matrix">
+            <thead>
+              <tr id="uHeader">
+                <th style="width:80px;">Index</th>
+                <th data-col="1">:1</th>
+              </tr>
+            </thead>
+            <tbody id="uBody"></tbody>
+          </table>
+        </div>
+        <div class="btn-row"><button class="btn" onclick="addRow('u')">+ Row</button></div>
+      </div>
+
+      <!-- t -->
+      <div class="seed-wrap">
+        <h4>var t [*]</h4>
+        <div class="table-scroll">
+          <table id="tTable" class="seed-matrix">
+            <thead>
+              <tr>
+                <th style="width:80px;">Index</th>
+                <th>Value</th>
+                <th style="width:52px;"></th>
+              </tr>
+            </thead>
+            <tbody id="tBody"></tbody>
+          </table>
+        </div>
+        <div class="btn-row"><button class="btn" onclick="addRow('t')">+ Row</button></div>
+      </div>
+    </section>
+
+
+
+    <!-- Step 4: Robot params -->
+    <section class="wiz-card hide" data-step="4">
+      <h3 class="step-title">Robot Parameters</h3>
+
+      <!-- Mode toggle -->
+      <div class="toggle" style="margin-bottom: 1rem;">
+        <label class="radio-option">
+          <input type="radio" name="robotMode" value="manual" checked />
+          <span>Manual Entry</span>
+        </label>
+        <label class="radio-option">
+          <input type="radio" name="robotMode" value="urdf" />
+          <span>Import from URDF</span>
+        </label>
+      </div>
+
+      <!-- URDF Upload Section -->
+      <div id="robotURDF" class="hide card-sub" style="margin-bottom: 1.2rem;">
+        <p class="muted">
+          Upload a <code>.urdf</code> or <code>.xml</code> file to prefill the table automatically.<br>
+          You can still edit parameters manually afterwards.
+        </p>
+        <input type="file" id="urdfFile" accept=".urdf,.xml" class="file-input" />
+      </div>
+
+      <!-- Manual Table Section -->
+      <div id="robotManual">
+        <h4 class="sub-title">param robot := [*,:]</h4>
+        <p class="muted" style="margin-bottom: 0.5rem;">
+          Fixed columns: 
+          <code>PARENT, S_RX, S_RY, S_RZ, S_PX, S_PY, S_PZ, Q_LB, Q_UB, F_RX, F_RY, F_RZ, F_PX, F_PY, F_PZ, F_TH, MASS, M_RX, M_RY, M_RZ, M_PX, M_PY, M_PZ, M_TH, IXX, IYY, IZZ, IXY, IXZ, IYZ</code>
+        </p>
+
+        <div class="table-wrapper">
+          <table id="robotTable" class="data-table">
+            <thead>
+              <tr id="robotHeader">
+                <th>#</th>
+                <th>PARENT</th><th>S_RX</th><th>S_RY</th><th>S_RZ</th><th>S_PX</th><th>S_PY</th><th>S_PZ</th>
+                <th>Q_LB</th><th>Q_UB</th><th>F_RX</th><th>F_RY</th><th>F_RZ</th><th>F_PX</th><th>F_PY</th><th>F_PZ</th><th>F_TH</th>
+                <th>MASS</th><th>M_RX</th><th>M_RY</th><th>M_RZ</th><th>M_PX</th><th>M_PY</th><th>M_PZ</th><th>M_TH</th>
+                <th>IXX</th><th>IYY</th><th>IZZ</th><th>IXY</th><th>IXZ</th><th>IYZ</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="robotBody"></tbody>
+          </table>
+        </div>
+
+        <div class="btn-row" style="margin-top: 0.8rem;">
+          <button class="btn" id="btnAddRobot">+ Add Row</button>
+        </div>
+      </div>
+
+      <!-- Helper (non-duplicate ID) -->
+      <div id="robotURDFHelp" class="hide">
+        <p class="muted">
+          Choose a URDF file to prefill values. You can later switch to “Manual Entry” to edit them.
+        </p>
+      </div>
+    </section>
+
+
+    <!-- Step 5: Runge–Kutta -->
+    <section class="wiz-card hide" data-step="5">
+      <h3 class="step-title">Runge–Kutta Method (Butcher Table)</h3>
+
+      <!-- Mode Selection -->
+      <div class="g2 wiz-row">
+        <div>
+          <label class="label">Selection Mode</label>
+          <div>
+            <label><input type="radio" name="rkMode" value="preset" checked> Preset</label>
+            <label><input type="radio" name="rkMode" value="custom"> Custom</label>
+          </div>
+        </div>
+        <div>
+          <label class="label">Subgrid Tag</label>
+          <input type="text" id="rkTag" value="RK" />
+        </div>
+      </div>
+
+      <!-- Preset RK Method -->
+      <div id="rkPresetBlock">
+        <label class="label">Preset Method</label>
+        <select id="rkMethod">
+          <option value="rk2">RK2 — midpoint</option>
+          <option value="heun3">Heun’s RK3</option>
+          <option value="kutta3">Kutta’s RK3 (3/8)</option>
+          <option value="ralston3">Ralston RK3</option>
+          <option value="rk4">RK4 — classic</option>
+          <option value="rk4_38">RK4 — 3/8 rule</option>
+        </select>
+      </div>
+
+      <!-- Custom Tableau Input -->
+      <div id="rkCustomBlock" class="hide" style="margin-top:1rem;">
+        <label class="label">Custom Butcher’s Tableau</label>
+        <div class="wiz-row">
+          <div>
+            <label>Number of Stages (s)</label>
+            <input type="number" id="numStages" min="2" max="6" value="4" />
+          </div>
+          <div style="align-self:end;">
+            <button type="button" onclick="renderTableau()">Generate Tableau</button>
+          </div>
+        </div>
+
+        <div id="tableauContainer" class="table-wrapper" style="margin-top:1rem;"></div>
+      </div>
+
+      <p class="muted">
+        We’ll emit <code>param ODE_K</code>, <code>param ODE_AK</code>, 
+        <code>param ODE_bK</code>, <code>param ODE_cK</code>, and 
+        <code>set ODE_SUBGRID[&lt;tag&gt;]</code>.
+      </p>
+    </section>
+
+    <!-- Step 6: Custom -->
+    <section class="wiz-card hide" data-step="6">
+      <h3 class="step-title">Custom Snippets</h3>
+      <div class="wiz-row">
+        <div>
+          <label class="label">Extra .dat snippet (appended at end)</label>
+          <textarea id="datExtra" rows="6" class="mono" placeholder="# your extra data blocks…"></textarea>
+        </div>
+        <div>
+          <label class="label">Custom .mod</label>
+          <textarea id="modCustomCode" rows="6" class="mono" placeholder="Enter custom .mod code here…"></textarea>
+        </div>
+        <div>
+          <label class="label">Extra .run snippet (appended)</label>
+          <textarea id="runExtra" rows="6" class="mono" placeholder="# extra run commands…"></textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- Step 7: Review & Submit -->
+    <section class="wiz-card hide" data-step="7">
+      <h3 class="step-title">Review</h3>
+      <div class="wiz-row g3">
+        <div>
+          <label class="label">test.dat</label>
+          <textarea id="preview" rows="16" class="mono"></textarea>
+        </div>
+        <div>
+          <label class="label">test.mod</label>
+          <textarea id="modPreview" rows="16" class="mono"></textarea>
+        </div>
+        <div>
+          <label class="label">test.run</label>
+          <textarea id="runPreview" rows="16" class="mono"></textarea>
+        </div>
+      </div>
+      <div class="g2 wiz-row" style="margin-top:10px;">
+        <div>
+          <label class="label">Notification email</label>
+          <input id="email" type="email" placeholder="you@example.com" />
+          <p class="muted">Shown in the success message (server sends using its configured email).</p>
+        </div>
+        <div>
+          <label class="label">NEOS Status</label>
+          <div id="neosResponse" class="mono" style="min-height:44px; white-space:pre-wrap;"></div>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn--primary" id="btnSaveSubmit">Save → Submit to NEOS</button>
+      </div>
+    </section>
+
+    <!-- Nav buttons -->
+    <div class="btn-row right">
+      <button class="btn" id="btnPrev">← Back</button>
+      <button class="btn btn--primary" id="btnNext">Next →</button>
+    </div>
+  </main>
+
+  <script>
+/* ====================== Wizard core ====================== */
+const STEPS = ['Model', 'Grid', 'Bézier', 'q/v/t/u', 'Robot', 'RK', 'Custom', 'Review'];
+let cur = 0;
+const qs  = s => document.querySelector(s);
+const qsa = s => Array.from(document.querySelectorAll(s));
+
+/* step dots */
+const stepsEl = qs('#steps');
+STEPS.forEach((_, i) => {
+  const d = document.createElement('div');
+  d.className = 'step-dot' + (i===0?' active':'');
+  d.textContent = i+1;
+  stepsEl.appendChild(d);
+});
+function showStep(i){
+  cur = Math.max(0, Math.min(STEPS.length-1, i));
+  qsa('[data-step]').forEach(sec => sec.classList.add('hide'));
+  qs(`[data-step="${cur}"]`).classList.remove('hide');
+  qsa('.step-dot').forEach((d,idx)=>d.classList.toggle('active', idx===cur));
+  qs('#btnPrev').disabled = (cur===0);
+  qs('#btnNext').textContent = (cur===STEPS.length-1)?'Finish':'Next →';
+}
+qs('#btnPrev').addEventListener('click', ()=>showStep(cur-1));
+qs('#btnNext').addEventListener('click', async ()=>{
+  if (cur===STEPS.length-2) { buildAllPreviews(); }
+  if (cur<STEPS.length-1) showStep(cur+1);
+});
+showStep(0);
+
+/* model type */
+const modelRadios = qsa('input[name="modelType"]');
+const modelType = () => (modelRadios.find(r=>r.checked)?.value)||'five';
+
+/* ====================== Seed tables (q, v, u, t) ====================== */
+/* Column count helper: prefer th[data-col], else infer (Index + controls) */
+function countDataCols(which){
+  const header = qs('#'+which+'Header');
+  if (!header) return 1;
+  const dataColThs = header.querySelectorAll('th[data-col]');
+  if (dataColThs.length) return dataColThs.length;
+  // fallback: old structure "Index | [control th] | (—)" -> dataCols = ths.length - 2
+  const ths = header.querySelectorAll('th');
+  return Math.max(1, ths.length - 2);
+}
+
+/* add row */
+function addRow(which){
+  const body = qs('#'+which+'Body');
+  const idx = body.children.length;
+  const tr = document.createElement('tr');
+
+  if (which === 't') {
+    tr.innerHTML = `<td><input data-kind="idx" value="${idx}"/></td>
+      <td><input data-kind="val" class="small" /></td>
+      <td><button class="btn" onclick="this.closest('tr').remove()">✕</button></td>`;
+    body.appendChild(tr);
+    return;
+  }
+
+  const cols = countDataCols(which);
+  let cells = `<td><input data-kind="idx" value="${idx}"/></td>`;
+  for (let c=1; c<=cols; c++){
+    cells += `<td><input data-kind="val" data-col="${c}" class="small" /></td>`;
+  }
+  cells += `<td><button class="btn" onclick="this.closest('tr').remove()">✕</button></td>`;
+  tr.innerHTML = cells;
+  body.appendChild(tr);
+}
+
+/* add column (controls live on first data header) */
+function addColumn(which){
+  if (which === 't') return;
+  const table  = qs('#'+which+'Table');
+  const header = qs('#'+which+'Header');
+  const body   = qs('#'+which+'Body');
+
+  const colsNow = countDataCols(which);
+  const nextCol = colsNow + 1;
+
+  // If using new header style with th[data-col]
+  const firstDataTh = header.querySelector('th[data-col="1"]');
+  if (firstDataTh){
+    // append new th at END; controls remain on :1 automatically
+    const th = document.createElement('th');
+    th.setAttribute('data-col', String(nextCol));
+    th.textContent = `:${nextCol}`;
+    header.appendChild(th);
+  } else {
+    // old header: Insert new before control th (2nd position)
+    const ths = header.querySelectorAll('th');
+    const controlTh = ths[1];
+    const newTh = document.createElement('th');
+    newTh.textContent = ':' + nextCol;
+    header.insertBefore(newTh, controlTh);
+  }
+
+  // add a new input cell to each existing row before delete button
+  body.querySelectorAll('tr').forEach(tr=>{
+    const delTd = tr.querySelector('td:last-child');
+    const td = document.createElement('td');
+    td.innerHTML = `<input data-kind="val" data-col="${nextCol}" class="small" />`;
+    tr.insertBefore(td, delTd);
+  });
+}
+
+/* delete last column (keep >=1) */
+function delColumn(name) {
+  if (name === 't') return;
+  const header = document.getElementById(name+'Header');
+  const body   = document.getElementById(name+'Body');
+  const colsNow = countDataCols(name);
+  if (colsNow <= 1) return;             // keep at least one data column
+
+  // remove last header th
+  const thData = header.querySelectorAll('th[data-col]');
+  if (thData.length) {
+    header.querySelector(`th[data-col="${colsNow}"]`)?.remove();
+  } else {
+    const ths = header.querySelectorAll('th');
+    const lastDataTh = ths[ths.length - 2];  // old fallback layout
+    if (lastDataTh && lastDataTh.textContent.trim().startsWith(':')) lastDataTh.remove();
+  }
+
+  // remove last data cell from each row
+  body.querySelectorAll('tr').forEach(tr=>{
+    const cells = tr.querySelectorAll('td');
+    const lastDataTd = cells[cells.length - 2]; // last before the delete-row button
+    lastDataTd?.remove();
+  });
+}
+
+
+/* expose for inline buttons in your HTML */
+window.addRow     = addRow;
+window.addColumn  = addColumn;
+window.delColumn  = delColumn;
+
+/* seed defaults */
+['q','v','u'].forEach(w => { addRow(w); addRow(w); }); 
+addRow('t');
+
+/* ====================== Bézier rows ====================== */
+// make sure helpers exist (won't override if you already have them)
+window.qs   = window.qs   || (sel => document.querySelector(sel));
+window.qsAll= window.qsAll|| (sel => document.querySelectorAll(sel));
+
+// Add rows for Bézier control points
+qs('#btnAddBez').addEventListener('click', ()=>{
+  const tb = qs('#bezTable tbody');
+  const i = tb.children.length;
+  // Seed distinct control points by default (not all identical)
+  // DER=0, CP_ROW=i, CP_COL alternates 0/2 to give a visible curve
+  const der = 0;
+  const cpRow = i;                 // 0,1,2,...
+  const cpCol = (i % 2 === 0) ? 0 : 2; // 0,2,0,2...
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td>${i}</td>
+    <td><input type="number" step="any" class="small" value="${der}"/></td>
+    <td><input type="number" step="any" class="small" value="${cpRow}"/></td>
+    <td><input type="number" step="any" class="small" value="${cpCol}"/></td>
+    <td><button class="btn" onclick="this.closest('tr').remove()">✕</button></td>`;
+  tb.appendChild(tr);
+});
+
+qs('#btnAddBezSG').addEventListener('click', ()=>{
+  const tb = qs('#bezSGTable tbody');
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td><input type="text" class="small" value="0"/></td>
+    <td><input type="number" class="small" value="1"/></td>
+    <td><input type="number" step="any" class="small" value="0"/></td>
+    <td><input type="number" step="any" class="small" value="25"/></td>
+    <td><button class="btn" onclick="this.closest('tr').remove()">✕</button></td>`;
+  tb.appendChild(tr);
+});
+
+// --- Seed a visible demo (3 control points: (0,0)->(1,2)->(2,0)) ---
+(function seedBezierDemo(){
+  const tb = qs('#bezTable tbody');
+  if (!tb) return;
+  tb.innerHTML = '';
+  const seed = [
+    {der:0, x:0, y:0},
+    {der:0, x:1, y:2},
+    {der:0, x:2, y:0},
+  ];
+  seed.forEach((p, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${i}</td>
+      <td><input type="number" step="any" class="small" value="${p.der}"/></td>
+      <td><input type="number" step="any" class="small" value="${p.x}"/></td>
+      <td><input type="number" step="any" class="small" value="${p.y}"/></td>
+      <td><button class="btn" onclick="this.closest('tr').remove()">✕</button></td>`;
+    tb.appendChild(tr);
+  });
+
+  // one subgrid row (not required for drawing)
+  const sgtb = qs('#bezSGTable tbody');
+  if (sgtb && !sgtb.children.length) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td><input type="text" class="small" value="0"/></td>
+      <td><input type="number" class="small" value="1"/></td>
+      <td><input type="number" step="any" class="small" value="0"/></td>
+      <td><input type="number" step="any" class="small" value="25"/></td>
+      <td><button class="btn" onclick="this.closest('tr').remove()">✕</button></td>`;
+    sgtb.appendChild(tr);
+  }
+})();
+
+/* ====================== Bézier Curve Visualization ====================== */
+qs('#btnGenerateBez').addEventListener('click', drawBezierCurve);
+
+function drawBezierCurve() {
+  const canvas = qs('#bezierCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  const rows = Array.from(qsAll('#bezTable tbody tr'));
+  const points = rows.map(r => {
+    const ins = r.querySelectorAll('input');
+    const x = parseFloat(ins[1].value);
+    const y = parseFloat(ins[2].value);
+    return { x, y };
+  }).filter(p => Number.isFinite(p.x) && Number.isFinite(p.y));
+
+  if (points.length < 2) {
+    alert('Please add at least 2 valid control points.');
+    return;
+  }
+
+  const scale = 60;
+  const offsetX = 80;
+  const offsetY = canvas.height - 60;
+
+  // ===== Background (dark matte gradient) =====
+  const bgGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+  bgGrad.addColorStop(0, '#0d0f13');
+  bgGrad.addColorStop(1, '#05060a');
+  ctx.fillStyle = bgGrad;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // ===== Grid (navy-toned) =====
+  ctx.strokeStyle = 'rgba(40,60,120,0.25)';
+  ctx.lineWidth = 1;
+  for (let gx = offsetX; gx < canvas.width; gx += scale) {
+    ctx.beginPath();
+    ctx.moveTo(gx, 0);
+    ctx.lineTo(gx, canvas.height);
+    ctx.stroke();
+  }
+  for (let gy = offsetY; gy > 0; gy -= scale) {
+    ctx.beginPath();
+    ctx.moveTo(0, gy);
+    ctx.lineTo(canvas.width, gy);
+    ctx.stroke();
+  }
+
+  // ===== Axes =====
+  ctx.strokeStyle = 'rgba(100,120,180,0.4)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(offsetX, 0);
+  ctx.lineTo(offsetX, canvas.height);
+  ctx.moveTo(0, offsetY);
+  ctx.lineTo(canvas.width, offsetY);
+  ctx.stroke();
+
+  // ===== Axis Labels & Ticks =====
+  ctx.font = '12px "Inter", system-ui';
+  ctx.fillStyle = '#8f99b5';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
+  for (let i = 0; i <= (canvas.width - offsetX) / scale; i++) {
+    const x = offsetX + i * scale;
+    ctx.fillText(i.toString(), x, offsetY + 6);
+  }
+  ctx.textAlign = 'right';
+  ctx.textBaseline = 'middle';
+  for (let j = 1; j <= offsetY / scale; j++) {
+    const y = offsetY - j * scale;
+    ctx.fillText(j.toString(), offsetX - 6, y);
+  }
+
+  // ===== Control polygon (thin, subtle) =====
+  ctx.strokeStyle = 'rgba(200,200,220,0.15)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(points[0].x * scale + offsetX, offsetY - points[0].y * scale);
+  for (let i = 1; i < points.length; i++) {
+    ctx.lineTo(points[i].x * scale + offsetX, offsetY - points[i].y * scale);
+  }
+  ctx.stroke();
+
+  // ===== Control points (silver) =====
+  ctx.fillStyle = '#cfd3db';
+  ctx.shadowColor = 'rgba(220,220,230,0.25)';
+  ctx.shadowBlur = 8;
+  for (const p of points) {
+    const px = p.x * scale + offsetX;
+    const py = offsetY - p.y * scale;
+    ctx.beginPath();
+    ctx.arc(px, py, 4, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.shadowBlur = 0;
+
+  // ===== Bézier curve (sleek silver, thinner line) =====
+  const curveGrad = ctx.createLinearGradient(0, 0, canvas.width, 0);
+  curveGrad.addColorStop(0, '#d8dadf');
+  curveGrad.addColorStop(0.5, '#e1e3e7');
+  curveGrad.addColorStop(1, '#f4f5f8');
+  ctx.strokeStyle = curveGrad;
+  ctx.lineWidth = 2;
+  ctx.shadowColor = 'rgba(220,220,240,0.35)';
+  ctx.shadowBlur = 10;
+  ctx.beginPath();
+
+  for (let t = 0; t <= 1.0001; t += 0.005) {
+    const { x, y } = bezierEval(points, t);
+    const px = x * scale + offsetX;
+    const py = offsetY - y * scale;
+    if (t === 0) ctx.moveTo(px, py);
+    else ctx.lineTo(px, py);
+  }
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+
+  // ===== Axis labels =====
+  ctx.fillStyle = '#9ba6c4';
+  ctx.font = '13px "Inter", system-ui';
+  ctx.textAlign = 'right';
+  ctx.fillText('X', canvas.width - 10, offsetY + 18);
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
+  ctx.fillText('Y', offsetX - 18, 8);
+}
+
+// De Casteljau’s Algorithm
+function bezierEval(points, t) {
+  let tmp = points.map(p => ({ ...p }));
+  for (let r = 1; r < points.length; r++) {
+    for (let i = 0; i < points.length - r; i++) {
+      tmp[i].x = (1 - t) * tmp[i].x + t * tmp[i + 1].x;
+      tmp[i].y = (1 - t) * tmp[i].y + t * tmp[i + 1].y;
+    }
+  }
+  return tmp[0];
+}
+
+/* ====================== Robot table ====================== */
+function addRobotRow(){
+  const body = qs('#robotBody');
+  const idx = body.children.length + 1;
+  const defaults = [
+    0, 0,0,1, 0,0,0,  '-Infinity', 'Infinity',
+    0,0,0, 0,0,0, 0,
+    1, 0,0,0, 0,0,0, 0,
+    0,0,0, 0,0,0
+  ];
+  const tds = [
+    `<td>${idx}</td>`,
+    ...defaults.map(v=>`<td><input type="text" class="small" value="${v}"/></td>`),
+    `<td><button class="btn" onclick="this.closest('tr').remove()">✕</button></td>`
+  ];
+  const tr = document.createElement('tr');
+  tr.innerHTML = tds.join('');
+  body.appendChild(tr);
+}
+qs('#btnAddRobot').addEventListener('click', addRobotRow);
+function seedRobot(){
+  qs('#robotBody').innerHTML='';
+  const n = (modelType()==='five') ? 5 : 1;
+  for (let i=0;i<n;i++) addRobotRow();
+}
+modelRadios.forEach(r=>r.addEventListener('change', seedRobot));
+seedRobot();
+
+/* ====================== URDF toggle + importer (unchanged logic) ====================== */
+const robotModeRadios = qsa('input[name="robotMode"]');
+const robotManualWrap = qs('#robotManual');
+const robotURDFWrap  = qs('#robotURDF');
+const robotURDFHelp  = qs('#robotURDFHelp');
+const urdfInput      = qs('#urdfFile');
+
+function currentRobotMode() { return robotModeRadios.find(r => r.checked)?.value || 'manual'; }
+function renderRobotMode() {
+  const mode = currentRobotMode();
+  const isURDF = mode === 'urdf';
+  robotManualWrap?.classList.toggle('hide',  isURDF);
+  robotURDFWrap?.classList.toggle('hide',   !isURDF);
+  robotURDFHelp?.classList.toggle('hide',   !isURDF);
+  urdfInput?.classList.toggle('hide',       !isURDF);
+}
+robotModeRadios.forEach(r => r.addEventListener('change', renderRobotMode));
+renderRobotMode();
+
+function splitTokens(str, n = 3, fill = '0') {
+  if (!str || !str.trim()) return Array(n).fill(fill);
+  const parts = str.trim().split(/\s+/);
+  if (parts.length < n) parts.push(...Array(n - parts.length).fill(fill));
+  return parts.slice(0, n);
+}
+function strOr(x, alt = '0') {
+  const s = (x ?? '').toString().trim();
+  return s === '' ? alt : s;
+}
+function textOrNull(el, attr) { return el ? el.getAttribute(attr) : null; }
+function safeParseXML(xmlText) {
+  const xml = new DOMParser().parseFromString(xmlText, 'application/xml');
+  const err = xml.querySelector('parsererror');
+  if (err) throw new Error(err.textContent || 'XML parser error');
+  return xml;
+}
+
+urdfInput?.addEventListener('change', async (e) => {
+  const f = e.target.files?.[0];
+  if (!f) return;
+  let xmlText, xml;
+  try { xmlText = await f.text(); } catch { alert('Could not read file.'); return; }
+  try { xml = safeParseXML(xmlText); } catch (err) { alert('URDF parse error: ' + err.message); return; }
+
+  const inertialByLink = new Map();
+  xml.querySelectorAll('link').forEach((linkEl) => {
+    const lname = linkEl.getAttribute('name') || '';
+    const inertial = linkEl.querySelector('inertial');
+    if (!inertial) return;
+    const massStr = strOr(textOrNull(inertial.querySelector('mass'), 'value'), '0');
+    const I = inertial.querySelector('inertia');
+    const ixx = strOr(textOrNull(I, 'ixx')), iyy = strOr(textOrNull(I, 'iyy')), izz = strOr(textOrNull(I, 'izz'));
+    const ixy = strOr(textOrNull(I, 'ixy')), ixz = strOr(textOrNull(I, 'ixz')), iyz = strOr(textOrNull(I, 'iyz'));
+    const o = inertial.querySelector('origin');
+    const [m_px, m_py, m_pz] = splitTokens(textOrNull(o, 'xyz'), 3, '0');
+    const [m_rx, m_ry, m_rz] = splitTokens(textOrNull(o, 'rpy'), 3, '0');
+    inertialByLink.set(lname, { mass: massStr, m_rx, m_ry, m_rz, m_px, m_py, m_pz, ixx, iyy, izz, ixy, ixz, iyz });
+  });
+
+  const joints = Array.from(xml.querySelectorAll('joint')).map((j) => {
+    const type       = j.getAttribute('type') || 'fixed';
+    const parentLink = strOr(textOrNull(j.querySelector('parent'), 'link'), '');
+    const childLink  = strOr(textOrNull(j.querySelector('child'),  'link'), '');
+    const [s_rx, s_ry, s_rz] = splitTokens(j.querySelector('axis')?.getAttribute('xyz') ?? '0 0 1', 3, '0');
+    const jo = j.querySelector('origin');
+    const [s_px, s_py, s_pz] = splitTokens(textOrNull(jo, 'xyz'), 3, '0');
+    const lim = j.querySelector('limit');
+    let q_lb = lim?.getAttribute('lower'), q_ub = lim?.getAttribute('upper');
+    if (type === 'continuous' || q_lb == null || q_ub == null) { q_lb = '-Infinity'; q_ub = 'Infinity'; }
+    else { q_lb = strOr(q_lb); q_ub = strOr(q_ub); }
+    return { parentLink, childLink, s_rx, s_ry, s_rz, s_px, s_py, s_pz, q_lb, q_ub };
+  });
+
+  if (!joints.length) { alert('No <joint> elements found in the URDF.'); return; }
+
+  const indexOfLinkByChild = new Map();
+  joints.forEach((j, i) => indexOfLinkByChild.set(j.childLink, String(i + 1)));
+
+  const body = document.getElementById('robotBody');
+  if (!body) { alert('Robot table body (#robotBody) not found.'); return; }
+  body.innerHTML = '';
+
+  joints.forEach((j, i) => {
+    const parentIdx = indexOfLinkByChild.get(j.parentLink) ?? '0';
+    const inert = inertialByLink.get(j.childLink) || {
+      mass: '0', m_rx:'0',m_ry:'0',m_rz:'0', m_px:'0',m_py:'0',m_pz:'0', ixx:'0',iyy:'0',izz:'0',ixy:'0',ixz:'0',iyz:'0'
+    };
+    const vals = [
+      parentIdx, j.s_rx, j.s_ry, j.s_rz, j.s_px, j.s_py, j.s_pz, j.q_lb, j.q_ub,
+      '0','0','0','0','0','0','0',
+      inert.mass, inert.m_rx, inert.m_ry, inert.m_rz, inert.m_px, inert.m_py, inert.m_pz, '0',
+      inert.ixx, inert.iyy, inert.izz, inert.ixy, inert.ixz, inert.iyz
+    ];
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${i + 1}</td>` + vals.map(v => `<td><input type="text" class="small" value="${v}"/></td>`).join('') + `<td><button class="btn" onclick="this.closest('tr').remove()">✕</button></td>`;
+    body.appendChild(tr);
+  });
+
+  // reveal values in Manual mode
+  robotModeRadios.forEach(r => { if (r.value === 'manual') r.checked = true; });
+  renderRobotMode();
+
+  alert(`URDF imported: ${joints.length} joint(s) mapped to AMPL robot table (values preserved).`);
+});
+
+/* ====================== Runge–Kutta Butcher tables ====================== */
+function rkButcher(name) {
+  switch (name) {
+    case 'rk2': // Midpoint RK2
+      return { s: 2, A: [[0, 0], [0.5, 0]], b: [0, 1], c: [0, 0.5] };
+    case 'heun3': // Heun RK3
+      return { s: 3, A: [[0, 0, 0], [1/3, 0, 0], [0, 2/3, 0]], b: [1/4, 0, 3/4], c: [0, 1/3, 2/3] };
+    case 'kutta3': // Kutta RK3 (3/8)
+      return { s: 3, A: [[0, 0, 0], [1/2, 0, 0], [-1, 2, 0]], b: [1/6, 2/3, 1/6], c: [0, 1/2, 1] };
+    case 'ralston3': // Ralston RK3
+      return { s: 3, A: [[0, 0, 0], [1/2, 0, 0], [0, 3/4, 0]], b: [2/9, 1/3, 4/9], c: [0, 1/2, 3/4] };
+    case 'rk4_38': // RK4 3/8 rule
+      return { s: 4, A: [[0, 0, 0, 0], [1/3, 0, 0, 0], [-1/3, 1, 0, 0], [1, -1, 1, 0]], b: [1/8, 3/8, 3/8, 1/8], c: [0, 1/3, 2/3, 1] };
+    default: // RK4 classic
+      return { s: 4, A: [[0, 0, 0, 0], [1/2, 0, 0, 0], [0, 1/2, 0, 0], [0, 0, 1, 0]], b: [1/6, 1/3, 1/3, 1/6], c: [0, 1/2, 1/2, 1] };
+  }
+}
+
+/* ====================== Custom Butcher Tableau ====================== */
+function renderTableau() {
+  const s = parseInt(document.getElementById('numStages').value);
+  let html = `<table class="data-table"><tr><th>c</th>`;
+  for (let j = 1; j <= s; j++) html += `<th>a${j}</th>`;
+  html += `</tr>`;
+
+  for (let i = 1; i <= s; i++) {
+    html += `<tr><td><input type="number" step="any" class="cVal" data-i="${i}" /></td>`;
+    for (let j = 1; j <= s; j++) {
+      html += `<td><input type="number" step="any" class="aVal" data-i="${i}" data-j="${j}" /></td>`;
+    }
+    html += `</tr>`;
+  }
+
+  html += `<tr><td>b</td>`;
+  for (let j = 1; j <= s; j++) {
+    html += `<td><input type="number" step="any" class="bVal" data-j="${j}" /></td>`;
+  }
+  html += `</tr></table>`;
+  document.getElementById('tableauContainer').innerHTML = html;
+}
+
+function getCustomButcher() {
+  const s = parseInt(document.getElementById('numStages').value);
+  const A = Array.from({ length: s }, () => Array(s).fill(0));
+  const b = Array(s).fill(0);
+  const c = Array(s).fill(0);
+
+  document.querySelectorAll('.aVal').forEach(inp => {
+    const i = parseInt(inp.dataset.i) - 1;
+    const j = parseInt(inp.dataset.j) - 1;
+    A[i][j] = parseFloat(inp.value) || 0;
+  });
+  document.querySelectorAll('.bVal').forEach(inp => {
+    const j = parseInt(inp.dataset.j) - 1;
+    b[j] = parseFloat(inp.value) || 0;
+  });
+  document.querySelectorAll('.cVal').forEach(inp => {
+    const i = parseInt(inp.dataset.i) - 1;
+    c[i] = parseFloat(inp.value) || 0;
+  });
+
+  return { s, A, b, c };
+}
+
+/* ====================== Mode Toggle ====================== */
+document.querySelectorAll('input[name="rkMode"]').forEach(r => {
+  r.addEventListener('change', e => {
+    const mode = e.target.value;
+    document.getElementById('rkPresetBlock').classList.toggle('hide', mode !== 'preset');
+    document.getElementById('rkCustomBlock').classList.toggle('hide', mode !== 'custom');
+  });
+});
+
+
+/* ====================== Collectors & formatters ====================== */
+function collectMatrix(which){
+  const body = qs('#'+which+'Body'); const rows = [];
+  Array.from(body.children).forEach((tr,i)=>{
+    const inputs = Array.from(tr.querySelectorAll('input[data-kind="val"]'));
+    const vals = inputs.map(inp => inp.value.trim());
+    rows.push({i, vals});
+  });
+  return rows;
+}
+function collectT(){
+  const body = qs('#tBody'); const rows = [];
+  Array.from(body.children).forEach((tr,idx)=>{
+    const inp = tr.querySelector('input[data-kind="val"]');
+    const val = (inp?.value ?? '').trim();
+    rows.push({idx, val});
+  });
+  return rows;
+}
+function collectRobot(){
+  const body = qs('#robotBody'); const rows=[];
+  Array.from(body.children).forEach((tr,rowIdx)=>{
+    const inputs = Array.from(tr.querySelectorAll('input'));
+    const vals = inputs.map(inp=>inp.value.trim());
+    rows.push({row: rowIdx+1, vals});
+  });
+  return rows;
+}
+function collectBez(){
+  const tb = qs('#bezTable tbody'); const out=[];
+  Array.from(tb.children).forEach((tr, i)=>{
+    const [der, r, c] = Array.from(tr.querySelectorAll('input')).slice(0,3).map(x=>x.value);
+    out.push({i, der, r, c});
+  });
+  return out;
+}
+function collectBezSG(){
+  const tb = qs('#bezSGTable tbody'); const out=[];
+  Array.from(tb.children).forEach(tr=>{
+    const [lbl, idx, beg, end] = Array.from(tr.querySelectorAll('input')).slice(0,4).map(x=>x.value);
+    out.push({lbl, idx, beg, end});
+  });
+  return out;
+}
+
+function fmtMatrixBlock(name, rows){
+  const maxCols = rows.reduce((m,r)=>Math.max(m, r.vals.length), 0);
+  const header = Array.from({length:maxCols}, (_,i)=> (i+1)).join('   ');
+  let s = `var ${name} := [:,*]\n    :${header} :=\n`;
+  rows.forEach(r=>{
+    const vals = r.vals.map(v=> (v===''?'0':v)).join('   ');
+    s += `${r.i}   ${vals}\n`;
+  });
+  return s.trimEnd() + ';\n';
+}
+function fmtVectorBlock(name, rows){
+  let s = `var ${name} := [*]\n`;
+  rows.forEach(r => { s += `${r.idx}   ${r.val===''?'0':r.val}\n`; });
+  return s.trimEnd() + ';\n';
+}
+function fmtRobotBlock(rows){
+  const cols = ['PARENT','S_RX','S_RY','S_RZ','S_PX','S_PY','S_PZ','Q_LB','Q_UB','F_RX','F_RY','F_RZ','F_PX','F_PY','F_PZ','F_TH','MASS','M_RX','M_RY','M_RZ','M_PX','M_PY','M_PZ','M_TH','IXX','IYY','IZZ','IXY','IXZ','IYZ'];
+  let s = `param robot := [*,:]\n  :${cols.join('   ')} :=\n`;
+  rows.forEach(r=>{
+    s += `${r.row}   ${r.vals.map(v => (v===''?'0':v)).join('   ')}\n`;
+  });
+  return s.trimEnd() + ';\n';
+}
+function fmtConstraintsBlock(){ return `param nr := 0.;\nparam constraint;\n`; }
+
+function fmtBezierBlocks(lbls, bezRows, sgSets, sgRows){
+  let s = `set BEZ_LBLS := ${lbls.join(' ')};\n`;
+  s += `param bez := [*,:]\n  :DER   CP_ROW   CP_COL :=\n`;
+  bezRows.forEach(r=>{ s += `${r.i}   ${r.der}   ${r.r}   ${r.c}\n`; });
+  s += ';\n\n';
+  lbls.forEach((lbl, i)=>{
+    const n = parseInt((sgSets[i]||'1').trim(),10)||1;
+    s += `set BEZ_SUBGRID[${lbl}] := ${n};\n`;
+  });
+  s += `\nparam bez_subgrid := [*,*,:]\n  :BEG   END :=\n`;
+  sgRows.forEach(r=>{ s += `${r.lbl} ${r.idx}   ${r.beg}   ${r.end}\n`; });
+  s += ';\n';
+  return s;
+}
+function fmtRKBlocks(method, tag, gridMax){
+  const B = rkButcher(method); const s=B.s, A=B.A, b=B.b, c=B.c;
+  let out = '';
+  out += `set ODE_SOLVERS := ${tag};\n`;
+  out += `param ODE_K := [*]\n${tag}   ${s}.;\n`;
+  out += `param ODE_AK := \n[${tag},*,:]\n      :${Array.from({length:s},(_,i)=> i+1).join('   ')} :=\n`;
+  for (let i=0;i<s;i++){ out += `${i+1}   ${Array.from({length:s},(_,j)=> (A[i][j]||0)).join('   ')}\n`; }
+  out += ';\n';
+  out += `param ODE_bK := [*,:]\n      :${Array.from({length:s},(_,i)=> i+1).join('   ')} :=\n`;
+  out += `${tag}   ${b.join('   ')};\n`;
+  out += `param ODE_cK := [*,:]\n      :${Array.from({length:s},(_,i)=> i+1).join('   ')} :=\n`;
+  out += `${tag}   ${c.join('   ')};\n`;
+  const end = Math.max(1, (parseInt(gridMax,10)||1)-1);
+  out += `set ODE_SUBGRID[${tag}] := (0, ${end});\n`;
+  return out;
+}
+
+/* ====================== Build previews ====================== */
+function buildDat() {
+  const gm = parseInt(qs('#gridMax').value, 10) || 1;
+  const g = parseFloat(qs('#gravity').value) || 0;
+  const pimTxt = qs('#pimSet').value.trim();
+  const lbls = qs('#bezLbls').value.trim().split(/\s+/).filter(Boolean);
+  const sgSets = qs('#bezSubgridSets').value.split(',').map(s => s.trim());
+
+  const qRows = collectMatrix('q'), vRows = collectMatrix('v'), uRows = collectMatrix('u'), tRows = collectT();
+  const robotRows = collectRobot();
+  const bezRows = collectBez();
+  const bezSgRows = collectBezSG();
+
+  const nqInfer = (qRows[0]?.vals?.length || (modelType() === 'five' ? 5 : 1)) || 1;
+
+  let dat = '';
+  dat += `# grid\nparam GRID_MAX := ${gm}.;\nset SUBPHASES := 1.1;\nparam subphases := [*,:]\n    :PHASE   BEG   END :=\n1.1   1.       0.    ${gm}.;\n\n`;
+  dat += `# seed\n${fmtMatrixBlock('q', qRows)}\n${fmtMatrixBlock('v', vRows)}\n${fmtVectorBlock('t', tRows)}\n${fmtMatrixBlock('u', uRows)}\n`;
+  dat += `# state\nparam nq := ${nqInfer}.;\n\n`;
+  dat += `# robot\n${fmtRobotBlock(robotRows)}\n`;
+  dat += `# constraints\n${fmtConstraintsBlock()}\n`;
+  dat += `# M and b (spatial gravity)\nparam spat_ag := [*]\n1   0.\n2   0.\n3   0.\n4   0.\n5   ${g}\n6   0.;\n\n`;
+  dat += `# eom\nset PIM := ${pimTxt ? '(' + pimTxt + ')' : ''};\n\n`;
+
+  // ===================== 🧩 Runge–Kutta Section =====================
+  dat += `# Runge–Kutta\n`;
+  const rkTag = qs('#rkTag').value.trim() || 'RK';
+  const rkMode = document.querySelector('input[name="rkMode"]:checked')?.value || 'preset';
+  let rk;
+
+  if (rkMode === 'custom') {
+    rk = getCustomButcher(); // from your new UI
+  } else {
+    rk = rkButcher(qs('#rkMethod').value); // preset
+  }
+
+  dat += `param ODE_K := ${rk.s};\n`;
+
+  // A matrix
+  dat += `param ODE_AK :`;
+  for (let j = 1; j <= rk.s; j++) dat += ` ${j}`;
+  dat += ` :=\n`;
+  for (let i = 1; i <= rk.s; i++) {
+    dat += `${i}`;
+    for (let j = 1; j <= rk.s; j++) dat += ` ${rk.A[i - 1][j - 1]}`;
+    dat += `\n`;
+  }
+  dat += `;\n\n`;
+
+  // b vector
+  dat += `param ODE_bK :=\n`;
+  for (let j = 1; j <= rk.s; j++) dat += `${j} ${rk.b[j - 1]}\n`;
+  dat += `;\n\n`;
+
+  // c vector
+  dat += `param ODE_cK :=\n`;
+  for (let i = 1; i <= rk.s; i++) dat += `${i} ${rk.c[i - 1]}\n`;
+  dat += `;\n\n`;
+
+  dat += `set ODE_SUBGRID[${rkTag}] := 1..${rk.s};\n\n`;
+  // ================================================================
+
+  dat += `# modules\nset MOD_MODULES := ODE PIM;\n\n`;
+  dat += `# Bézier\n${fmtBezierBlocks(lbls, bezRows, sgSets, bezSgRows)}\n`;
+
+  const tail = qs('#datExtra').value.trim();
+  if (tail) dat += `\n# extra\n${tail}\n`;
+
+  return dat.trim() + '\n';
+}
+
+function buildMod() {
+  // --- Core modules + phases + grid scaffold ---
+  const core = `
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#* grid
+#----------- modules
+# model-defined modules;
+set MOD_MODULES;
+set MOD_GRID {MOD_MODULES}; # this set will be redeclared later
+
+# data-defined modules
+set DAT_MODULES default {};
+set DAT_GRID {DAT_MODULES};
+
+# all modules
+set MODULES = MOD_MODULES union DAT_MODULES;
+set GRID_MODULES {i1 in MODULES} := 
+  if i1 in MOD_MODULES then MOD_GRID[i1]  
+  else DAT_GRID[i1];
+
+#----------- phases
+# dynamics are constant within a phase
+set SUBPHASES within Reals;
+set SUBPHASES_MBRS = {'PHASE', 'BEG', 'END'};
+param subphases {SUBPHASES, SUBPHASES_MBRS};
+
+# subphases must map to phase through floor function
+check {i1 in SUBPHASES} : subphases[i1, 'PHASE'] = floor(i1);
+# beginning must be less than end
+check {i1 in SUBPHASES} : subphases[i1, 'BEG'] <= subphases[i1, 'END'];
+# make sure sets don't overlap
+check {i1 in SUBPHASES, i2 in SUBPHASES : i1 != i2} : inter {i3 in {i1, i2}} union {i4 in {'BEG', 'END'}} {subphases[i3, i4]} within {};
+
+set PHASES = setof {i1 in SUBPHASES} subphases[i1, 'PHASE'];
+
+#----------- grid points
+param GRID_MAX >= 0;
+
+set GRID_MBRS = {0} union SUBPHASES union PHASES;
+
+set GRID {i1 in GRID_MBRS} ordered by [0, GRID_MAX] :=
+  if i1 = 0 then # add grid points from registered modules
+    union {i2 in MODULES} GRID_MODULES[i2]
+  else if i1 in Integers then # collect grid points for each phase
+    union {i2 in SUBPHASES : floor(i2) = i1} GRID[i2]
+  else {i2 in GRID[0] : subphases[i1, 'BEG'] <= i2 <= subphases[i1, 'END']};  # collect grid points for each subphase
+
+#----------- decision variable: time
+var t {GRID[0]}; # time
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#* grid!
+
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#* state
+param nq >= 0 integer;
+set Q = 1..nq; # config space
+set X = 1..2*nq; # state space
+
+#----------- decision variables: generalized coordinates and forces
+# state variables
+var q {Q, GRID[0]};
+var v {Q, GRID[0]}; # v = dq/dt
+var a {Q, GRID[0]}; # a = d^2q/dt^2
+
+var x {i1 in X, i2 in GRID[0]} =
+  if i1 <= nq then q[i1, i2]
+  else v[i1-nq, i2];
+
+# control input
+var u {Q, GRID[0]};
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#* state!
+
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#* robot
+set RBT_IDX  ordered = {'PARENT', 'S_RX', 'S_RY', 'S_RZ', 'S_PX', 'S_PY', 'S_PZ', 'Q_LB', 'Q_UB', 'F_RX', 'F_RY', 'F_RZ', 'F_PX', 'F_PY', 'F_PZ', 'F_TH', 'MASS', 'M_RX', 'M_RY', 'M_RZ', 'M_PX', 'M_PY', 'M_PZ', 'M_TH', 'IXX', 'IYY', 'IZZ', 'IXY', 'IXZ', 'IYZ'};
+param robot {Q, RBT_IDX};
+
+#----------- kinematic tree
+# -1 = leaves to base, 0 = base to leaves, 1 = 1 to leaves
+set SPAT_LINK_MBRS := {-1, 0, 1};
+
+set SPAT_L {i1 in SPAT_LINK_MBRS} ordered :=
+  if i1 = -1 then nq..0 by -1
+  else i1..nq;
+
+# P = parent, C = child, S = subtree, K = path to base
+set SPAT_TREE_P {i1 in SPAT_L[0]} ordered = if i1 in SPAT_L[1] then {robot[i1, 'PARENT']} else {};
+set SPAT_TREE_C {i1 in SPAT_L[0]} ordered = setof {i2 in SPAT_L[1], i3 in SPAT_TREE_P[i2]: i1 = i3} i2;
+set SPAT_TREE_S {i1 in SPAT_L[-1]} ordered = {i1} union (union {i2 in SPAT_TREE_C[i1]} SPAT_TREE_S[i2]);
+set SPAT_TREE_K {i1 in SPAT_L[0]} ordered = {i1} union (union {i2 in SPAT_TREE_P[i1]: i1 in SPAT_L[1]} SPAT_TREE_K[i2]);
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#* robot!
+
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#* constraints
+param nr >= 0 integer; # total number of constraints across all phases
+set R = 1..nr; # constraints
+
+set CON_IDX  ordered = {'PHASE', 'TYPE', 'ROW', 'BODY', 'R_RX', 'R_RY', 'R_RZ', 'R_PX', 'R_PY', 'R_PZ', 'F_RX', 'F_RY', 'F_RZ', 'F_PX', 'F_PY', 'F_PZ', 'F_TH'};
+param constraint {R, CON_IDX} symbolic;
+
+#----------- indices for physical and virtual constraints
+# P = physical constraint or force, V = virtual constraint, U = virtual force
+# M = constrained motions, F = constraint forces
+set CON_P {i1 in PHASES} = setof {i2 in R: constraint[i2, 'PHASE'] = i1 and constraint[i2, 'TYPE'] = 'p'} constraint[i2, 'ROW'];
+set CON_V {i1 in PHASES} = setof {i2 in R: constraint[i2, 'PHASE'] = i1 and constraint[i2, 'TYPE'] = 'v'} constraint[i2, 'ROW'];
+set CON_U {i1 in PHASES} = setof {i2 in R: constraint[i2, 'PHASE'] = i1 and constraint[i2, 'TYPE'] = 'u'} constraint[i2, 'ROW'];
+
+#----------- indices for physical and virtual constraints
+# M = constrained motions, F = constraint forces
+set CON_M {i1 in PHASES} = CON_P[i1] union CON_V[i1];
+set CON_F {i1 in PHASES} = CON_P[i1] union CON_U[i1];
+set CON_J {i1 in PHASES} = CON_M[i1] union CON_F[i1];
+
+# mapping from i to k in J[p, i, j] = sum J[p, k[i], j] in phase p
+set CON_R {i1 in PHASES, i2 in CON_J[i1]} := setof {i3 in R: constraint[i3, 'PHASE'] = i1 and constraint[i3, 'ROW'] = i2} i3;
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#* constraints!
+
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#* spatial transforms
+param nm = 6;
+set SPAT_M = 1..nm;
+
+#----------- all transforms in robot and constraints
+set SPAT_EXPC := 1..nm+1;
+
+# constant transforms
+set SPAT_XP := 1..(2 * nq + nr);
+
+param x_jp := 1; # RBT_F
+param x_im := nq + 1; # RBT_M
+param x_cb := 2*nq + 1; # CON_F
+
+param spat_expcp {i1 in SPAT_XP, i2 in SPAT_EXPC} :=
+  if x_jp <= i1 < x_im then robot[i1 - x_jp + 1, next('F_RX', RBT_IDX, i2 - 1)]
+  else if x_im <= i1 < x_cb then robot[i1 - x_im + 1, next('M_RX', RBT_IDX, i2 - 1)]
+  else constraint[i1 - x_cb + 1, next('F_RX', CON_IDX, i2 - 1)];
+
+param Ep {i1 in SPAT_XP, i2 in SPAT_M, i3 in SPAT_M: i2 <= 3 and i3 <= 3} =
+  if i2 = 1 and i3 = 1 then 1 + (1 - cos(spat_expcp[i1, 7]))*(-spat_expcp[i1, 2]^2 - spat_expcp[i1, 3]^2)
+  else if i2 = 1 and i3 = 2 then (1 - cos(spat_expcp[i1, 7]))*spat_expcp[i1, 1]*spat_expcp[i1, 2] + sin(spat_expcp[i1, 7])*spat_expcp[i1, 3]
+  else if i2 = 1 and i3 = 3 then -(sin(spat_expcp[i1, 7])*spat_expcp[i1, 2]) + (1 - cos(spat_expcp[i1, 7]))*spat_expcp[i1, 1]*spat_expcp[i1, 3]
+  else if i2 = 2 and i3 = 1 then (1 - cos(spat_expcp[i1, 7]))*spat_expcp[i1, 1]*spat_expcp[i1, 2] - sin(spat_expcp[i1, 7])*spat_expcp[i1, 3]
+  else if i2 = 2 and i3 = 2 then 1 + (1 - cos(spat_expcp[i1, 7]))*(-spat_expcp[i1, 1]^2 - spat_expcp[i1, 3]^2)
+  else if i2 = 2 and i3 = 3 then sin(spat_expcp[i1, 7])*spat_expcp[i1, 1] + (1 - cos(spat_expcp[i1, 7]))*spat_expcp[i1, 2]*spat_expcp[i1, 3]
+  else if i2 = 3 and i3 = 1 then sin(spat_expcp[i1, 7])*spat_expcp[i1, 2] + (1 - cos(spat_expcp[i1, 7]))*spat_expcp[i1, 1]*spat_expcp[i1, 3]
+  else if i2 = 3 and i3 = 2 then -(sin(spat_expcp[i1, 7])*spat_expcp[i1, 1]) + (1 - cos(spat_expcp[i1, 7]))*spat_expcp[i1, 2]*spat_expcp[i1, 3]
+  else if i2 = 3 and i3 = 3 then 1 + (1 - cos(spat_expcp[i1, 7]))*(-spat_expcp[i1, 1]^2 - spat_expcp[i1, 2]^2);
+
+# px = (p) x = skew-symmetric matrix of p = (-E r) x
+param ppx {i1 in SPAT_XP, i2 in SPAT_M, i3 in SPAT_M: i2 <= 3 and i3 <= 3} =
+  if i2 = 1 and i3 = 2 then -((1 - cos(spat_expcp[i1, 7]))*(-(spat_expcp[i1, 2]*spat_expcp[i1, 4]) + spat_expcp[i1, 1]*spat_expcp[i1, 5])) + spat_expcp[i1, 6]*spat_expcp[i1, 7] - (-(spat_expcp[i1, 1]*spat_expcp[i1, 3]*spat_expcp[i1, 4]) - spat_expcp[i1, 2]*spat_expcp[i1, 3]*spat_expcp[i1, 5] - (-spat_expcp[i1, 1]^2 - spat_expcp[i1, 2]^2)*spat_expcp[i1, 6])*(-sin(spat_expcp[i1, 7]) + spat_expcp[i1, 7])
+  else if i2 = 1 and i3 = 3 then (1 - cos(spat_expcp[i1, 7]))*(spat_expcp[i1, 3]*spat_expcp[i1, 4] - spat_expcp[i1, 1]*spat_expcp[i1, 6]) - spat_expcp[i1, 5]*spat_expcp[i1, 7] + (-(spat_expcp[i1, 1]*spat_expcp[i1, 2]*spat_expcp[i1, 4]) - (-spat_expcp[i1, 1]^2 - spat_expcp[i1, 3]^2)*spat_expcp[i1, 5] - spat_expcp[i1, 2]*spat_expcp[i1, 3]*spat_expcp[i1, 6])*(-sin(spat_expcp[i1, 7]) + spat_expcp[i1, 7])
+  else if i2 = 2 and i3 = 1 then (1 - cos(spat_expcp[i1, 7]))*(-(spat_expcp[i1, 2]*spat_expcp[i1, 4]) + spat_expcp[i1, 1]*spat_expcp[i1, 5]) - spat_expcp[i1, 6]*spat_expcp[i1, 7] + (-(spat_expcp[i1, 1]*spat_expcp[i1, 3]*spat_expcp[i1, 4]) - spat_expcp[i1, 2]*spat_expcp[i1, 3]*spat_expcp[i1, 5] - (-spat_expcp[i1, 1]^2 - spat_expcp[i1, 2]^2)*spat_expcp[i1, 6])*(-sin(spat_expcp[i1, 7]) + spat_expcp[i1, 7])
+  else if i2 = 2 and i3 = 3 then -((1 - cos(spat_expcp[i1, 7]))*(-(spat_expcp[i1, 3]*spat_expcp[i1, 5]) + spat_expcp[i1, 2]*spat_expcp[i1, 6])) + spat_expcp[i1, 4]*spat_expcp[i1, 7] - (-((-spat_expcp[i1, 2]^2 - spat_expcp[i1, 3]^2)*spat_expcp[i1, 4]) - spat_expcp[i1, 1]*spat_expcp[i1, 2]*spat_expcp[i1, 5] - spat_expcp[i1, 1]*spat_expcp[i1, 3]*spat_expcp[i1, 6])*(-sin(spat_expcp[i1, 7]) + spat_expcp[i1, 7])
+  else if i2 = 3 and i3 = 1 then -((1 - cos(spat_expcp[i1, 7]))*(spat_expcp[i1, 3]*spat_expcp[i1, 4] - spat_expcp[i1, 1]*spat_expcp[i1, 6])) + spat_expcp[i1, 5]*spat_expcp[i1, 7] - (-(spat_expcp[i1, 1]*spat_expcp[i1, 2]*spat_expcp[i1, 4]) - (-spat_expcp[i1, 1]^2 - spat_expcp[i1, 3]^2)*spat_expcp[i1, 5] - spat_expcp[i1, 2]*spat_expcp[i1, 3]*spat_expcp[i1, 6])*(-sin(spat_expcp[i1, 7]) + spat_expcp[i1, 7])
+  else if i2 = 3 and i3 = 2 then (1 - cos(spat_expcp[i1, 7]))*(-(spat_expcp[i1, 3]*spat_expcp[i1, 5]) + spat_expcp[i1, 2]*spat_expcp[i1, 6]) - spat_expcp[i1, 4]*spat_expcp[i1, 7] + (-((-spat_expcp[i1, 2]^2 - spat_expcp[i1, 3]^2)*spat_expcp[i1, 4]) - spat_expcp[i1, 1]*spat_expcp[i1, 2]*spat_expcp[i1, 5] - spat_expcp[i1, 1]*spat_expcp[i1, 3]*spat_expcp[i1, 6])*(-sin(spat_expcp[i1, 7]) + spat_expcp[i1, 7]);
+
+# p x E = skew[-E.r].E = -E.skew[r].E^T.E = -E.skew[r]
+param spat_Xp {i1 in SPAT_XP, i2 in SPAT_M, i3 in SPAT_M} =
+  if i2 <= 3 and i3 <= 3 then Ep[i1, i2, i3]
+  else if i2 > 3 and i3 > 3 then Ep[i1, i2 - 3, i3 - 3]
+  else if 3 < i2 <= 6 and i3 <= 3 then sum {i4 in SPAT_M: i4 <= 3} ppx[i1, i2 - 3, i4] * Ep[i1, i4, i3];
+
+#----------- variable transforms
+set SPAT_XV := 1..nq;
+
+param x_ij := 1; # RBT_S
+
+param spat_expcv {i1 in SPAT_XV, i2 in SPAT_M} :=
+  robot[i1, next('S_RX', RBT_IDX, i2 - 1)];
+
+var Ev {i1 in SPAT_XV, i2 in SPAT_M, i3 in SPAT_M, i4 in GRID[0]: i2 <= 3 and i3 <= 3} =
+  if i2 = 1 and i3 = 1 then 1 + (1 - cos(q[i1, i4]))*(-spat_expcv[i1, 2]^2 - spat_expcv[i1, 3]^2)
+  else if i2 = 1 and i3 = 2 then (1 - cos(q[i1, i4]))*spat_expcv[i1, 1]*spat_expcv[i1, 2] + sin(q[i1, i4])*spat_expcv[i1, 3]
+  else if i2 = 1 and i3 = 3 then -(sin(q[i1, i4])*spat_expcv[i1, 2]) + (1 - cos(q[i1, i4]))*spat_expcv[i1, 1]*spat_expcv[i1, 3]
+  else if i2 = 2 and i3 = 1 then (1 - cos(q[i1, i4]))*spat_expcv[i1, 1]*spat_expcv[i1, 2] - sin(q[i1, i4])*spat_expcv[i1, 3]
+  else if i2 = 2 and i3 = 2 then 1 + (1 - cos(q[i1, i4]))*(-spat_expcv[i1, 1]^2 - spat_expcv[i1, 3]^2)
+  else if i2 = 2 and i3 = 3 then sin(q[i1, i4])*spat_expcv[i1, 1] + (1 - cos(q[i1, i4]))*spat_expcv[i1, 2]*spat_expcv[i1, 3]
+  else if i2 = 3 and i3 = 1 then sin(q[i1, i4])*spat_expcv[i1, 2] + (1 - cos(q[i1, i4]))*spat_expcv[i1, 1]*spat_expcv[i1, 3]
+  else if i2 = 3 and i3 = 2 then -(sin(q[i1, i4])*spat_expcv[i1, 1]) + (1 - cos(q[i1, i4]))*spat_expcv[i1, 2]*spat_expcv[i1, 3]
+  else if i2 = 3 and i3 = 3 then 1 + (1 - cos(q[i1, i4]))*(-spat_expcv[i1, 1]^2 - spat_expcv[i1, 2]^2);
+
+# px = (p) x = skew-symmetric matrix of p = (-E r) x
+var pvx {i1 in SPAT_XV, i2 in SPAT_M, i3 in SPAT_M, i4 in GRID[0]: i2 <= 3 and i3 <= 3} =
+  if i2 = 1 and i3 = 2 then -((1 - cos(q[i1, i4]))*(-(spat_expcv[i1, 2]*spat_expcv[i1, 4]) + spat_expcv[i1, 1]*spat_expcv[i1, 5])) + spat_expcv[i1, 6]*q[i1, i4] - (-(spat_expcv[i1, 1]*spat_expcv[i1, 3]*spat_expcv[i1, 4]) - spat_expcv[i1, 2]*spat_expcv[i1, 3]*spat_expcv[i1, 5] - (-spat_expcv[i1, 1]^2 - spat_expcv[i1, 2]^2)*spat_expcv[i1, 6])*(-sin(q[i1, i4]) + q[i1, i4])
+  else if i2 = 1 and i3 = 3 then (1 - cos(q[i1, i4]))*(spat_expcv[i1, 3]*spat_expcv[i1, 4] - spat_expcv[i1, 1]*spat_expcv[i1, 6]) - spat_expcv[i1, 5]*q[i1, i4] + (-(spat_expcv[i1, 1]*spat_expcv[i1, 2]*spat_expcv[i1, 4]) - (-spat_expcv[i1, 1]^2 - spat_expcv[i1, 3]^2)*spat_expcv[i1, 5] - spat_expcv[i1, 2]*spat_expcv[i1, 3]*spat_expcv[i1, 6])*(-sin(q[i1, i4]) + q[i1, i4])
+  else if i2 = 2 and i3 = 1 then (1 - cos(q[i1, i4]))*(-(spat_expcv[i1, 2]*spat_expcv[i1, 4]) + spat_expcv[i1, 1]*spat_expcv[i1, 5]) - spat_expcv[i1, 6]*q[i1, i4] + (-(spat_expcv[i1, 1]*spat_expcv[i1, 3]*spat_expcv[i1, 4]) - spat_expcv[i1, 2]*spat_expcv[i1, 3]*spat_expcv[i1, 5] - (-spat_expcv[i1, 1]^2 - spat_expcv[i1, 2]^2)*spat_expcv[i1, 6])*(-sin(q[i1, i4]) + q[i1, i4])
+  else if i2 = 2 and i3 = 3 then -((1 - cos(q[i1, i4]))*(-(spat_expcv[i1, 3]*spat_expcv[i1, 5]) + spat_expcv[i1, 2]*spat_expcv[i1, 6])) + spat_expcv[i1, 4]*q[i1, i4] - (-((-spat_expcv[i1, 2]^2 - spat_expcv[i1, 3]^2)*spat_expcv[i1, 4]) - spat_expcv[i1, 1]*spat_expcv[i1, 2]*spat_expcv[i1, 5] - spat_expcv[i1, 1]*spat_expcv[i1, 3]*spat_expcv[i1, 6])*(-sin(q[i1, i4]) + q[i1, i4])
+  else if i2 = 3 and i3 = 1 then -((1 - cos(q[i1, i4]))*(spat_expcv[i1, 3]*spat_expcv[i1, 4] - spat_expcv[i1, 1]*spat_expcv[i1, 6])) + spat_expcv[i1, 5]*q[i1, i4] - (-(spat_expcv[i1, 1]*spat_expcv[i1, 2]*spat_expcv[i1, 4]) - (-spat_expcv[i1, 1]^2 - spat_expcv[i1, 3]^2)*spat_expcv[i1, 5] - spat_expcv[i1, 2]*spat_expcv[i1, 3]*spat_expcv[i1, 6])*(-sin(q[i1, i4]) + q[i1, i4])
+  else if i2 = 3 and i3 = 2 then (1 - cos(q[i1, i4]))*(-(spat_expcv[i1, 3]*spat_expcv[i1, 5]) + spat_expcv[i1, 2]*spat_expcv[i1, 6]) - spat_expcv[i1, 4]*q[i1, i4] + (-((-spat_expcv[i1, 2]^2 - spat_expcv[i1, 3]^2)*spat_expcv[i1, 4]) - spat_expcv[i1, 1]*spat_expcv[i1, 2]*spat_expcv[i1, 5] - spat_expcv[i1, 1]*spat_expcv[i1, 3]*spat_expcv[i1, 6])*(-sin(q[i1, i4]) + q[i1, i4]);
+
+# p x E = skew[-E.r].E = -E.skew[r].E^T.E = -E.skew[r]
+var spat_Xv {i1 in SPAT_XV, i2 in SPAT_M, i3 in SPAT_M, i4 in GRID[0]} =
+  if i2 <= 3 and i3 <= 3 then Ev[i1, i2, i3, i4]
+  else if i2 > 3 and i3 > 3 then Ev[i1, i2 - 3, i3 - 3, i4]
+  else if 3 < i2 <= 6 and i3 <= 3 then sum {i5 in SPAT_M: i5 <= 3} pvx[i1, i2 - 3, i5, i4] * Ev[i1, i5, i3, i4];
+
+#----------- track the robot's position
+var spat_X_ip {i1 in SPAT_L[1], i2 in SPAT_M, i3 in SPAT_M, i4 in GRID[0]} =
+  sum{i5 in SPAT_M} spat_Xv[x_ij + i1 - 1, i2, i5, i4] * spat_Xp[x_jp + i1 - 1, i5, i3];
+
+#----------- mass matrix M and internal forces b
+param spat_ag {SPAT_M};
+
+param spat_s_ii {i1 in SPAT_L[1], i2 in SPAT_M} =
+  robot[i1, next('S_RX', RBT_IDX, i2 - 1)];
+
+param spat_I_mm {i1 in SPAT_L[1], i2 in SPAT_M, i3 in SPAT_M} =
+  if i2 = i3 and i3 > 3 then robot[i1, 'MASS']
+  else if i2 = i3 and i3 <= 3 then robot[i1, next('IXX', RBT_IDX, i2 - 1)]
+  else if (i2 = 1 and i3 = 2) or (i2 = 2 and i3 = 1) then robot[i1, 'IXY']
+  else if (i2 = 1 and i3 = 3) or (i2 = 3 and i3 = 1) then robot[i1, 'IXZ']
+  else if (i2 = 2 and i3 = 3) or (i2 = 3 and i3 = 2) then robot[i1, 'IYZ'];
+
+param spat_I_im {i1 in SPAT_L[1], i2 in SPAT_M, i3 in SPAT_M} = sum {i4 in SPAT_M, i5 in SPAT_M} spat_Xp[x_im + i1 - 1, i4, i2] * spat_I_mm[i1, i4, i5] * spat_Xp[x_im + i1 - 1, i5, i3];
+
+#----------- composite rigid body algorithm
+var CRB_IC {i1 in SPAT_L[-1], i2 in SPAT_M, i3 in SPAT_M, i4 in GRID[0] : i1 > 0} = spat_I_im[i1, i2, i3] + sum {i5 in SPAT_TREE_C[i1], i6 in SPAT_M, i7 in SPAT_M} spat_X_ip[i5, i6, i2, i4] * CRB_IC[i5, i6, i7, i4] * spat_X_ip[i5, i7, i3, i4];
+
+var CRB_f {i1 in SPAT_L[-1], i2 in SPAT_TREE_K[i1], i3 in SPAT_M, i4 in GRID[0] : i1 > 0} = if i1 = i2 then sum {i5 in SPAT_M} CRB_IC[i1, i3, i5, i4] * spat_s_ii[i1, i5] else sum {i5 in SPAT_M} spat_X_ip[prev(i2), i5, i3, i4] * CRB_f[i1, prev(i2), i5, i4];
+
+var M {i1 in SPAT_L[-1], i2 in SPAT_L[-1], i3 in GRID[0] : i1 > 0 && i2 > 0} = if i1 in SPAT_TREE_S[i2] then sum {i5 in SPAT_M} CRB_f[i1, i2, i5, i3] * spat_s_ii[i2, i5] else if i2 in SPAT_TREE_S[i1] then M[i2, i1, i3] else 0;
+
+#----------- recursive Netwon-Euler algorithm
+var RNEA_v {i1 in SPAT_L[0], i2 in SPAT_M, i3 in GRID[0]} = if i1 = 0 then 0 else spat_s_ii[i1, i2] * v[i1, i3] + sum {i4 in SPAT_TREE_P[i1], i5 in SPAT_M} spat_X_ip[i1, i2, i5, i3] * RNEA_v[i4, i5, i3];
+
+var RNEA_vx {i1 in SPAT_L[1], i2 in SPAT_M, i3 in SPAT_M, i4 in GRID[0]} =
+  if i2 = 1 and i3 = 2 then -RNEA_v[i1, 3, i4]
+  else if i2 = 1 and i3 = 3 then RNEA_v[i1, 2, i4]
+  else if i2 = 2 and i3 = 1 then RNEA_v[i1, 3, i4]
+  else if i2 = 2 and i3 = 3 then -RNEA_v[i1, 1, i4]
+  else if i2 = 3 and i3 = 1 then -RNEA_v[i1, 2, i4]
+  else if i2 = 3 and i3 = 2 then RNEA_v[i1, 1, i4]
+  else if i2 = 4 and i3 = 2 then -RNEA_v[i1, 6, i4]
+  else if i2 = 4 and i3 = 3 then RNEA_v[i1, 5, i4]
+  else if i2 = 4 and i3 = 5 then -RNEA_v[i1, 3, i4]
+  else if i2 = 4 and i3 = 6 then RNEA_v[i1, 2, i4]
+  else if i2 = 5 and i3 = 1 then RNEA_v[i1, 6, i4]
+  else if i2 = 5 and i3 = 3 then -RNEA_v[i1, 4, i4]
+  else if i2 = 5 and i3 = 4 then RNEA_v[i1, 3, i4]
+  else if i2 = 5 and i3 = 6 then -RNEA_v[i1, 1, i4]
+  else if i2 = 6 and i3 = 1 then -RNEA_v[i1, 5, i4]
+  else if i2 = 6 and i3 = 2 then RNEA_v[i1, 4, i4]
+  else if i2 = 6 and i3 = 4 then -RNEA_v[i1, 2, i4]
+  else if i2 = 6 and i3 = 5 then RNEA_v[i1, 1, i4];
+
+var RNEA_a {i1 in SPAT_L[0], i2 in SPAT_M, i3 in GRID[0]} = if i1 = 0 then spat_ag[i2] else sum {i4 in SPAT_TREE_P[i1], i5 in SPAT_M} spat_X_ip[i1, i2, i5, i3] * RNEA_a[i4, i5, i3] + (sum {i5 in SPAT_M} RNEA_vx[i1, i2, i5, i3] * spat_s_ii[i1, i5]) * v[i1, i3];
+
+var RNEA_fb {i1 in SPAT_L[1], i2 in SPAT_M, i3 in GRID[0]} = sum {i5 in SPAT_M} spat_I_im[i1, i2, i5] * RNEA_a[i1, i5, i3] + sum {i5 in SPAT_M, i6 in SPAT_M} -RNEA_vx[i1, i5, i2, i3] * spat_I_im[i1, i5, i6] * RNEA_v[i1, i6, i3];
+
+var RNEA_f {i1 in SPAT_L[-1], i2 in SPAT_M, i3 in GRID[0] : i1 > 0} = RNEA_fb[i1, i2, i3] + sum {i5 in SPAT_TREE_C[i1], i6 in SPAT_M} spat_X_ip[i5, i6, i2, i3] * RNEA_f[i5, i6, i3];
+
+var b {i1 in SPAT_L[1], i3 in GRID[0]} = sum {i2 in SPAT_M} spat_s_ii[i1, i2] * RNEA_f[i1, i2, i3];
+
+#----------- operational space constraints
+param OSIM_r_00 {i1 in R, i2 in SPAT_M} = constraint[i1, next('R_RX', CON_IDX, i2 - 1)];
+
+# rigid bodies used in computation of constraints
+set OSIM_K {i1 in PHASES} ordered by [0, nq] := union {i2 in CON_M[i1], i3 in CON_R[i1, i2]} SPAT_TREE_K[constraint[i3, 'BODY']];
+
+set OSIM_B {i1 in PHASES} := setof {i2 in CON_M[i1], i3 in CON_R[i1, i2]} constraint[i3, 'BODY'];
+
+var OSIM_R_0i {i1 in PHASES, i2 in OSIM_K[i1], i3 in SPAT_M, i4 in SPAT_M, i5 in GRID[i1]} = 
+  if i2 = 0 and i3 = i4 then 1
+  else sum {i6 in SPAT_TREE_P[i2], i7 in SPAT_M: (i3 <= 3 and i4 <= 3) or (i3 > 3 and i4 > 3)} OSIM_R_0i[i1, i6, i3, i7, i5] * spat_X_ip[i2, i4, i7, i5];
+
+var OSIM_Rdot_0i {i1 in PHASES, i2 in OSIM_K[i1], i3 in SPAT_M, i4 in SPAT_M, i5 in GRID[i1]} = 
+  if i2 > 0 then sum {i6 in SPAT_M: (i3 <= 3 and i4 <= 3) or (i3 > 3 and i4 > 3)} OSIM_R_0i[i1, i2, i3, i6, i5] * RNEA_vx[i2, i6, i4, i5];
+
+var OSIM_X_bi {i1 in PHASES, i2 in OSIM_B[i1], i3 in SPAT_TREE_K[i2], i4 in SPAT_M, i5 in SPAT_M, i6 in GRID[i1]} = 
+  if i2 = i3 and i4 = i5 then 1 
+  else if i2 > i3 then sum {i7 in SPAT_M} OSIM_X_bi[i1, i2, prev(i3), i4, i7, i6] * spat_X_ip[prev(i3), i7, i5, i6];
+
+var OSIM_v_rel {i1 in PHASES, i2 in OSIM_B[i1], i3 in SPAT_TREE_K[i2], i4 in SPAT_M, i5 in GRID[i1]} = if i3 > 0 then (-RNEA_v[i2, i4, i5] + sum {i6 in SPAT_M} OSIM_X_bi[i1, i2, i3, i4, i6, i5] * RNEA_v[i3, i6, i5]);
+
+var OSIM_v_relx {i1 in PHASES, i2 in OSIM_B[i1], i3 in SPAT_TREE_K[i2], i4 in SPAT_M, i5 in SPAT_M, i6 in GRID[i1]} =
+  if i4 = 1 and i5 = 2 then -OSIM_v_rel[i1, i2, i3, 3, i6]
+  else if i4 = 1 and i5 = 3 then OSIM_v_rel[i1, i2, i3, 2, i6]
+  else if i4 = 2 and i5 = 1 then OSIM_v_rel[i1, i2, i3, 3, i6]
+  else if i4 = 2 and i5 = 3 then -OSIM_v_rel[i1, i2, i3, 1, i6]
+  else if i4 = 3 and i5 = 1 then -OSIM_v_rel[i1, i2, i3, 2, i6]
+  else if i4 = 3 and i5 = 2 then OSIM_v_rel[i1, i2, i3, 1, i6]
+  else if i4 = 4 and i5 = 2 then -OSIM_v_rel[i1, i2, i3, 6, i6]
+  else if i4 = 4 and i5 = 3 then OSIM_v_rel[i1, i2, i3, 5, i6]
+  else if i4 = 4 and i5 = 5 then -OSIM_v_rel[i1, i2, i3, 3, i6]
+  else if i4 = 4 and i5 = 6 then OSIM_v_rel[i1, i2, i3, 2, i6]
+  else if i4 = 5 and i5 = 1 then OSIM_v_rel[i1, i2, i3, 6, i6]
+  else if i4 = 5 and i5 = 3 then -OSIM_v_rel[i1, i2, i3, 4, i6]
+  else if i4 = 5 and i5 = 4 then OSIM_v_rel[i1, i2, i3, 3, i6]
+  else if i4 = 5 and i5 = 6 then -OSIM_v_rel[i1, i2, i3, 1, i6]
+  else if i4 = 6 and i5 = 1 then -OSIM_v_rel[i1, i2, i3, 5, i6]
+  else if i4 = 6 and i5 = 2 then OSIM_v_rel[i1, i2, i3, 4, i6]
+  else if i4 = 6 and i5 = 4 then -OSIM_v_rel[i1, i2, i3, 2, i6]
+  else if i4 = 6 and i5 = 5 then OSIM_v_rel[i1, i2, i3, 1, i6];
+
+var OSIM_Xdot_bi {i1 in PHASES, i2 in OSIM_B[i1], i3 in SPAT_TREE_K[i2], i4 in SPAT_M, i5 in SPAT_M, i6 in GRID[i1]} = 
+  if i3 > 0 then sum {i7 in SPAT_M} OSIM_v_relx[i1, i2, i3, i4, i7, i6] * OSIM_X_bi[i1, i2, i3, i7, i5, i6];
+
+# X_0cb = R_0b * R_bc * T_cb = frame with axes aligned 
+# with {0} located at {c} relative to b; 0cb => (0c)b
+# R_0b * R_bc * R_cb = R_0b, so apply simplification in computation of SO(3)
+# R_0b * R_bc * (p x R_cb) = -R_0b * R_bc * R_cb * rx = -R_0b rx, need to compute
+var OSIM_X_0cb {i1 in PHASES, i2 in CON_J[i1], i3 in CON_R[i1, i2], i4 in SPAT_M, i5 in SPAT_M, i6 in GRID[i1]} =
+  if i4 <= 3 and i5 <= 3 then OSIM_R_0i[i1, constraint[i3, 'BODY'], i4, i5, i6]
+  else if i4 > 3 and i5 > 3 then OSIM_R_0i[i1, constraint[i3, 'BODY'], i4 - 3, i5 - 3, i6]
+  else if i4 > 3 and i5 <= 3 then sum {i7 in SPAT_M, i8 in SPAT_M: i7 <= 3 and i8 <= 3} OSIM_R_0i[i1, constraint[i3, 'BODY'], i4 - 3, i7, i6] * Ep[x_cb + i3 - 1, i8, i7] * spat_Xp[x_cb + i3 - 1, i8 + 3, i5];
+
+var OSIM_Xdot_0cb {i1 in PHASES, i2 in CON_J[i1], i3 in CON_R[i1, i2], i4 in SPAT_M, i5 in SPAT_M, i6 in GRID[i1]} =
+  if i4 <= 3 and i5 <= 3 then OSIM_Rdot_0i[i1, constraint[i3, 'BODY'], i4, i5, i6]
+  else if i4 > 3 and i5 > 3 then OSIM_Rdot_0i[i1, constraint[i3, 'BODY'], i4 - 3, i5 - 3, i6]
+  else if i4 > 3 and i5 <= 3 then sum {i7 in SPAT_M, i8 in SPAT_M: i7 <= 3 and i8 <= 3} OSIM_Rdot_0i[i1, constraint[i3, 'BODY'], i4 - 3, i7, i6] * Ep[x_cb + i3 - 1, i8, i7] * spat_Xp[x_cb + i3 - 1, i8 + 3, i5];
+
+# variables for computing positions and angles
+# X_c0 = X_0c_0 <= this transform will give position of {c} in {0} coordinates
+var OSIM_X_c0 {i1 in PHASES, i2 in CON_M[i1], i3 in CON_R[i1, i2], i4 in SPAT_M, i5 in SPAT_M, i6 in GRID[i1]} = sum {i7 in SPAT_M} OSIM_X_0cb[i1, i2, i3, i4, i7, i6] * OSIM_X_bi[i1, constraint[i3, 'BODY'], 0, i7, i5, i6];
+
+# R_0c = R_0b * R_bc <= this transform will give angles of {c} in {0} coordinates
+var OSIM_R_0c {i1 in PHASES, i2 in CON_J[i1], i3 in CON_R[i1, i2], i4 in SPAT_M, i5 in SPAT_M, i6 in GRID[i1]: i4 <= 3 and i5 <= 3} = sum {i7 in SPAT_M: i7 <= 3} OSIM_R_0i[i1, constraint[i3, 'BODY'], i4, i7, i6] * Ep[x_cb + i3 - 1, i5, i7];
+
+var J {i1 in PHASES, i2 in CON_J[i1], i3 in SPAT_L[1], i4 in GRID[i1]} = sum {i5 in CON_R[i1, i2], i6 in SPAT_M, i7 in SPAT_M, i8 in SPAT_M : i3 in SPAT_TREE_K[constraint[i5, 'BODY']]} OSIM_r_00[i5, i6] * OSIM_X_0cb[i1, i2, i5, i6, i7, i4] * OSIM_X_bi[i1, constraint[i5, 'BODY'], i3, i7, i8, i4] * spat_s_ii[i3, i8];
+
+var phi {i1 in PHASES, i2 in CON_M[i1], i3 in GRID[i1]} = sum {i4 in CON_R[i1, i2], i5 in SPAT_TREE_K[constraint[i4, 'BODY']], i6 in SPAT_M, i7 in SPAT_M, i8 in SPAT_M : i5 > 0} (OSIM_r_00[i4, i6] * (OSIM_Xdot_0cb[i1, i2, i4, i6, i7, i3] * OSIM_X_bi[i1, constraint[i4, 'BODY'], i5, i7, i8, i3] + OSIM_X_0cb[i1, i2, i4, i6, i7, i3] * OSIM_Xdot_bi[i1, constraint[i4, 'BODY'], i5, i7, i8, i3]) * spat_s_ii[i5, i8]) * v[i5, i3];
+
+var OSIM_position {i1 in PHASES, i2 in CON_M[i1], i3 in CON_R[i1, i2], i4 in SPAT_M, i5 in GRID[i1]} =
+  if i4 = 1 then atan2(-OSIM_R_0c[i1, i2, i3, 2, 3, i5],OSIM_R_0c[i1, i2, i3, 3, 3, i5])
+  else if i4 = 2 then asin(OSIM_R_0c[i1, i2, i3, 1, 3, i5])
+  else if i4 = 3 then atan2(-OSIM_R_0c[i1, i2, i3, 1, 2, i5],OSIM_R_0c[i1, i2, i3, 1, 1, i5])
+  else if i4 = 4 then (-(OSIM_X_c0[i1, i2, i3, 1, 3, i5]*OSIM_X_c0[i1, i2, i3, 4, 2, i5]) + OSIM_X_c0[i1, i2, i3, 1, 2, i5]*OSIM_X_c0[i1, i2, i3, 4, 3, i5] - OSIM_X_c0[i1, i2, i3, 2, 3, i5]*OSIM_X_c0[i1, i2, i3, 5, 2, i5] + OSIM_X_c0[i1, i2, i3, 2, 2, i5]*OSIM_X_c0[i1, i2, i3, 5, 3, i5] - OSIM_X_c0[i1, i2, i3, 3, 3, i5]*OSIM_X_c0[i1, i2, i3, 6, 2, i5] + OSIM_X_c0[i1, i2, i3, 3, 2, i5]*OSIM_X_c0[i1, i2, i3, 6, 3, i5])/2
+  else if i4 = 5 then (OSIM_X_c0[i1, i2, i3, 1, 3, i5]*OSIM_X_c0[i1, i2, i3, 4, 1, i5] - OSIM_X_c0[i1, i2, i3, 1, 1, i5]*OSIM_X_c0[i1, i2, i3, 4, 3, i5] + OSIM_X_c0[i1, i2, i3, 2, 3, i5]*OSIM_X_c0[i1, i2, i3, 5, 1, i5] - OSIM_X_c0[i1, i2, i3, 2, 1, i5]*OSIM_X_c0[i1, i2, i3, 5, 3, i5] + OSIM_X_c0[i1, i2, i3, 3, 3, i5]*OSIM_X_c0[i1, i2, i3, 6, 1, i5] - OSIM_X_c0[i1, i2, i3, 3, 1, i5]*OSIM_X_c0[i1, i2, i3, 6, 3, i5])/2
+  else if i4 = 6 then (-(OSIM_X_c0[i1, i2, i3, 1, 2, i5]*OSIM_X_c0[i1, i2, i3, 4, 1, i5]) + OSIM_X_c0[i1, i2, i3, 1, 1, i5]*OSIM_X_c0[i1, i2, i3, 4, 2, i5] - OSIM_X_c0[i1, i2, i3, 2, 2, i5]*OSIM_X_c0[i1, i2, i3, 5, 1, i5] + OSIM_X_c0[i1, i2, i3, 2, 1, i5]*OSIM_X_c0[i1, i2, i3, 5, 2, i5] - OSIM_X_c0[i1, i2, i3, 3, 2, i5]*OSIM_X_c0[i1, i2, i3, 6, 1, i5] + OSIM_X_c0[i1, i2, i3, 3, 1, i5]*OSIM_X_c0[i1, i2, i3, 6, 2, i5])/2;
+
+var g {i1 in PHASES, i2 in CON_M[i1], i3 in GRID[i1]} = sum {i4 in CON_R[i1, i2], i5 in SPAT_M} OSIM_r_00[i4, i5] * OSIM_position[i1, i2, i4, i5, i3];
+
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#* eom
+#----------- continuous dynamics
+# decision variable: constraint forces
+var f {i1 in PHASES, CON_F[i1], GRID[i1]};
+
+# constraint variables
+var Jv {i1 in PHASES, i2 in CON_M[i1], i3 in GRID[i1]} = sum {i4 in Q} J[i1,i2,i4,i3]*v[i4,i3];
+var Ja {i1 in PHASES, i2 in CON_M[i1], i3 in GRID[i1]} = sum {i4 in Q} J[i1,i2,i4,i3]*a[i4,i3];
+var Jtf {i1 in PHASES, i2 in Q, i3 in GRID[i1]} = sum {i4 in CON_F[i1]} J[i1,i4,i2,i3]*f[i1,i4,i3];
+
+var g_des {i1 in PHASES, CON_M[i1], GRID[i1]} default 0;
+var gdot_des {i1 in PHASES, CON_M[i1], GRID[i1]} default 0;
+var gddot_des {i1 in PHASES, CON_M[i1], GRID[i1]} default 0;
+
+# constraints
+subject to CONQ {i1 in PHASES, i2 in CON_M[i1], i3 in GRID[i1]} : g[i1,i2,i3] - g_des[i1,i2,i3] = 0;
+subject to CONV {i1 in PHASES, i2 in CON_M[i1], i3 in GRID[i1]} : Jv[i1,i2,i3] - gdot_des[i1,i2,i3] = 0;
+subject to CONA {i1 in PHASES, i2 in CON_M[i1], i3 in GRID[i1]} : Ja[i1,i2,i3] + phi[i1,i2,i3] - gddot_des[i1,i2,i3] = 0;
+
+# EL variables
+var EL {i1 in Q, i2 in GRID[0]} = sum {i3 in Q} M[i1,i3,i2]*a[i3,i2] + b[i1,i2] - u[i1,i2];
+
+# constrained equations of motion
+subject to EOM {i1 in PHASES, i2 in Q, i3 in GRID[i1]} : EL[i2,i3] = Jtf[i1,i2,i3];
+
+#----------- instantaneous impacts
+set PIM dimen 2; # PIM = switching/post-impact times as pair (t-, t+)
+set PIM_MBRS := {'-', '+'};
+set PIM_GRID {i1 in PIM_MBRS} := setof {(i2, i3) in PIM} if i1 = '-' then i2 else i3;
+
+# coefficient of restitution
+param epsilon {i1 in PHASES, CON_M[i1], PIM_GRID['+'] inter GRID[i1]} default 0;
+
+# decision variable: constraint impulses
+var I {i1 in PHASES, CON_F[i1], PIM_GRID['+'] inter GRID[i1]};
+
+# impact variables
+var Mv {i1 in Q, (i3, i4) in PIM} = sum {i2 in Q} M[i1,i2,i3]*(v[i2,i4]-v[i2,i3]); # M(v+ - v-)
+
+var JtI {i1 in PHASES, i2 in Q, i3 in PIM_GRID['+'] inter GRID[i1]} = sum {i4 in CON_F[i1]} J[i1,i4,i2,i3] * I[i1,i4,i3];
+
+var eJv {i1 in PHASES, i2 in CON_M[i1], (i3, i4) in PIM: i4 in GRID[i1]} = epsilon[i1,i2,i4] * sum {i5 in Q} J[i1,i2,i5,i4]*v[i5,i3];
+
+# pre-impact equals post-impact switching time
+subject to TPI {(i1, i2) in PIM} : t[i2] = t[i1]; # t+ = t-
+
+# plastic impact equations
+subject to IME {i1 in PHASES, i2 in Q, (i3, i4) in PIM: i4 in GRID[i1]} : Mv[i2,i3,i4] - JtI[i1,i2,i4] = 0;
+subject to POSTQ {i1 in PHASES, i2 in Q, (i3, i4) in PIM: i4 in GRID[i1]} : q[i2,i4] - q[i2,i3] = 0;
+subject to POSTV {i1 in PHASES, i2 in CON_M[i1], (i3, i4) in PIM: i4 in GRID[i1]} : Jv[i1,i2,i4] + eJv[i1,i2,i3,i4] = 0;
+
+# (to, from) in PIM must be unique to avoid competing constraints
+check {i1 in setof {(i3,i4) in PIM} i4} : sum {i2 in setof {(i3,i4) in PIM} i4 : i2 = i1} 1 = 1;
+check {i1 in setof {(i3,i4) in PIM} i3} : sum {i2 in setof {(i3,i4) in PIM} i3 : i2 = i1} 1 = 1;
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#* eom!
+
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#* Runge-Kutta
+set ODE_SOLVERS;
+set ODE_SUBGRID {ODE_SOLVERS} dimen 2;
+param ODE_K {ODE_SOLVERS};
+set ODEMBRS := {0, 'BEG', 'END', 'K'};
+set ODE {i1 in ODE_SOLVERS, i2 in ODEMBRS} :=
+  if i2 = 0 then union {(i3, i4) in ODE_SUBGRID[i1]} i3..i4 - 1
+  else if i2 = 'K' then 1..ODE_K[i1]
+  else if i2 = 'BEG' then setof {(i3, i4) in ODE_SUBGRID[i1]} i3
+  else if i2 = 'END' then setof {(i3, i4) in ODE_SUBGRID[i1]} i4
+  else {};
+
+var ODE_delta {i1 in SUBPHASES, i2 in ODE_SOLVERS, i3 in ODE[i2, 0] : i3 in GRID[i1]} = (t[subphases[i1, 'END']] - t[subphases[i1, 'BEG']]) / (subphases[i1, 'END'] - subphases[i1, 'BEG']);
+
+# Butcher tableau parameters
+param ODE_AK {i1 in ODE_SOLVERS, ODE[i1, 'K'], ODE[i1, 'K']};
+param ODE_bK {i1 in ODE_SOLVERS, ODE[i1, 'K']};
+param ODE_cK {i1 in ODE_SOLVERS, ODE[i1, 'K']};
+
+var ODE_hK {i1 in ODE_SOLVERS, ODE[i1, 0]} >= 0; # time step size
+
+param ODE_a0 {i1 in ODE_SOLVERS} = if 0 = sum {i2 in ODE[i1, 'K']} ODE_AK[i1, 1, i2] then 1;
+param ODE_aK {i1 in ODE_SOLVERS} = if 0 = sum {i2 in ODE[i1, 'K']} (ODE_AK[i1, ODE_K[i1], i2] - ODE_bK[i1, i2]) then 1;
+
+set ODE_GRID ordered by [0, GRID_MAX] := union {i2 in ODE_SOLVERS} 
+  (setof {i4 in ODE[i2, 0], i5 in ODE[i2, 'K']: 
+    1 + ODE_a0[i2] <= i5 <= ODE_K[i2] - ODE_aK[i2]} i4 + i5/10^ceil(log10(ODE_K[i2]+1)) 
+  union ODE[i2, 0] union ODE[i2, 'END']);
+
+# q defect constraints
+subject to ODE_DEFQ {i1 in ODE_SOLVERS, i2 in Q, i3 in ODE[i1, 0]} : q[i2,next(i3,ODE_GRID,ODE_K[i1]+1-ODE_a0[i1]-ODE_aK[i1])] = q[i2,i3] + ODE_hK[i1,i3] * sum {i4 in ODE[i1,'K']} ODE_bK[i1,i4] * v[i2,next(i3,ODE_GRID,i4-ODE_a0[i1])];
+
+# q collocation constraints
+subject to ODE_COLQ {i1 in ODE_SOLVERS, i2 in Q, i3 in ODE[i1, 0], i4 in ODE[i1, 'K']: 1 + ODE_a0[i1] <= i4 <= ODE_K[i1] - ODE_aK[i1]} : q[i2, next(i3,ODE_GRID,i4-ODE_a0[i1])] = q[i2,i3] + ODE_hK[i1,i3] * sum {i5 in ODE[i1, 'K']} ODE_AK[i1,i4,i5] * v[i2,next(i3,ODE_GRID,i5-ODE_a0[i1])];
+
+# v defect constraints
+subject to ODE_DEFV {i1 in ODE_SOLVERS, i2 in Q, i3 in ODE[i1, 0]} : v[i2,next(i3,ODE_GRID,ODE_K[i1]+1-ODE_a0[i1]-ODE_aK[i1])] = v[i2,i3] + ODE_hK[i1,i3] * sum {i4 in ODE[i1,'K']} ODE_bK[i1,i4] * a[i2,next(i3,ODE_GRID,i4-ODE_a0[i1])];
+
+# v collocation constraints
+subject to ODE_COLV {i1 in ODE_SOLVERS, i2 in Q, i3 in ODE[i1, 0], i4 in ODE[i1, 'K']: 1 + ODE_a0[i1] <= i4 <= ODE_K[i1] - ODE_aK[i1]} : v[i2, next(i3,ODE_GRID,i4-ODE_a0[i1])] = v[i2,i3] + ODE_hK[i1,i3] * sum {i5 in ODE[i1, 'K']} ODE_AK[i1,i4,i5] * a[i2,next(i3,ODE_GRID,i5-ODE_a0[i1])];
+
+# time defects constraints
+subject to ODE_DEFTIME {i1 in ODE_SOLVERS, i2 in ODE[i1, 0]} : t[next(i2, ODE_GRID, ODE_K[i1]+1-ODE_a0[i1]-ODE_aK[i1])] = t[i2] + ODE_hK[i1, i2];
+
+# time collocation constraints
+subject to ODE_COLTIME {i1 in ODE_SOLVERS, i2 in ODE[i1, 0], i3 in ODE[i1, 'K']: 1 + ODE_a0[i1] <= i3 <= ODE_K[i1] - ODE_aK[i1]} : t[next(i2, ODE_GRID, i3-ODE_a0[i1])] = t[i2] + ODE_hK[i1, i2] * ODE_cK[i1, i3];
+
+# step size constraints
+subject to ODE_DEFSTEP {i1 in SUBPHASES, i2 in ODE_SOLVERS, i3 in ODE[i2, 0]: i3 in GRID[i1]} : ODE_hK[i2, i3] = (next(i3, ODE_GRID, ODE_K[i2]+1-ODE_a0[i2]-ODE_aK[i2]) - i3) * ODE_delta[i1, i2, i3];
+
+# knots points must be integers
+check {i1 in ODE_SOLVERS, (i2, i3) in ODE_SUBGRID[i1]} : i2 in Integers and i3 in Integers;
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#* Runge-Kutta!
+
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#* grid
+# model has been processed, so now add data specific rules for modules in the model file
+redeclare set MOD_GRID {i1 in MOD_MODULES} := 
+  if i1 = 'ODE' then ODE_GRID
+  else if i1 = 'PIM' then union {(i2,i3) in PIM} {i2, i3}
+  else {};
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#* grid!
+
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#* objective
+#var utot = sum {i1 in ODE_SOLVERS, i2 in ODE[i1, 0]} ODE_hK[i1, i2] * sum {i3 in ODE[i1, 'K']} (ODE_bK[i1, i3] * (sum {i4 in Q} u[i4, next(i2,GRID[0],i3)]^2));
+
+var utot = sum {i1 in ODE_SOLVERS, i2 in ODE[i1, 0]} ODE_hK[i1, i2] * sum {i3 in ODE[i1, 'K']} (ODE_bK[i1, i3] * (sum {i4 in Q} u[i4, next(i2,ODE_GRID,i3-ODE_a0[i1])]^2));
+
+minimize UTOT : utot;`;
+
+  // --- Append user custom .mod code from the "Custom" step ---
+  const custom = (qs('#modCustomCode').value || '').trim();
+
+  return `${core}\n#----------- custom user-defined modules/code\n${custom}\n`;
+}
+
+
+function buildRun(){
+  const caseType = (modelType()==='five') ? 'five' : 'moving';
+  let run = '';
+  if (caseType === 'moving'){
+    run = `
+#----------- options
+option presolve_eps 1e-5;
+
+#----------- block problem
+problem BLOCKTEST :
+  UTOT,
+  t, q, v, a, u, f, I,
+  g_des, gdot_des, gddot_des,
+  CONA, EOM,
+  TPI, IME, POSTQ, POSTV,
+  ODE_hK,
+  ODE_DEFSTEP,
+  ODE_DEFQ, ODE_COLQ, ODE_DEFV, ODE_COLV,
+  ODE_DEFTIME, ODE_COLTIME,
+  Q0, QF, QT, V0, VF, U, T0, TF
+;
+
+#----------- solve
+solve BLOCKTEST > nul;
+if solve_result != 'solved' then {
+  print 'failed!', 'BLOCKTEST', '--', BLOCKTEST.result, '--',  BLOCKTEST.message;
+}
+
+print {j in 1.._nvars : match(_varname[j], '^q\\[') > 0} : j, _varname[j], _var[j] > test.out;
+print {j in 1.._nvars : match(_varname[j], '^t\\[') > 0} : j, _varname[j], _var[j] >> test.out;
+print {j in 1.._nvars : match(_varname[j], '^u\\[') > 0} : j, _varname[j], _var[j] >> test.out;
+close test.out;
+option send_email yes;`.trim();
+  } else {
+    run = `
+#----------- clear and reload
+reset;
+model test.mod;
+data test.dat;
+
+#----------- options
+option presolve_eps 1e-5;
+
+#----------- gait problem
+problem FIVELINKTEST :
+  UTOT,
+  t, q, v, a, u,
+  EOM,
+  TPI,
+  ODE_hK,
+  ODE_DEFQ, ODE_COLQ, ODE_DEFV, ODE_COLV,
+  ODE_DEFTIME, ODE_COLTIME, ODE_DEFSTEP,
+  T0, TF,
+  XT, U
+;
+
+#----------- solve
+solve FIVELINKTEST > nul;
+if solve_result != 'solved' then {
+  print 'failed!', 'FIVELINKTEST', '--', FIVELINKTEST.result, '--',  FIVELINKTEST.message;
+}
+print 'IPOPT cost (in local coordinates): ', utot;
+
+print {j in 1.._nvars : match(_varname[j], '^q\\[') > 0} : j, _varname[j], _var[j] > test.out;
+print {j in 1.._nvars : match(_varname[j], '^t\\[') > 0} : j, _varname[j], _var[j] >> test.out;
+print {j in 1.._nvars : match(_varname[j], '^u\\[') > 0} : j, _varname[j], _var[j] >> test.out;
+close test.out;`.trim();
+  }
+  const extra = qs('#runExtra').value.trim();
+  if (extra) run += `\n\n# extra run\n${extra}\n`;
+  return run + '\n';
+}
+function buildAllPreviews(){
+  qs('#preview').value    = buildDat();
+  qs('#modPreview').value = buildMod();
+  qs('#runPreview').value = buildRun();
+}
+
+/* ====================== NEOS submission ====================== */
+async function submitToNeos(){
+  const emailVal = (qs('#email').value || '').trim();
+  const dat = qs('#preview').value || buildDat();
+  const mod = qs('#modPreview').value || buildMod();
+  const run = qs('#runPreview').value || buildRun();
+
+  const post = async (url, fileContent) => {
+    const res = await fetch(url, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ fileContent })
+    });
+    const txt = await res.text();
+    if(!res.ok) throw new Error(txt || ('HTTP '+res.status));
+    return txt;
+  };
+
+  await post('/generate', dat);
+  await post('/generate-mod', mod);
+  await post('/generate-run', run);
+
+  const neosResp = await fetch('/submit-neos', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({})
+  });
+  const neosMsg = await neosResp.text();
+  if(!neosResp.ok) throw new Error(neosMsg || 'NEOS submit failed');
+
+  const jobMatch   = neosMsg.match(/Job\s*Number:\s*([0-9]+)/i);
+  const passMatch  = neosMsg.match(/Password:\s*([^\s]+)/i);
+  const jobNumber  = jobMatch ? jobMatch[1] : "(not found)";
+  const password   = passMatch ? passMatch[1] : "(not found)";
+  const emailShown = emailVal || "configured on server";
+
+  qs('#neosResponse').innerHTML =
+    `NEOS job submitted successfully!\n\n` +
+    `Job Number: ${jobNumber}\n` +
+    `Password: ${password}\n` +
+    `Email sent successfully to: ${emailShown}\n\n` +
+    `Track here: https://neos-server.org/neos/admin.html`;
+}
+qs('#btnSaveSubmit').addEventListener('click', async ()=>{
+  try {
+    qs('#neosResponse').textContent = 'Saving & submitting…';
+    buildAllPreviews();
+    await submitToNeos();
+  } catch (err) {
+    console.error(err);
+    qs('#neosResponse').textContent = 'Error: ' + err.message;
+  }
+});
+
+/* ====================== Grid viz + AMPL block ====================== */
+function readSubphasesForAMPL() {
+  const tb = document.getElementById('subphaseBody');
+  if (!tb) return [];
+  const rows = [...tb.querySelectorAll('tr')];
+  return rows.map(tr => {
+    const [labelEl, begEl, endEl] = tr.querySelectorAll('input');
+    return {
+      label: String(labelEl?.value ?? '').trim(),
+      beg: Number(begEl?.value ?? 0),
+      end: Number(endEl?.value ?? 0),
+    };
+  }).filter(r => r.label !== '' && Number.isFinite(r.beg) && Number.isFinite(r.end));
+}
+function readSubphasesForViz() {
+  return readSubphasesForAMPL().map((r, i) => ({ ...r, idx: i }));
+}
+function updateGridViz() {
+  const GRID_MAX = Math.max(0, Number(document.getElementById('gridMax')?.value ?? 0));
+  const gridBar = document.getElementById('gridBar');
+  const gridLegend = document.getElementById('gridLegend');
+  if (!gridBar || !gridLegend) return;
+
+  const subs = readSubphasesForViz().map(r => ({
+    ...r,
+    beg: Math.max(0, Math.min(GRID_MAX, r.beg)),
+    end: Math.max(0, Math.min(GRID_MAX, r.end)),
+  })).sort((a,b) => (a.beg - b.beg) || (a.end - b.end));
+
+  gridBar.innerHTML = '';
+  gridLegend.innerHTML = '';
+
+  if (!GRID_MAX || !subs.length) return;
+
+  const colors = ['#8ab4f8','#f28b82','#fdd663','#81c995','#c58af9','#78d9ec','#ffb1a3','#b39ddb'];
+  subs.forEach((r, i) => {
+    const left = (r.beg / GRID_MAX) * 100;
+    const width = Math.max(0, (r.end - r.beg) / GRID_MAX * 100);
+    const color = colors[i % colors.length];
+
+    const seg = document.createElement('div');
+    seg.className = 'phase-chunk';
+    seg.style.left = left + '%';
+    seg.style.width = width + '%';
+    seg.style.background = color;
+    seg.title = `${r.label} (${r.beg}–${r.end})`;
+    gridBar.appendChild(seg);
+
+    const line = document.createElement('div');
+    line.innerHTML = `<span class="dot" style="background:${color}"></span><strong>${r.label}</strong> — ${r.beg} → ${r.end}`;
+    gridLegend.appendChild(line);
+  });
+}
+document.getElementById('btnAddSubphase')?.addEventListener('click', () => {
+  const tb = document.getElementById('subphaseBody');
+  if (!tb) return;
+  const GRID_MAX = +document.getElementById('gridMax')?.value || 0;
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><input type="text" value="1.1" placeholder="e.g., 1.1" /></td>
+    <td><input type="number" value="0" step="1" /></td>
+    <td><input type="number" value="${GRID_MAX || 0}" step="1" /></td>
+    <td><button type="button" class="btn btn--ghost" onclick="removeRow(this)">✕</button></td>
+  `;
+  tb.appendChild(tr);
+  updateGridViz();
+});
+window.removeRow = (btn) => { btn.closest('tr')?.remove(); updateGridViz(); };
+
+function composeAMPLGridBlock() {
+  const GRID_MAX = Number(document.getElementById('gridMax')?.value ?? 0);
+  const subs = readSubphasesForAMPL();
+  const subSet = subs.map(s => s.label).join(' ');
+  const subRows = subs.map(s => `${s.label}   1.       ${s.beg}.    ${s.end}.`).join('\n');
+
+  return `#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#* grid
+# params
+param GRID_MAX := ${GRID_MAX}.;
+set SUBPHASES := ${subSet || ''};
+param subphases := [*,:]
+    :PHASE   BEG   END :=
+${subRows};
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#* grid!`;
+}
+
+document.getElementById('gridMax')?.addEventListener('input', updateGridViz);
+document.getElementById('subphaseBody')?.addEventListener('input', (e) => {
+  if (e.target && /^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName)) updateGridViz();
+});
+
+window.readSubphasesForAMPL   = readSubphasesForAMPL;
+window.composeAMPLGridBlock   = composeAMPLGridBlock;
+window.updateGridViz          = updateGridViz;
+updateGridViz();
+
+window.generateDatFromWizard = function generateDatFromWizard() {
+  const gridBlock = composeAMPLGridBlock();
+  return [gridBlock /* , seedBlock, stateBlock, robotBlock, … */].join('\n\n');
+};
+  /* Header button wiring for q/v/u using data-table + data-action */
+document.querySelectorAll('.col-controls').forEach(bar => {
+  bar.addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-action]');
+    if (!btn) return;
+    const which = bar.dataset.table;    // "q" | "v" | "u"
+    const act = btn.dataset.action;     // "add-col" | "del-col"
+    if (act === 'add-col') addColumn(which);
+    if (act === 'del-col') delColumn(which);
+  });
+});
+</script>
+</body>
+</html>

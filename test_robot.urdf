@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<robot name="test_robot">
+  <link name="base_link">
+    <inertial>
+      <mass value="1.23456789"/>
+      <origin xyz="0.123456789 0.987654321 0.555555555" rpy="0.111111111 0.222222222 0.333333333"/>
+      <inertia ixx="0.123456789" iyy="0.987654321" izz="0.555555555" ixy="0.111111111" ixz="0.222222222" iyz="0.333333333"/>
+    </inertial>
+  </link>
+  
+  <link name="link1">
+    <inertial>
+      <mass value="2.34567890"/>
+      <origin xyz="1.234567890 2.345678901 3.456789012" rpy="1.111111111 2.222222222 3.333333333"/>
+      <inertia ixx="1.234567890" iyy="2.345678901" izz="3.456789012" ixy="1.111111111" ixz="2.222222222" iyz="3.333333333"/>
+    </inertial>
+  </link>
+  
+  <joint name="joint1" type="revolute">
+    <parent link="base_link"/>
+    <child link="link1"/>
+    <origin xyz="0.5 0.6 0.7" rpy="0.1 0.2 0.3"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-3.14159265359" upper="3.14159265359" effort="100" velocity="1"/>
+  </joint>
+</robot>

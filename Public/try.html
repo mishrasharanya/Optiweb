@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>AMPLIFY - Try It</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script defer src="app.js"></script>
+  <style>
+    :root { --card-border: rgba(255,255,255,.1); --accent: #8ab4f8; }
+    .grid-3 { display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+    .btn-row { display:flex; gap:8px; flex-wrap:wrap; }
+    .mono { font-family: ui-monospace,SFMono-Regular,Menlo,Monaco,"Roboto Mono",Consolas,"Liberation Mono","Courier New",monospace; }
+
+    /* Moving block */
+    #animArea { border:1px solid var(--card-border); border-radius:12px; position:relative; width:100%; height:220px; background: transparent; }
+    #block { position:absolute; width:44px; height:26px; border-radius:8px; top:calc(50% - 13px); left:0;
+             background: var(--accent); box-shadow: 0 6px 20px rgba(138,180,248,.25); }
+
+    /* Five-linked */
+    #skeleton { width:100%; height:220px; border:1px solid var(--card-border); border-radius:12px; background:transparent; display:block; }
+    .joint { fill:#ddd; opacity:.9 }
+    .link  { stroke:#ddd; stroke-width:4; stroke-linecap:round; opacity:.9 }
+  </style>
+</head>
+<body class="page">
+  <header class="site-header">
+    <div class="container">
+      <a class="back" href="index.html">← Home</a>
+      <h1>Try it</h1>
+      <p class="subtitle">Run a ready-made demo and see the motion.</p>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <div class="info-row">
+        <div>
+          <h3 id="demoTitle">Demo</h3>
+          <p class="muted">
+            Loads <code>test.dat</code>, <code>test.mod</code>, and <code>test.run</code> from
+            <code>/demos/&lt;case&gt;/</code> and submits to NEOS using your server.
+          </p>
+        </div>
+        <div class="btn-row">
+          <button class="btn" id="btnReload">Reload Demo</button>
+          <button class="btn btn--primary" id="btnRun">Save & Submit to NEOS</button>
+        </div>
+      </div>
+
+      <div class="grid-3" style="margin-top:1rem">
+        <div>
+          <label class="label">.dat (read-only)</label>
+          <textarea id="datText" readonly></textarea>
+          <div class="muted" id="datMeta"></div>
+        </div>
+        <div>
+          <label class="label">.mod (read-only)</label>
+          <textarea id="modText" readonly></textarea>
+          <div class="muted" id="modMeta"></div>
+        </div>
+        <div>
+          <label class="label">.run (read-only)</label>
+          <textarea id="runText" readonly></textarea>
+          <div class="muted" id="runMeta"></div>
+        </div>
+      </div>
+
+      <div id="serverResponse" class="card mono" style="margin-top:12px; white-space:pre-wrap;"></div>
+      <div id="neosResponse" class="card mono" style="margin-top:12px; white-space:pre-wrap;"></div>
+    </section>
+
+    <!-- ===== MOVING-BLOCK VISUALIZER (animation only) ===== -->
+    <section id="vizMoving" class="card" style="display:none; margin-top:12px;">
+      <h3>Visualization — Moving Block</h3>
+      <div id="animArea"><div id="block"></div></div>
+      <p class="muted">1-D block position driven by <code>q(t)</code> from your .dat.</p>
+      <div class="btn-row">
+        <button class="btn" id="btnPlay">▶ Play</button>
+        <button class="btn" id="btnPause">⏸ Pause</button>
+        <button class="btn" id="btnReset">⟲ Reset</button>
+      </div>
+    </section>
+
+    <!-- ===== FIVE-LINKED ROBOT VISUALIZER (animation only) ===== -->
+    <section id="vizFive" class="card" style="display:none; margin-top:12px;">
+      <h3>Visualization — Five-Linked Robot</h3>
+      <svg id="skeleton" viewBox="0 0 640 220" preserveAspectRatio="xMidYMid meet"></svg>
+      <p class="muted">Pelvis with stance/swing thigh & shank (5 points). Angles from <code>q = refB·refq</code> with time grid from <code>reft</code> when available.</p>
+      <div class="btn-row">
+        <button class="btn" id="btnPlay5">▶ Play</button>
+        <button class="btn" id="btnPause5">⏸ Pause</button>
+        <button class="btn" id="btnReset5">⟲ Reset</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // ===== query param → 'moving' | 'five'
+    function getCase() {
+      const params = new URLSearchParams(location.search);
+      const c = (params.get('case') || 'moving').toLowerCase();
+      return (c === 'five' || c === 'five-linked' || c === 'five_linked') ? 'five' : 'moving';
+    }
+
+    // ===== elements
+    const datText = document.getElementById('datText');
+    const modText = document.getElementById('modText');
+    const runText = document.getElementById('runText');
+    const datMeta = document.getElementById('datMeta');
+    const modMeta = document.getElementById('modMeta');
+    const runMeta = document.getElementById('runMeta');
+    const serverResponse = document.getElementById('serverResponse');
+    const neosResponse = document.getElementById('neosResponse');
+    const demoTitle = document.getElementById('demoTitle');
+    const btnReload = document.getElementById('btnReload');
+    const btnRun = document.getElementById('btnRun');
+
+    // moving viz
+    const vizMoving = document.getElementById('vizMoving');
+    const animArea = document.getElementById('animArea');
+    const blockEl  = document.getElementById('block');
+    const btnPlay  = document.getElementById('btnPlay');
+    const btnPause = document.getElementById('btnPause');
+    const btnReset = document.getElementById('btnReset');
+
+    // five-link viz
+    const vizFive = document.getElementById('vizFive');
+    const skel    = document.getElementById('skeleton');
+    const btnPlay5  = document.getElementById('btnPlay5');
+    const btnPause5 = document.getElementById('btnPause5');
+    const btnReset5 = document.getElementById('btnReset5');
+
+    // ===== helpers
+    async function fetchText(url) {
+      const res = await fetch(url, { cache: 'no-store' });
+      if (!res.ok) throw new Error(`Failed to load ${url} (${res.status})`);
+      return await res.text();
+    }
+    async function postText(url, bodyObj) {
+      const resp = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(bodyObj || {})
+      });
+      const txt = await resp.text();
+      if (!resp.ok) throw new Error(txt || ('HTTP ' + resp.status));
+      return txt;
+    }
+
+    // ===== load demo files and prep viz
+    async function loadDemo() {
+      const kase = getCase();
+      demoTitle.textContent = kase === 'moving' ? 'Moving Block (demo)' : 'Five-Linked Robot (demo)';
+      const base = `/demos/${kase}`;
+      serverResponse.textContent = 'Loading demo files...\n';
+      neosResponse.textContent = '';
+      vizMoving.style.display = 'none';
+      vizFive.style.display = 'none';
+
+      try {
+        const [dat, mod, run] = await Promise.all([
+          fetchText(`${base}/test.dat`),
+          fetchText(`${base}/test.mod`),
+          fetchText(`${base}/test.run`)
+        ]);
+
+        datText.value = dat;   modText.value = mod;   runText.value = run;
+        datMeta.textContent = `Loaded /demos/${kase}/test.dat (${dat.length} chars)`;
+        modMeta.textContent = `Loaded /demos/${kase}/test.mod (${mod.length} chars)`;
+        runMeta.textContent = `Loaded /demos/${kase}/test.run (${run.length} chars)`;
+        serverResponse.textContent += 'Demo loaded.\n';
+
+        if (kase === 'moving') {
+          const parsed = parseQandT_Moving(dat);
+          if (parsed && parsed.t.length && parsed.q.length && parsed.t.length === parsed.q.length) {
+            vizMoving.style.display = '';
+            prepareAnimationMoving(parsed.t, parsed.q);
+          } else {
+            serverResponse.textContent += 'Note: Could not parse q(t) for moving visualization.\n';
+          }
+        } else {
+          let parsed = buildFiveLinkFromRef(dat); // prefer refB·refq with reft
+          if (!parsed) {
+            parsed = parseQandT_Five(dat); // fallback to seed q/t
+            serverResponse.textContent += 'Note: using seed var q/t; refB·refq not found.\n';
+          }
+          if (parsed && parsed.t.length && parsed.qMat.length) {
+            vizFive.style.display = '';
+            prepareAnimationFive(parsed.t, parsed.qMat);
+          } else {
+            serverResponse.textContent += 'Note: Could not build five-link q(t).\n';
+          }
+        }
+      } catch (e) {
+        console.error(e);
+        serverResponse.textContent += 'ERROR loading demo: ' + e.message + '\n';
+      }
+    }
+
+    // ===== parsers
+    function parseQandT_Moving(text) {
+      const q = parseMatrixFirstCol(text, 'q');
+      const t = parseVectorTimes(text, 't');
+      return { t, q };
+    }
+    function parseQandT_Five(text) {
+      const qMat = parseMatrixAllCols(text, 'q');
+      const t = parseVectorTimes(text, 't');
+      const n = Math.min(t.length, qMat.length);
+      return { t: t.slice(0,n), qMat: qMat.slice(0,n) };
+    }
+    function parseVectorTimes(text, name) {
+      const m = text.match(new RegExp(`var\\s+${name}\\s*:=?\\s*\\[\\*\\][\\s\\S]*?;`, 'i'));
+      if (!m) return [];
+      const body = m[0];
+      const rows = [];
+      for (let line of body.split('\n')) {
+        line = line.replace(/;.*/, '').trim();
+        if (!line || /^var\b|^#|^:/.test(line)) continue;
+        const toks = line.split(/\s+/).filter(Boolean);
+        if (toks.length >= 2) {
+          const idx = parseFloat(toks[0]), val = parseFloat(toks[1]);
+          if (!Number.isNaN(idx) && !Number.isNaN(val)) rows.push([idx,val]);
+        }
+      }
+      rows.sort((a,b)=>a[0]-b[0]);
+      return rows.map(r=>r[1]); // the time values
+    }
+    function parseMatrixFirstCol(text, name) {
+      const m = text.match(new RegExp(`var\\s+${name}\\s*:=?[\\s\\S]*?;`, 'i'));
+      if (!m) return [];
+      const body = m[0];
+      const rows = [];
+      for (let line of body.split('\n')) {
+        line = line.replace(/;.*/, '').trim();
+        if (!line || /^var\b|^#|^:/.test(line)) continue;
+        const toks = line.split(/\s+/).filter(Boolean);
+        if (toks.length >= 2) {
+          const rowIndex = parseFloat(toks[0]);
+          const firstVal = parseFloat(toks[1]);
+          if (!Number.isNaN(rowIndex) && !Number.isNaN(firstVal)) rows.push([rowIndex, firstVal]);
+        }
+      }
+      rows.sort((a,b)=>a[0]-b[0]);
+      return rows.map(r=>r[1]);
+    }
+    function parseMatrixAllCols(text, name) {
+      const m = text.match(new RegExp(`var\\s+${name}\\s*:=?[\\s\\S]*?;`, 'i'));
+      if (!m) return [];
+      const body = m[0];
+      const rows = [];
+      for (let line of body.split('\n')) {
+        line = line.replace(/;.*/, '').trim();
+        if (!line || /^var\b|^#/.test(line)) continue;
+        if (line.startsWith(':')) continue;
+        if (!line) continue;
+        const toks = line.split(/\s+/).filter(Boolean);
+        if (toks.length >= 2) {
+          const rowIndex = parseFloat(toks[0]);
+          const vals = toks.slice(1).map(Number).filter(v => !Number.isNaN(v));
+          if (!Number.isNaN(rowIndex) && vals.length) rows.push([rowIndex, ...vals]);
+        }
+      }
+      rows.sort((a,b)=>a[0]-b[0]);
+      return rows.map(r => r.slice(1));
+    }
+
+    // === ref tables (AMPL-aligned) ===
+    function parseParamMatrix(text, name) {
+      const re = new RegExp(`param\\s+${name}\\s*:=\\s*\\[\\*,\\s*:\\s*\\][\\s\\S]*?;`, 'i');
+      const m = text.match(re);
+      if (!m) return null;
+      const block = m[0];
+      const headerLine = block.split('\n').find(l => l.trim().startsWith(':'));
+      if (!headerLine) return null;
+      const cols = headerLine.replace(/[:=]/g, ' ').trim().split(/\s+/).filter(Boolean);
+      const lines = block.split('\n');
+      const data = new Map(); const rows = [];
+      let started = false;
+      for (let line of lines) {
+        line = line.replace(/;.*/, '').trim();
+        if (!line) continue;
+        if (line.startsWith('param') || line.startsWith('[*,:]')) continue;
+        if (line.startsWith(':')) { started = true; continue; }
+        if (!started) continue;
+        const toks = line.split(/\s+/).filter(Boolean);
+        if (toks.length >= 2) {
+          const r = toks[0];
+          const vals = toks.slice(1).map(Number);
+          if (!data.has(r)) { data.set(r, new Map()); rows.push(r); }
+          const rowMap = data.get(r);
+          for (let j = 0; j < Math.min(cols.length, vals.length); j++) {
+            rowMap.set(cols[j], vals[j]);
+          }
+        }
+      }
+      return { rows, cols, data };
+    }
+    function parseParamVectorMap(text, name) {
+      const re = new RegExp(`param\\s+${name}\\s*:=\\s*\\[\\*\\][\\s\\S]*?;`, 'i');
+      const m = text.match(re);
+      if (!m) return null;
+      const block = m[0];
+      const map = new Map();
+      for (let line of block.split('\n')) {
+        line = line.replace(/;.*/, '').trim();
+        if (!line || /^param\b/.test(line)) continue;
+        const toks = line.split(/\s+/).filter(Boolean);
+        if (toks.length >= 2) {
+          const k = toks[0]; const v = Number(toks[1]);
+          if (!Number.isNaN(v)) map.set(k, v);
+        }
+      }
+      return map;
+    }
+    function buildFiveLinkFromRef(text) {
+      const reft = parseParamVectorMap(text, 'reft');
+      const refq = parseParamMatrix(text, 'refq');
+      const refB = parseParamMatrix(text, 'refB');
+      if (!reft || !refq || !refB) return null;
+
+      const cols = refq.cols.slice();
+      const colTimes = cols.map(c => reft.get(c));
+      if (colTimes.some(v => v === undefined)) return null;
+      const order = [...cols.keys()].sort((i, j) => colTimes[i] - colTimes[j]);
+      const T = order.map(i => colTimes[i]);
+
+      const joints = refq.rows.map(r => Number(r)).sort((a,b)=>a-b);
+      const K = cols.length, J = joints.length;
+      const Qref = Array.from({ length: J }, () => Array(K).fill(0));
+      joints.forEach((jr, jIdx) => {
+        for (let k = 0; k < K; k++) {
+          const col = cols[k];
+          const v = refq.data.get(String(jr))?.get(col);
+          Qref[jIdx][k] = (v ?? 0);
+        }
+      });
+      for (let j = 0; j < J; j++) Qref[j] = order.map(k => Qref[j][k]);
+
+      const B = Array.from({ length: J }, () => Array(J).fill(0));
+      joints.forEach((ri, i) => {
+        joints.forEach((cj, j) => {
+          const val = refB.data.get(String(ri))?.get(String(cj));
+          B[i][j] = (val ?? 0);
+        });
+      });
+
+      const qMatLocal = [];
+      for (let k = 0; k < T.length; k++) {
+        const refCol = joints.map((_, j) => Qref[j][k]);
+        const loc = Array(J).fill(0);
+        for (let i = 0; i < J; i++) {
+          let s = 0; for (let j = 0; j < J; j++) s += B[i][j] * refCol[j];
+          loc[i] = s;
+        }
+        qMatLocal.push(loc); // [q1..qJ]
+      }
+      return { t: T, qMat: qMatLocal };
+    }
+
+    // ===== MOVING animation (no chart)
+    let animRAF=null, animStart=0, pausedAt=0, tArr=[], qArr=[];
+    function prepareAnimationMoving(t, q){ tArr=t.slice(); qArr=q.slice(); pausedAt=0; animStart=0; positionBlockAt(0); }
+    function positionBlockAt(u){
+      const w=animArea.clientWidth, pad=16, trackW=Math.max(0,w-pad*2-blockEl.offsetWidth);
+      const x=pad+u*trackW; blockEl.style.left=x+'px';
+    }
+    function interpQMoving(time){
+      const hasAbs=tArr.some(v=>Math.abs(v)>1e-12), T0=hasAbs?Math.min(...tArr):0, T1=hasAbs?Math.max(...tArr):(tArr.length-1||1);
+      const tt=time; if(tt<=T0) return qArr[0]; if(tt>=T1) return qArr[qArr.length-1];
+      for(let i=0;i<tArr.length-1;i++){
+        const a=hasAbs?tArr[i]:i, b=hasAbs?tArr[i+1]:i+1;
+        if(tt>=a && tt<=b){ const u=(tt-a)/(b-a||1); return qArr[i]*(1-u)+qArr[i+1]*u; }
+      }
+      return qArr[qArr.length-1];
+    }
+    function startAnimMoving(){
+      cancelAnimMoving();
+      const hasAbs=tArr.some(v=>Math.abs(v)>1e-12), T0=hasAbs?Math.min(...tArr):0, T1=hasAbs?Math.max(...tArr):(tArr.length-1||1);
+      const duration=4500; animStart=performance.now()-pausedAt;
+      const qMin=Math.min(...qArr), qMax=Math.max(...qArr), qSpan=(qMax-qMin)||1;
+      const tick=now=>{
+        const el=now-animStart, u=Math.min(1, el/duration), simT=T0+u*(T1-T0);
+        const qNow=interpQMoving(simT), uu=(qNow-qMin)/qSpan; positionBlockAt(uu);
+        if(u<1) animRAF=requestAnimationFrame(tick); else pausedAt=0;
+      };
+      animRAF=requestAnimationFrame(tick);
+    }
+    function pauseAnimMoving(){ if(animRAF){ cancelAnimationFrame(animRAF); animRAF=null; pausedAt=performance.now()-animStart; } }
+    function cancelAnimMoving(){ if(animRAF) cancelAnimationFrame(animRAF); animRAF=null; pausedAt=0; animStart=0; }
+    btnPlay.addEventListener('click', startAnimMoving);
+    btnPause.addEventListener('click', pauseAnimMoving);
+    btnReset.addEventListener('click', ()=>{ cancelAnimMoving(); positionBlockAt(0); });
+
+    // ===== FIVE-LINK animation (5 points, upright, no chart)
+    let animRAF5=null, animStart5=0, pausedAt5=0, t5=[], q5=[];
+    const L_THIGH_ST=60, L_SHANK_ST=60, L_THIGH_SW=60, L_SHANK_SW=60;
+
+    function prepareAnimationFive(t, qMat) {
+      t5=t.slice(); q5=qMat.slice(); pausedAt5=0; animStart5=0;
+      // build scene (4 links, 5 joints)
+      while (skel.firstChild) skel.removeChild(skel.firstChild);
+      const g = document.createElementNS(skel.namespaceURI,'g'); g.setAttribute('id','sGroup'); skel.appendChild(g);
+      ['sth','ssh','twh','swh'].forEach(id => {
+        const ln = document.createElementNS(skel.namespaceURI,'line');
+        ln.setAttribute('class','link'); ln.setAttribute('id','link_'+id); g.appendChild(ln);
+      });
+      ['pelvis','kneeS','ankleS','kneeW','ankleW'].forEach(id=>{
+        const c=document.createElementNS(skel.namespaceURI,'circle');
+        c.setAttribute('class','joint'); c.setAttribute('id','joint_'+id); c.setAttribute('r','4'); g.appendChild(c);
+      });
+      drawSkeletonAtFive(q5.length ? q5[0] : [0,0,0,0,0]);
+    }
+
+    function interpQVec(time){
+      const hasAbs=t5.some(v=>Math.abs(v)>1e-12), T0=hasAbs?Math.min(...t5):0, T1=hasAbs?Math.max(...t5):(t5.length-1||1);
+      const tt=time;
+      if (tt<=T0) return q5[0].slice();
+      if (tt>=T1) return q5[q5.length-1].slice();
+      for (let i=0;i<t5.length-1;i++){
+        const a=hasAbs?t5[i]:i, b=hasAbs?t5[i+1]:i+1;
+        if (tt>=a && tt<=b){
+          const u=(tt-a)/(b-a||1), qa=q5[i], qb=q5[i+1];
+          const M=Math.max(qa.length,qb.length), out=new Array(M);
+          for(let j=0;j<M;j++){ const va=qa[j]??qa[qa.length-1], vb=qb[j]??qb[qb.length-1]; out[j]=va*(1-u)+vb*u; }
+          return out;
+        }
+      }
+      return q5[q5.length-1].slice();
+    }
+
+    function drawSkeletonAtFive(timeOrQ) {
+      const g = skel.querySelector('#sGroup'); if (!g) return;
+      const W = skel.viewBox.baseVal.width  || 640;
+      const H = skel.viewBox.baseVal.height || 260;
+      const pelvis = { x: W * 0.60, y: H * 0.33 };
+
+      const q = Array.isArray(timeOrQ) ? timeOrQ : interpQVec(timeOrQ);
+      const thetaBase = -Math.PI/2;
+      const thetaTorso = thetaBase + (q[0] ?? 0);
+
+      // Hip & knee (cumulative). Flip knee signs if needed by uncommenting lines below.
+      let thetaHipS  = thetaTorso + (q[1] ?? 0);
+      let thetaKneeS = thetaHipS  + (q[2] ?? 0);
+      let thetaHipW  = thetaTorso + (q[3] ?? 0);
+      let thetaKneeW = thetaHipW  + (q[4] ?? 0);
+
+      // // If your knees look inverted, use this variant:
+      // thetaHipS  = thetaTorso + (q[1] ?? 0);
+      // thetaKneeS = thetaHipS  - (q[2] ?? 0);
+      // thetaHipW  = thetaTorso + (q[3] ?? 0);
+      // thetaKneeW = thetaHipW  - (q[4] ?? 0);
+
+      // SVG y grows DOWN → subtract sine to make "up" go up
+      const kneeS = {
+        x: pelvis.x + L_THIGH_ST * Math.cos(thetaHipS),
+        y: pelvis.y - L_THIGH_ST * Math.sin(thetaHipS),
+      };
+      const ankleS = {
+        x: kneeS.x + L_SHANK_ST * Math.cos(thetaKneeS),
+        y: kneeS.y - L_SHANK_ST * Math.sin(thetaKneeS),
+      };
+      const kneeW = {
+        x: pelvis.x + L_THIGH_SW * Math.cos(thetaHipW),
+        y: pelvis.y - L_THIGH_SW * Math.sin(thetaHipW),
+      };
+      const ankleW = {
+        x: kneeW.x + L_SHANK_SW * Math.cos(thetaKneeW),
+        y: kneeW.y - L_SHANK_SW * Math.sin(thetaKneeW),
+      };
+
+      setLine('link_sth', pelvis, kneeS);
+      setLine('link_ssh', kneeS,  ankleS);
+      setLine('link_twh', pelvis, kneeW);
+      setLine('link_swh', kneeW,  ankleW);
+
+      setDot('joint_pelvis', pelvis);
+      setDot('joint_kneeS',  kneeS);
+      setDot('joint_ankleS', ankleS);
+      setDot('joint_kneeW',  kneeW);
+      setDot('joint_ankleW', ankleW);
+
+      function setLine(id, a, b){ const el=skel.querySelector('#'+id); if(el){ el.setAttribute('x1',a.x); el.setAttribute('y1',a.y); el.setAttribute('x2',b.x); el.setAttribute('y2',b.y); } }
+      function setDot(id, p){ const el=skel.querySelector('#'+id); if(el){ el.setAttribute('cx',p.x); el.setAttribute('cy',p.y); } }
+    }
+
+    function startAnimFive(){
+      cancelAnimFive();
+      const hasAbs=t5.some(v=>Math.abs(v)>1e-12), T0=hasAbs?Math.min(...t5):0, T1=hasAbs?Math.max(...t5):(t5.length-1||1);
+      const duration=5000; animStart5=performance.now()-pausedAt5;
+      const tick=now=>{
+        const el=now-animStart5, u=Math.min(1, el/duration), simT=T0+u*(T1-T0);
+        drawSkeletonAtFive(simT);
+        if(u<1) animRAF5=requestAnimationFrame(tick); else pausedAt5=0;
+      };
+      animRAF5=requestAnimationFrame(tick);
+    }
+    function pauseAnimFive(){ if(animRAF5){ cancelAnimationFrame(animRAF5); animRAF5=null; pausedAt5=performance.now()-animStart5; } }
+    function cancelAnimFive(){ if(animRAF5) cancelAnimationFrame(animRAF5); animRAF5=null; pausedAt5=0; animStart5=0; }
+    btnPlay5.addEventListener('click', startAnimFive);
+    btnPause5.addEventListener('click', pauseAnimFive);
+    btnReset5.addEventListener('click', ()=>{ cancelAnimFive(); drawSkeletonAtFive(q5.length? q5[0] : [0,0,0,0,0]); });
+
+    // ===== submit flow
+    btnReload.addEventListener('click', loadDemo);
+    btnRun.addEventListener('click', async () => {
+      const dat = (datText.value || '').trim();
+      const mod = (modText.value || '').trim();
+      const run = (runText.value || '').trim();
+
+      serverResponse.textContent = `Saving files...\n`;
+      neosResponse.textContent = '';
+
+      if (!dat || !mod || !run) {
+        serverResponse.textContent += 'Demo not loaded. Click “Reload Demo”.\n';
+        return;
+      }
+
+      btnRun.disabled = true;
+      try {
+        serverResponse.textContent += await postText('/generate',     { fileContent: dat }) + '\n';
+        serverResponse.textContent += await postText('/generate-mod', { fileContent: mod }) + '\n';
+        serverResponse.textContent += await postText('/generate-run', { fileContent: run }) + '\n';
+        serverResponse.textContent += 'Submitting to NEOS...\n';
+
+        const neosMsgText = await postText('/submit-neos', {});
+        const jobMatch   = neosMsgText.match(/Job\s*Number:\s*([0-9]+)/i);
+        const passMatch  = neosMsgText.match(/Password:\s*([^\s]+)/i);
+        const emailMatch = neosMsgText.match(/Results\s+will\s+be\s+sent\s+to\s+your\s+email\s*\(([^)]+)\)/i);
+
+        const jobNumber  = jobMatch ? jobMatch[1] : "(not found)";
+        const password   = passMatch ? passMatch[1] : "(not found)";
+        const emailShown = emailMatch ? emailMatch[1] : "(configured on server)";
+
+        neosResponse.innerHTML =
+          "NEOS job submitted successfully!<br><br>" +
+          `<strong>Job Number:</strong> ${jobNumber}<br>` +
+          `<strong>Password:</strong> ${password}<br>` +
+          `<strong>Email sent successfully to:</strong> ${emailShown}<br><br>` +
+          `Track here: <a href="https://neos-server.org/neos/admin.html" target="_blank" rel="noopener">NEOS Admin</a>`;
+      } catch (err) {
+        console.error(err);
+        serverResponse.textContent += '\nERROR: ' + err.message;
+        neosResponse.textContent = '';
+      } finally {
+        btnRun.disabled = false;
+      }
+    });
+
+    // init
+    loadDemo();
+  </script>
+</body>
+</html>
