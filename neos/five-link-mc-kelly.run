@@ -1,0 +1,91 @@
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#* settings
+#----------- clear and reload
+reset;
+model neos/five-link-mc-kelly.mod;
+data neos/five-link-mc-kelly.dat;
+
+#----------- options
+option presolve_eps 1e-5;
+option solver ipopt;
+
+option log_file 'neos/five-link-mc-kelly.log';
+option times 1;
+option gentimes 1;
+option show_stats 2;
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#* settings!
+
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#* fivelinkmin test
+subject to REFT {i1 in GRID[0]: i1 < GRID_MAX} : t[i1] = reft[i1];
+subject to REFQ {i1 in Q, i2 in GRID[0]: i2 < GRID_MAX} : q[i1, i2] = sum {i3 in Q} refB[i1, i3] * refq[i3, i2];
+subject to REFV {i1 in Q, i2 in GRID[0]: i2 < GRID_MAX} : v[i1, i2] = sum {i3 in Q} refB[i1, i3] * refv[i3, i2];
+subject to REFA {i1 in Q, i2 in GRID[0]: i2 < GRID_MAX} : a[i1, i2] = sum {i3 in Q} refB[i1, i3] * refa[i3, i2];
+subject to REFU {i1 in Q, i2 in GRID[0]: i2 < GRID_MAX} : u[i1, i2] = refu[i1, i2];
+
+#----------- gait problem
+problem FIVELINKTEST :
+  UTOT,
+  t, q, v, a, u,
+  EOM,
+  TPI,
+  ODE_hK,
+  ODE_DEFQ, ODE_COLQ, ODE_DEFV, ODE_COLV,
+  ODE_DEFTIME, ODE_COLTIME, ODE_DEFSTEP,
+  T0, TF,
+  XT, U,
+  STANCE_KNEE_EXTENSION, SWING_KNEE_EXTENSION,
+  SWING_PRE_POSX, SWING_PRE_POSY, SWING_PRE_VELY, SWING_POST_VELY,
+  GAITX, QPLUS, CONSV_ANG_MOM
+;
+
+# compare against ref optimal sln
+problem REFSLN :
+  UTOT,
+  t, q, v, a, u,
+  EOM,
+  TPI,
+  ODE_hK,
+  ODE_DEFQ, ODE_COLQ, ODE_DEFV, ODE_COLV,
+  ODE_DEFTIME, ODE_COLTIME, ODE_DEFSTEP,
+  T0, TF,
+  XT, U,
+  STANCE_KNEE_EXTENSION, SWING_KNEE_EXTENSION,
+  SWING_PRE_POSX, SWING_PRE_POSY, SWING_PRE_VELY, SWING_POST_VELY,
+  GAITX, QPLUS, CONSV_ANG_MOM,
+  REFT, REFQ, REFV, REFA
+;
+
+# compute cost in ref sln coordinates
+problem REFOBJ :
+  t, u, ODE_hK,
+  REFU, REFT,
+  ODE_DEFTIME, ODE_COLTIME, ODE_DEFSTEP,
+  T0, TF
+;
+
+#----------- solve
+solve FIVELINKTEST;
+if solve_result != 'solved' then {
+  print 'failed!', 'FIVELINKTEST', '--', FIVELINKTEST.result, '--',  FIVELINKTEST.message;
+}
+print 'IPOPT cost (in local coordinates): ', utot;
+
+print {j in 1.._nvars : match(_varname[j], '^x\[') > 0} : j, _varname[j], _var[j] > neos/five-link-mc-kelly.out;
+print {j in 1.._nvars : match(_varname[j], '^t\[') > 0} : j, _varname[j], _var[j] >> neos/five-link-mc-kelly.out;
+print {j in 1.._nvars : match(_varname[j], '^u\[') > 0} : j, _varname[j], _var[j] >> neos/five-link-mc-kelly.out;
+close neos/five-link-mc-kelly.out;
+
+solve REFSLN;
+if solve_result != 'solved' then {
+  print 'failed!', 'REFSLN', '--', REFSLN.result, '--',  REFSLN.message;
+}
+print 'FMINCON cost (in local coordinates): ', utot;
+
+solve REFOBJ;
+if solve_result != 'solved' then {
+  print 'failed!', 'REFOBJ', '--', REFOBJ.result, '--',  REFOBJ.message;
+}
+print 'FMINCON cost (in ref coordinates): ', utot;
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#* fivelinkmin test!
+
+display _ampl_elapsed_time;
+display _ampl_system_time, _ampl_user_time, _ampl_time, _solve_elapsed_time, _solve_system_time, _solve_user_time, _solve_time;

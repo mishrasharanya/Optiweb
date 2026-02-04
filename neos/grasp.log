@@ -1,0 +1,243 @@
+#				incremental	total
+#phase		seconds		memory		memory
+#execute	0		1408928		1408928
+### neos/grasp.run:13(284)   option ...
+#execute	0		0		1408928
+### neos/grasp.run:14(304)   option ...
+#execute	0		0		1408928
+### neos/grasp.run:16(328)   option ...
+#execute	0		0		1408928
+### neos/grasp.run:17(348)   option ...
+#execute	0		0		1408928
+### neos/grasp.run:32(806)   solve ...
+#compile	0		127800		1536728
+##genmod times:
+##seq      seconds    cum. sec.    mem. inc.  name
+##  0            0            0            0  Infinity
+## 107            0            0            0  MOD_MODULES
+## 108            0            0            0  PIM
+## 109            0            0            0  MOD_GRID
+## 110            0            0            0  DAT_MODULES
+## 111            0            0            0  DAT_GRID
+## 112            0            0            0  MODULES
+## 113            0            0            0  GRID_MODULES
+## 114            0            0            0  SUBPHASES
+## 115            0            0            0  SUBPHASES_MBRS
+## 116            0            0            0  subphases
+## 120            0            0            0  PHASES
+## 121            0            0            0  GRID_MAX
+## 122            0            0            0  GRID_MBRS
+## 123            0            0            0  GRID
+## 126            0            0            0  nq
+## 127            0            0            0  Q
+## 129            0            0        32800  q
+## 131            0            0            0  v
+## 133            0            0            0  a
+## 135            0            0            0  u
+## 139            0            0            0  RBT_IDX
+## 140            0            0            0  robot
+## 141            0            0            0  SPAT_LINK_MBRS
+## 142            0            0            0  SPAT_L
+## 143            0            0            0  SPAT_TREE_P
+## 144            0            0            0  SPAT_TREE_C
+## 145            0            0            0  SPAT_TREE_S
+## 146            0            0            0  SPAT_TREE_K
+## 147            0            0            0  nr
+## 148            0            0            0  R
+## 149            0            0            0  CON_IDX
+## 150            0            0         2056  constraint
+## 151            0            0         5664  CON_P
+## 152            0            0            0  CON_V
+## 153            0            0            0  CON_U
+## 154            0            0        34848  CON_M
+## 155            0            0         2056  CON_F
+## 156            0            0         2056  CON_J
+## 157            0            0        69432  CON_R
+## 158            0            0            0  nm
+## 159            0            0            0  SPAT_M
+## 160            0            0            0  SPAT_EXPC
+## 161            0            0            0  SPAT_XP
+## 162            0            0            0  x_jp
+## 163            0            0            0  x_im
+## 164            0            0            0  x_cb
+## 165            0            0        94312  spat_expcp
+## 166            0            0       196760  Ep
+## 167            0            0       163976  ppx
+## 168            0            0       852496  spat_Xp
+## 169            0            0            0  SPAT_XV
+## 170            0            0            0  x_ij
+## 171            0            0            0  spat_expcv
+## 171            0            0        41520  =Ev
+## 173            0            0         2600  =pvx
+## 175            0            0        15472  =spat_Xv
+## 177            0            0        43096  =spat_X_ip
+## 180            0            0            0  spat_ag
+## 181            0            0            0  spat_s_ii
+## 182            0            0         4112  spat_I_mm
+## 183            0            0         2056  spat_I_im
+## 183            0            0      1522192  =CRB_IC
+## 185            0            0       176352  =CRB_f
+## 187            0            0            0  =M
+## 189            0            0        35400  =RNEA_v
+## 191            0            0        84096  =RNEA_vx
+## 193            0            0        33320  =RNEA_a
+## 195            0            0         3120  =RNEA_fb
+## 197            0            0        35920  =RNEA_f
+## 199            0            0            0  =b
+## 202            0            0        70752  OSIM_r_oo
+## 203            0            0            0  OSIM_K
+## 204            0            0            0  OSIM_B
+## 204            0            0       108704  =OSIM_R_0i
+## 208            0            0       242000  =OSIM_X_bi
+## 216            0            0      1174256  =OSIM_X_ob
+## 222     0.015625     0.015625      1422216  =J
+## 231            0     0.015625            0  f
+## 242            0     0.015625       196800  =Jtf
+## 250            0     0.015625            0  =EL
+## 253            0     0.015625            0  EOM
+## 307            0     0.015625            0  GRASPTEST
+#genmod		0.015625	6675064		8211792
+#merge		0		262152		8473944
+#compile	0		32792		8506736
+##genmod times:
+##seq      seconds    cum. sec.    mem. inc.  name
+## 117            0            0            0  <check>
+## 118            0            0            0  <check>
+## 119            0            0            0  <check>
+## 274            0            0            0  <check>
+## 275            0            0            0  <check>
+## 300            0            0            0  <check>
+#genmod		0		0		8506736
+#compile	0		102008		8608744
+##genmod times:
+##seq      seconds    cum. sec.    mem. inc.  name
+## 89            0            0            0  derstage
+## 93            0            0            0  sstatus
+## 128            0            0            0  X
+## 136            0            0        65544  =x
+## 206            0            0       117992  =OSIM_Rdot_0i
+## 210            0            0        65600  =OSIM_v_rel
+## 212            0            0        12880  =OSIM_v_relx
+## 214            0            0       242456  =OSIM_Xdot_bi
+## 218            0            0      1170104  =OSIM_Xdot_ob
+## 220            0            0      1930864  =OSIM_X_c0
+## 224     0.015625     0.015625      3118064  =phi
+## 226            0     0.015625      1067552  =OSIM_position
+## 228            0     0.015625            0  =g
+## 238            0     0.015625       241936  =Jv
+## 240            0     0.015625       241936  =Ja
+## 255            0     0.015625            0  PIM_MBRS
+## 256            0     0.015625            0  PIM_GRID
+## 257            0     0.015625            0  epsilon
+## 258            0     0.015625            0  I
+## 260            0     0.015625            0  =Mv
+## 262            0     0.015625            0  =JtI
+## 264            0     0.015625            0  =eJv
+## 276            0     0.015625            0  SURFACE
+## 278            0     0.015625            0  pos
+## 279            0     0.015625            0  nc
+## 280            0     0.015625            0  nf
+## 283     0.015625      0.03125            0  CONTACTS
+## 284            0      0.03125            0  c
+## 286            0      0.03125          520  FC_NO_CONTACT
+## 288            0      0.03125        10304  FC_NO_WRENCH
+## 290            0      0.03125            0  FPC
+## 292            0      0.03125            0  Q_OBJECT
+## 294            0      0.03125            0  V_OBJECT
+## 296            0      0.03125            0  A_OBJECT
+## 298            0      0.03125        40480  FORM_CLOSURE
+## 301            0      0.03125            0  fingers
+## 303            0      0.03125            0  NUM_CONTACTS
+## 305            0      0.03125            0  NUM_FINGERS
+#genmod		0.03125		8326752		16935496
+#merge		0		524296		17459792
+#collect	0		15246824	32706616
+#presolve	0.015625	16530608	49237224
+#solveout	0		0		49237224
+
+Presolve eliminates 29676 constraints and 29646 variables.
+"option presolve 1;" used.
+Adjusted problem:
+73 variables:
+	1 integer variable
+	72 nonlinear variables
+79 constraints; 397 nonzeros
+	36 nonlinear constraints
+	43 linear constraints
+	42 equality constraints
+	37 inequality constraints
+1 linear objective; 1 nonzero.
+
+#presolve	0		0		49237224
+#output		0		2056		49239280
+#Total		0.0625
+Gurobi 12.0.3:   tech:timing = 2
+NL model read time = 0.000935s
+NL model conversion time = 0.000521s
+
+Gurobi 12.0.3: optimal solution; objective 4
+55 simplex iterations
+1 branching node
+Setup time = 0.002271s
+Solver time = 0.012608s
+Output time = 0.000030s
+Total time = 0.014909s
+
+suffix time OUT;
+suffix time_read OUT;
+suffix time_setup OUT;
+suffix time_output OUT;
+suffix time_solver OUT;
+suffix time_conversion OUT;
+#execute	0		270608		49509888
+### neos/grasp.run:33(824)   if ...
+#compile	0		0		49509888
+##genmod times:
+##seq      seconds    cum. sec.    mem. inc.  name
+## 50            0            0            0  solve_result
+#genmod		0		2056		49511944
+### neos/grasp.run:38(1022)   print ...
+#execute	0.015625	3998864		53510808
+### neos/grasp.run:39(1123)   print ...
+#execute	0		1969728		55480536
+### neos/grasp.run:40(1225)   print ...
+#execute	0.015625	1969728		57450264
+### neos/grasp.run:41(1327)   print ...
+#execute	0		1969760		59420024
+### neos/grasp.run:42(1429)   print ...
+#execute	0.03125		2002496		61422520
+### neos/grasp.run:43(1539)   print ...
+#execute	0		1969696		63392216
+### neos/grasp.run:44(1641)   close ...
+#execute	0		0		63392216
+### neos/grasp.run:46(1666)   display ...
+#compile	0		0		63392216
+##genmod times:
+##seq      seconds    cum. sec.    mem. inc.  name
+## 42            0            0            0  _ampl_time
+## 45            0            0            0  _ampl_elapsed_time
+#genmod		0		0		63392216
+_ampl_elapsed_time = 0.359
+
+#execute	0		0		63392216
+### neos/grasp.run:47(1695)   display ...
+#compile	0		0		63392216
+##genmod times:
+##seq      seconds    cum. sec.    mem. inc.  name
+## 26            0            0            0  _solve_time
+## 27            0            0            0  _solve_system_time
+## 28            0            0            0  _solve_user_time
+## 29            0            0            0  _solve_elapsed_time
+## 42            0            0            0  _ampl_time
+## 43            0            0            0  _ampl_system_time
+## 44            0            0            0  _ampl_user_time
+#genmod		0		0		63392216
+_ampl_system_time = 0.015625
+_ampl_user_time = 0.109375
+_ampl_time = 0.125
+_solve_elapsed_time = 0.094
+_solve_system_time = 0.015625
+_solve_user_time = 0.015625
+_solve_time = 0.03125
+
+#execute	0		0		63392216

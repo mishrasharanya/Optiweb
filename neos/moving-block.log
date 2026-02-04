@@ -1,0 +1,317 @@
+#				incremental	total
+#phase		seconds		memory		memory
+#execute	0.015625	1019296		1019296
+### neos/moving-block.run:13(304)   option ...
+#execute	0		0		1019296
+### neos/moving-block.run:14(324)   option ...
+#execute	0		0		1019296
+### neos/moving-block.run:33(804)   solve ...
+#compile	0		2080		1021376
+##genmod times:
+##seq      seconds    cum. sec.    mem. inc.  name
+## 109            0            0            0  PIM
+## 110            0            0            0  ODE_SOLVERS
+## 111            0            0            0  ODE_SUBGRID
+## 125            0            0            0  SUBPHASES
+## 126            0            0            0  SUBPHASES_MBRS
+## 127            0            0            0  subphases
+## 128            0            0            0  <check>
+## 129            0            0            0  <check>
+## 130            0            0            0  <check>
+## 284            0            0            0  <check>
+## 285            0            0            0  <check>
+## 305            0            0            0  <check>
+#genmod		0		0		1021376
+#compile	0		400280		1421656
+##genmod times:
+##seq      seconds    cum. sec.    mem. inc.  name
+##  0            0            0            0  Infinity
+## 89            0            0            0  derstage
+## 93            0            0            0  sstatus
+## 107            0            0            0  MOD_MODULES
+## 108            0            0            0  GRID_MAX
+## 112            0            0            0  ODE_K
+## 113            0            0            0  ODEMBRS
+## 114            0            0            0  ODE
+## 115            0            0            0  ODE_AK
+## 116            0            0            0  ODE_bK
+## 117            0            0            0  ODE_a0
+## 118            0            0            0  ODE_aK
+## 119            0            0            0  ODE_GRID
+## 120            0            0            0  MOD_GRID
+## 121            0            0            0  DAT_MODULES
+## 122            0            0            0  DAT_GRID
+## 123            0            0            0  MODULES
+## 124            0            0            0  GRID_MODULES
+## 131            0            0            0  PHASES
+## 132            0            0            0  GRID_MBRS
+## 133            0            0            0  GRID
+## 134            0            0            0  t
+## 136            0            0            0  nq
+## 137            0            0            0  Q
+## 138            0            0            0  X
+## 139            0            0            0  q
+## 141            0            0            0  v
+## 143            0            0            0  a
+## 145            0            0            0  u
+## 136            0            0        73784  =x
+## 149            0            0            0  RBT_IDX
+## 150            0            0            0  robot
+## 151            0            0            0  SPAT_LINK_MBRS
+## 152            0            0            0  SPAT_L
+## 153            0            0            0  SPAT_TREE_P
+## 154            0            0            0  SPAT_TREE_C
+## 155            0            0            0  SPAT_TREE_S
+## 156            0            0            0  SPAT_TREE_K
+## 157            0            0            0  nr
+## 158            0            0            0  R
+## 159            0            0            0  CON_IDX
+## 160            0            0            0  constraint
+## 161            0            0            0  CON_P
+## 162            0            0            0  CON_V
+## 163            0            0            0  CON_U
+## 164            0            0            0  CON_M
+## 165            0            0            0  CON_F
+## 166            0            0            0  CON_J
+## 167            0            0            0  CON_R
+## 168            0            0            0  nm
+## 169            0            0            0  SPAT_M
+## 170            0            0            0  SPAT_EXPC
+## 171            0            0            0  SPAT_XP
+## 172            0            0            0  x_jp
+## 173            0            0            0  x_im
+## 174            0            0            0  x_cb
+## 175            0            0            0  spat_expcp
+## 176            0            0            0  Ep
+## 177            0            0            0  ppx
+## 178            0            0         3104  spat_Xp
+## 179            0            0            0  SPAT_XV
+## 180            0            0            0  x_ij
+## 181            0            0            0  spat_expcv
+## 171            0            0        33416  =Ev
+## 173            0            0        53856  =pvx
+## 175            0            0       403808  =spat_Xv
+## 177            0            0       188048  =spat_X_ip
+## 190            0            0            0  spat_ag
+## 191            0            0            0  spat_s_ii
+## 192            0            0            0  spat_I_mm
+## 193            0            0            0  spat_I_im
+## 183            0            0       156792  =CRB_IC
+## 185            0            0       238032  =CRB_f
+## 187            0            0            0  =M
+## 189            0            0       260344  =RNEA_v
+## 191            0            0       174216  =RNEA_vx
+## 193            0            0       235776  =RNEA_a
+## 195            0            0        67680  =RNEA_fb
+## 197            0            0        43088  =RNEA_f
+## 199            0            0            0  =b
+## 212            0            0            0  OSIM_r_oo
+## 213            0            0            0  OSIM_K
+## 214            0            0            0  OSIM_B
+## 204            0            0            0  =OSIM_R_0i
+## 206            0            0            0  =OSIM_Rdot_0i
+## 208            0            0            0  =OSIM_X_bi
+## 210            0            0            0  =OSIM_v_rel
+## 212            0            0            0  =OSIM_v_relx
+## 214            0            0            0  =OSIM_Xdot_bi
+## 216            0            0            0  =OSIM_X_ob
+## 218            0            0            0  =OSIM_Xdot_ob
+## 220            0            0            0  =OSIM_X_c0
+## 222            0            0            0  =J
+## 224            0            0            0  =phi
+## 226            0            0            0  =OSIM_position
+## 228            0            0            0  =g
+## 241            0            0            0  f
+## 247            0            0            0  gddot_des
+## 238            0            0            0  =Jv
+## 240            0            0            0  =Ja
+## 242            0            0            0  =Jtf
+## 259            0            0            0  CONA
+## 250            0            0            0  =EL
+## 263            0            0            0  EOM
+## 265            0            0            0  PIM_MBRS
+## 266            0            0            0  PIM_GRID
+## 267            0            0            0  epsilon
+## 268            0            0            0  I
+## 260            0            0            0  =Mv
+## 262            0            0            0  =JtI
+## 264            0            0            0  =eJv
+## 276            0            0            0  TPI
+## 278            0            0            0  IME
+## 280            0            0            0  POSTQ
+## 282            0            0            0  POSTV
+## 281            0            0            0  =ODE_delta
+## 288            0            0            0  ODE_cK
+## 289            0            0            0  ODE_hK
+## 291            0            0        32800  ODE_DEFQ
+## 293            0            0            0  ODE_COLQ
+## 295            0            0        38400  ODE_DEFV
+## 297            0            0            0  ODE_COLV
+## 299            0            0            0  ODE_DEFTIME
+## 301            0            0            0  ODE_COLTIME
+## 303            0            0            0  ODE_DEFSTEP
+## 306            0            0        32800  =utot
+## 308            0            0            0  UTOT
+## 310            0            0            0  Q0
+## 312            0            0            0  QF
+## 314            0            0            0  QT
+## 316            0            0            0  V0
+## 318            0            0            0  VF
+## 320            0            0            0  U
+## 322            0            0            0  T0
+## 324            0            0            0  TF
+#genmod		0		2035944		3457600
+#merge		0		131080		3588680
+#collect	0		2443296		6031976
+#presolve	0		2906432		8938408
+#solveout	0		1081360		10019768
+
+Presolve eliminates 5821 constraints and 5760 variables.
+Substitution eliminates 813 variables.
+"option presolve 10;" used, but "option presolve 11;" might work better.
+Adjusted problem:
+116 variables:
+	30 nonlinear variables
+	86 linear variables
+88 constraints, all linear; 286 nonzeros
+	88 equality constraints
+1 nonlinear objective; 30 nonzeros.
+
+Setting $presolve_eps < 3.55e-16 could change presolve results.
+
+504 linear definitional constraints eliminated (168 fills)
+309 nonlinear definitional constraints eliminated
+	1 for objectives only
+	308 unused
+#presolve	0		0		10019768
+#output		0		2056		10021824
+#Total		0.015625
+Ipopt 3.12.13: 
+
+******************************************************************************
+This program contains Ipopt, a library for large-scale nonlinear optimization.
+ Ipopt is released as open source code under the Eclipse Public License (EPL).
+         For more information visit http://projects.coin-or.org/Ipopt
+******************************************************************************
+
+This is Ipopt version 3.12.13, running with linear solver mumps.
+NOTE: Other linear solvers might be more efficient (see Ipopt documentation).
+
+Number of nonzeros in equality constraint Jacobian...:      286
+Number of nonzeros in inequality constraint Jacobian.:        0
+Number of nonzeros in Lagrangian Hessian.............:       30
+
+Total number of variables............................:      116
+                     variables with only lower bounds:        0
+                variables with lower and upper bounds:       58
+                     variables with only upper bounds:        0
+Total number of equality constraints.................:       88
+Total number of inequality constraints...............:        0
+        inequality constraints with only lower bounds:        0
+   inequality constraints with lower and upper bounds:        0
+        inequality constraints with only upper bounds:        0
+
+iter    objective    inf_pr   inf_du lg(mu)  ||d||  lg(rg) alpha_du alpha_pr  ls
+   0  3.3412604e-01 1.00e+00 5.64e-04  -1.0 0.00e+00    -  0.00e+00 0.00e+00   0
+   1  1.2027366e+01 6.50e-03 2.49e+01  -1.0 7.50e+00    -  3.81e-02 9.94e-01h  1
+   2  1.2102747e+01 1.80e-16 2.04e-01  -1.0 6.99e-01    -  9.79e-01 1.00e+00h  1
+   3  1.2093264e+01 1.60e-16 1.07e-14  -1.0 8.59e-01    -  1.00e+00 1.00e+00f  1
+   4  1.2056115e+01 1.53e-16 3.65e-15  -2.5 5.36e-01    -  1.00e+00 1.00e+00f  1
+   5  1.2055858e+01 1.56e-16 1.78e-15  -3.8 5.23e-02    -  1.00e+00 1.00e+00f  1
+   6  1.2055858e+01 1.94e-16 1.83e-15  -5.7 1.25e-03    -  1.00e+00 1.00e+00f  1
+   7  1.2055858e+01 1.87e-16 2.78e-15  -8.6 1.21e-05    -  1.00e+00 1.00e+00h  1
+
+Number of Iterations....: 7
+
+                                   (scaled)                 (unscaled)
+Objective...............:   1.2055857637172501e+01    1.2055857637172501e+01
+Dual infeasibility......:   2.7774595740459509e-15    2.7774595740459509e-15
+Constraint violation....:   1.8735013540549517e-16    1.8735013540549517e-16
+Complementarity.........:   2.5091213938141735e-09    2.5091213938141735e-09
+Overall NLP error.......:   2.5091213938141735e-09    2.5091213938141735e-09
+
+
+Number of objective function evaluations             = 8
+Number of objective gradient evaluations             = 8
+Number of equality constraint evaluations            = 8
+Number of inequality constraint evaluations          = 0
+Number of equality constraint Jacobian evaluations   = 8
+Number of inequality constraint Jacobian evaluations = 0
+Number of Lagrangian Hessian evaluations             = 7
+Total CPU secs in IPOPT (w/o function evaluations)   =      0.004
+Total CPU secs in NLP function evaluations           =      0.000
+
+EXIT: Optimal Solution Found.
+ 
+Ipopt 3.12.13: Optimal Solution Found
+
+suffix ipopt_zU_out OUT;
+suffix ipopt_zL_out OUT;
+#execute	0		116392		10138216
+### neos/moving-block.run:34(822)   if ...
+#compile	0		0		10138216
+##genmod times:
+##seq      seconds    cum. sec.    mem. inc.  name
+## 50            0            0            0  solve_result
+#genmod		0		2056		10140272
+### neos/moving-block.run:39(1020)   print ...
+#collect	0		0		10140272
+#presolve	0		23072		10163344
+#solveout	0		0		10163344
+
+Presolve eliminates 5821 constraints and 5760 variables.
+Substitution eliminates 813 variables.
+"option presolve 10;" used, but "option presolve 11;" might work better.
+Adjusted problem:
+116 variables:
+	30 nonlinear variables
+	86 linear variables
+88 constraints, all linear; 286 nonzeros
+	88 equality constraints
+1 nonlinear objective; 30 nonzeros.
+
+Setting $presolve_eps < 3.55e-16 could change presolve results.
+
+504 linear definitional constraints eliminated (168 fills)
+309 nonlinear definitional constraints eliminated
+	1 for objectives only
+	308 unused
+#presolve	0		0		10163344
+#execute	0		659200		10822544
+### neos/moving-block.run:40(1128)   print ...
+#execute	0.015625	262400		11084944
+### neos/moving-block.run:41(1237)   print ...
+#execute	0		262384		11347328
+### neos/moving-block.run:42(1346)   close ...
+#execute	0		0		11347328
+### neos/moving-block.run:44(1378)   display ...
+#compile	0		0		11347328
+##genmod times:
+##seq      seconds    cum. sec.    mem. inc.  name
+## 42            0            0            0  _ampl_time
+## 45            0            0            0  _ampl_elapsed_time
+#genmod		0		0		11347328
+_ampl_elapsed_time = 0.187
+
+#execute	0		0		11347328
+### neos/moving-block.run:45(1407)   display ...
+#compile	0		0		11347328
+##genmod times:
+##seq      seconds    cum. sec.    mem. inc.  name
+## 26            0            0            0  _solve_time
+## 27            0            0            0  _solve_system_time
+## 28            0            0            0  _solve_user_time
+## 29            0            0            0  _solve_elapsed_time
+## 42            0            0            0  _ampl_time
+## 43            0            0            0  _ampl_system_time
+## 44            0            0            0  _ampl_user_time
+#genmod		0		0		11347328
+_ampl_system_time = 0.03125
+_ampl_user_time = 0
+_ampl_time = 0.03125
+_solve_elapsed_time = 0.016
+_solve_system_time = 0.015625
+_solve_user_time = 0.015625
+_solve_time = 0.03125
+
+#execute	0		0		11347328

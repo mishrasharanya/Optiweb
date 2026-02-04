@@ -1,0 +1,326 @@
+#				incremental	total
+#phase		seconds		memory		memory
+#execute	0		1060240		1060240
+### neos/five-link-phc-kelly.run:13(325)   option ...
+#execute	0		0		1060240
+### neos/five-link-phc-kelly.run:14(345)   option ...
+#execute	0		0		1060240
+### neos/five-link-phc-kelly.run:41(1444)   solve ...
+#compile	0		313432		1373672
+##genmod times:
+##seq      seconds    cum. sec.    mem. inc.  name
+##  0            0            0            0  Infinity
+## 107            0            0            0  MOD_MODULES
+## 108            0            0            0  GRID_MAX
+## 109            0            0            0  PIM
+## 110            0            0            0  ODE_SOLVERS
+## 111            0            0            0  ODE_SUBGRID
+## 112            0            0            0  ODE_K
+## 113            0            0            0  ODEMBRS
+## 114            0            0            0  ODE
+## 115            0            0            0  ODE_AK
+## 116            0            0            0  ODE_bK
+## 117            0            0            0  ODE_a0
+## 118            0            0            0  ODE_aK
+## 119            0            0            0  ODE_GRID
+## 120            0            0            0  MOD_GRID
+## 121            0            0            0  DAT_MODULES
+## 122            0            0            0  DAT_GRID
+## 123            0            0            0  MODULES
+## 124            0            0        32792  GRID_MODULES
+## 125            0            0            0  SUBPHASES
+## 126            0            0            0  SUBPHASES_MBRS
+## 127            0            0            0  subphases
+## 131            0            0            0  PHASES
+## 132            0            0            0  GRID_MBRS
+## 133            0            0            0  GRID
+## 136            0            0            0  nq
+## 137            0            0            0  Q
+## 139            0            0         6208  q
+## 141            0            0         5160  v
+## 143            0            0         3096  a
+## 149            0            0            0  RBT_IDX
+## 150            0            0            0  robot
+## 151            0            0            0  SPAT_LINK_MBRS
+## 152            0            0            0  SPAT_L
+## 153            0            0            0  SPAT_TREE_P
+## 156            0            0            0  SPAT_TREE_K
+## 157            0            0            0  nr
+## 158            0            0            0  R
+## 159            0            0            0  CON_IDX
+## 160            0            0            0  constraint
+## 161            0            0            0  CON_P
+## 162            0            0            0  CON_V
+## 163            0            0            0  CON_U
+## 164            0            0            0  CON_M
+## 165            0            0            0  CON_F
+## 166            0            0            0  CON_J
+## 167            0            0            0  CON_R
+## 168            0            0            0  nm
+## 169            0            0            0  SPAT_M
+## 170            0            0            0  SPAT_EXPC
+## 171            0            0            0  SPAT_XP
+## 172            0            0            0  x_jp
+## 173            0            0            0  x_im
+## 174            0            0            0  x_cb
+## 175            0            0        38976  spat_expcp
+## 176            0            0         4112  Ep
+## 177            0            0         4112  ppx
+## 178            0            0        57424  spat_Xp
+## 179            0            0            0  SPAT_XV
+## 180            0            0            0  x_ij
+## 181            0            0            0  spat_expcv
+## 171            0            0       214496  =Ev
+## 173            0            0        74848  =pvx
+## 175     0.015625     0.015625       985368  =spat_Xv
+## 177            0     0.015625       481560  =spat_X_ip
+## 191            0     0.015625            0  spat_s_ii
+## 189            0     0.015625       573480  =RNEA_v
+## 191            0     0.015625       484160  =RNEA_vx
+## 212            0     0.015625            0  OSIM_r_oo
+## 213            0     0.015625        32784  OSIM_K
+## 214            0     0.015625            0  OSIM_B
+## 204            0     0.015625      1730192  =OSIM_R_0i
+## 206            0     0.015625      1682456  =OSIM_Rdot_0i
+## 208            0     0.015625      4776808  =OSIM_X_bi
+## 210            0     0.015625       704152  =OSIM_v_rel
+## 212            0     0.015625       921872  =OSIM_v_relx
+## 214     0.015625      0.03125      4593448  =OSIM_Xdot_bi
+## 216            0      0.03125       169728  =OSIM_X_ob
+## 218            0      0.03125       273696  =OSIM_Xdot_ob
+## 220            0      0.03125       297712  =OSIM_X_c0
+## 222            0      0.03125       233712  =J
+## 224            0      0.03125       525320  =phi
+## 226            0      0.03125       257392  =OSIM_position
+## 228            0      0.03125            0  =g
+## 241            0      0.03125         1560  f
+## 243            0      0.03125         2080  g_des
+## 245            0      0.03125         2080  gdot_des
+## 247            0      0.03125         2080  gddot_des
+## 238            0      0.03125        68720  =Jv
+## 240            0      0.03125        68720  =Ja
+## 255            0      0.03125         2080  CONQ
+## 257            0      0.03125         2080  CONV
+## 259            0      0.03125         2080  CONA
+## 265            0      0.03125            0  PIM_MBRS
+## 266            0      0.03125            0  PIM_GRID
+## 267            0      0.03125            0  epsilon
+## 268            0      0.03125            0  I
+## 264            0      0.03125            0  =eJv
+## 282            0      0.03125            0  POSTV
+## 337            0      0.03125            0  FIVELINKTEST
+#genmod		0.03125		19316544	20690216
+#merge		0		524296		21214512
+#compile	0		520		21215032
+##genmod times:
+##seq      seconds    cum. sec.    mem. inc.  name
+## 128            0            0            0  <check>
+## 129            0            0            0  <check>
+## 130            0            0            0  <check>
+## 284            0            0            0  <check>
+## 285            0            0            0  <check>
+## 305            0            0            0  <check>
+#genmod		0		0		21215032
+#compile	0		53072		21268104
+##genmod times:
+##seq      seconds    cum. sec.    mem. inc.  name
+## 89            0            0            0  derstage
+## 93            0            0            0  sstatus
+## 134            0            0       262152  t
+## 138            0            0            0  X
+## 145            0            0         4656  u
+## 136            0            0        49376  =x
+## 154            0            0            0  SPAT_TREE_C
+## 155            0            0            0  SPAT_TREE_S
+## 190            0            0            0  spat_ag
+## 192            0            0         4112  spat_I_mm
+## 193            0            0         2056  spat_I_im
+## 183      0.03125      0.03125     22776552  =CRB_IC
+## 185            0      0.03125      2215960  =CRB_f
+## 187            0      0.03125        71336  =M
+## 193            0      0.03125       636552  =RNEA_a
+## 195            0      0.03125       727216  =RNEA_fb
+## 197            0      0.03125       490976  =RNEA_f
+## 199            0      0.03125          520  =b
+## 242            0      0.03125        71280  =Jtf
+## 250            0      0.03125       104592  =EL
+## 263            0      0.03125         4128  EOM
+## 260            0      0.03125        32800  =Mv
+## 262            0      0.03125            0  =JtI
+## 276            0      0.03125            0  TPI
+## 278            0      0.03125            0  IME
+## 280            0      0.03125            0  POSTQ
+## 281            0      0.03125            0  =ODE_delta
+## 288            0      0.03125            0  ODE_cK
+## 289            0      0.03125            0  ODE_hK
+## 291            0      0.03125        32800  ODE_DEFQ
+## 293            0      0.03125         2080  ODE_COLQ
+## 295            0      0.03125        35400  ODE_DEFV
+## 297            0      0.03125         2600  ODE_COLV
+## 299            0      0.03125            0  ODE_DEFTIME
+## 301            0      0.03125            0  ODE_COLTIME
+## 303            0      0.03125            0  ODE_DEFSTEP
+## 306            0      0.03125        32800  =utot
+## 308            0      0.03125            0  UTOT
+## 310            0      0.03125            0  GAIT_COORDS
+## 311            0      0.03125            0  U_IN
+## 312            0      0.03125            0  step_length_des
+## 313            0      0.03125            0  step_time_des
+## 314            0      0.03125            0  GAIT_A
+## 315            0      0.03125            0  T0
+## 317            0      0.03125            0  TF
+## 319            0      0.03125         6208  XT
+## 321            0      0.03125         4128  U
+## 323            0      0.03125            0  STANCE_KNEE_EXTENSION
+## 325            0      0.03125            0  SWING_KNEE_EXTENSION
+## 327            0      0.03125            0  GAITX
+## 329            0      0.03125            0  SWING_PRE_POSX
+## 331            0      0.03125            0  SWING_PRE_POSY
+## 333            0      0.03125            0  SWING_POST_VELY
+## 335            0      0.03125            0  SWING_PRE_VELY
+#genmod		0.03125		27574904	48843008
+#merge		0		1048584		49891592
+#collect	0.03125		50320784	100212376
+#presolve	0.078125	30854192	131066568
+#solveout	0.015625	8658968		139725536
+
+Presolve eliminates 22388 constraints and 22365 variables.
+Substitution eliminates 24130 variables.
+"option presolve 10;" used, but "option presolve 7;" would suffice.
+Adjusted problem:
+326 variables:
+	304 nonlinear variables
+	22 linear variables
+302 constraints; 2665 nonzeros
+	145 nonlinear constraints
+	157 linear constraints
+	300 equality constraints
+	2 inequality constraints
+1 nonlinear objective; 44 nonzeros.
+
+Setting $presolve_eps < 4.44e-17 could change presolve results.
+
+2541 linear definitional constraints eliminated (2296 fills)
+21592 nonlinear definitional constraints eliminated
+	5655 for constraints only
+	1 for objectives only
+	15936 unused
+#presolve	0		0		139725536
+#output		0		8200		139733736
+#Total		0.1875
+Ipopt 3.12.13: 
+
+******************************************************************************
+This program contains Ipopt, a library for large-scale nonlinear optimization.
+ Ipopt is released as open source code under the Eclipse Public License (EPL).
+         For more information visit http://projects.coin-or.org/Ipopt
+******************************************************************************
+
+This is Ipopt version 3.12.13, running with linear solver mumps.
+NOTE: Other linear solvers might be more efficient (see Ipopt documentation).
+
+Number of nonzeros in equality constraint Jacobian...:     2645
+Number of nonzeros in inequality constraint Jacobian.:       20
+Number of nonzeros in Lagrangian Hessian.............:     1547
+
+Total number of variables............................:      326
+                     variables with only lower bounds:        0
+                variables with lower and upper bounds:      168
+                     variables with only upper bounds:        0
+Total number of equality constraints.................:      300
+Total number of inequality constraints...............:        2
+        inequality constraints with only lower bounds:        1
+   inequality constraints with lower and upper bounds:        0
+        inequality constraints with only upper bounds:        1
+
+iter    objective    inf_pr   inf_du lg(mu)  ||d||  lg(rg) alpha_du alpha_pr  ls
+   0  0.0000000e+00 3.92e+02 1.00e+00  -1.0 0.00e+00    -  0.00e+00 0.00e+00   0
+   1  1.5109664e+00 3.70e+02 2.17e+00  -1.0 4.17e+02  -4.0 2.58e-02 5.80e-02h  1
+   2  3.7303316e+01 2.80e+02 8.27e+01  -1.0 4.01e+02  -4.5 3.54e-02 2.41e-01h  1
+   3  1.2192739e+02 1.85e+02 5.91e+01  -1.0 2.95e+02  -5.0 3.30e-01 3.36e-01h  1
+   4  3.8527155e+02 4.27e+01 3.19e+01  -1.0 1.85e+02  -5.4 8.40e-01 8.93e-01h  1
+   5  3.9101454e+02 3.80e+01 4.29e+01  -1.0 4.08e+01  -5.9 5.82e-01 1.09e-01h  1
+   6  4.4359820e+02 1.31e+01 1.42e+02  -1.0 2.97e+01  -6.4 5.46e-01 1.00e+00h  1
+   7  4.4375560e+02 4.88e-01 4.02e-02  -1.0 4.18e+00  -6.9 1.00e+00 1.00e+00h  1
+   8  4.4321737e+02 1.07e-01 3.26e+00  -1.7 4.23e+00  -7.3 1.00e+00 9.23e-01h  1
+   9  4.4319573e+02 1.19e-02 1.77e-03  -1.7 1.36e+00  -7.8 1.00e+00 1.00e+00h  1
+iter    objective    inf_pr   inf_du lg(mu)  ||d||  lg(rg) alpha_du alpha_pr  ls
+  10  4.4314536e+02 1.41e-02 2.14e-03  -2.5 1.42e+00  -8.3 1.00e+00 1.00e+00h  1
+  11  4.4314238e+02 1.07e-03 1.61e-04  -3.8 4.08e-01  -8.8 1.00e+00 1.00e+00h  1
+  12  4.4314229e+02 5.16e-06 7.78e-07  -5.7 2.86e-02  -9.2 1.00e+00 1.00e+00h  1
+  13  4.4314228e+02 4.21e-10 6.36e-11  -8.6 2.54e-04  -9.7 1.00e+00 1.00e+00h  1
+
+Number of Iterations....: 13
+
+                                   (scaled)                 (unscaled)
+Objective...............:   4.4314228437220788e+02    4.4314228437220788e+02
+Dual infeasibility......:   6.3595079030066285e-11    6.3595079030066285e-11
+Constraint violation....:   4.2092551666428335e-10    4.2092551666428335e-10
+Complementarity.........:   2.6062461819382750e-09    2.6062461819382750e-09
+Overall NLP error.......:   2.6062461819382750e-09    2.6062461819382750e-09
+
+
+Number of objective function evaluations             = 14
+Number of objective gradient evaluations             = 14
+Number of equality constraint evaluations            = 14
+Number of inequality constraint evaluations          = 14
+Number of equality constraint Jacobian evaluations   = 14
+Number of inequality constraint Jacobian evaluations = 14
+Number of Lagrangian Hessian evaluations             = 13
+Total CPU secs in IPOPT (w/o function evaluations)   =      0.166
+Total CPU secs in NLP function evaluations           =      0.123
+
+EXIT: Optimal Solution Found.
+ 
+Ipopt 3.12.13: Optimal Solution Found
+
+suffix ipopt_zU_out OUT;
+suffix ipopt_zL_out OUT;
+#execute	0		539312		140273048
+### neos/five-link-phc-kelly.run:42(1465)   if ...
+#compile	0		0		140273048
+##genmod times:
+##seq      seconds    cum. sec.    mem. inc.  name
+## 50            0            0            0  solve_result
+#genmod		0		2056		140275104
+### neos/five-link-phc-kelly.run:47(1675)   print ...
+#execute	0.015625	5382216		145657320
+### neos/five-link-phc-kelly.run:48(1790)   print ...
+#execute	0.015625	2395504		148052824
+### neos/five-link-phc-kelly.run:49(1906)   print ...
+#execute	0		2395408		150448232
+### neos/five-link-phc-kelly.run:50(2022)   print ...
+#execute	0.015625	2395424		152843656
+### neos/five-link-phc-kelly.run:51(2138)   close ...
+#execute	0		0		152843656
+### neos/five-link-phc-kelly.run:53(2177)   display ...
+#compile	0		0		152843656
+##genmod times:
+##seq      seconds    cum. sec.    mem. inc.  name
+## 42            0            0            0  _ampl_time
+## 45            0            0            0  _ampl_elapsed_time
+#genmod		0		0		152843656
+_ampl_elapsed_time = 0.406
+
+#execute	0		0		152843656
+### neos/five-link-phc-kelly.run:54(2206)   display ...
+#compile	0		0		152843656
+##genmod times:
+##seq      seconds    cum. sec.    mem. inc.  name
+## 26            0            0            0  _solve_time
+## 27            0            0            0  _solve_system_time
+## 28            0            0            0  _solve_user_time
+## 29            0            0            0  _solve_elapsed_time
+## 42            0            0            0  _ampl_time
+## 43            0            0            0  _ampl_system_time
+## 44            0            0            0  _ampl_user_time
+#genmod		0		0		152843656
+_ampl_system_time = 0.046875
+_ampl_user_time = 0.1875
+_ampl_time = 0.234375
+_solve_elapsed_time = 0.344
+_solve_system_time = 0.03125
+_solve_user_time = 0.328125
+_solve_time = 0.359375
+
+#execute	0		0		152843656
