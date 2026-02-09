@@ -67,7 +67,8 @@
     }
 
     /* Table wrapper and table */
-    .wiz-card[data-step="4"] .table-wrapper {
+    .wiz-card[data-step="4"] .table-wrapper,
+    .wiz-card[data-step="5"] .table-wrapper {
       border: 1px solid #222b35;
       background: #0f141c;
       border-radius: 8px;
@@ -75,27 +76,32 @@
       box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.3);
     }
 
-    .wiz-card[data-step="4"] .data-table {
+    .wiz-card[data-step="4"] .data-table,
+    .wiz-card[data-step="5"] .data-table {
       width: 100%;
       border-collapse: collapse;
       color: #e0e0e0;
       font-size: 0.9rem;
     }
 
-    .wiz-card[data-step="4"] .data-table th {
+    .wiz-card[data-step="4"] .data-table th,
+    .wiz-card[data-step="5"] .data-table th {
       background: #1a2029;
       color: #ccc;
       font-weight: 600;
       border-bottom: 1px solid #2a3240;
     }
 
-    .wiz-card[data-step="4"] .data-table td {
+    .wiz-card[data-step="4"] .data-table td,
+    .wiz-card[data-step="5"] .data-table td {
       border-bottom: 1px solid #222b35;
       background: #0f141c;
     }
 
     .wiz-card[data-step="4"] input[type="text"],
-    .wiz-card[data-step="4"] input[type="number"] {
+    .wiz-card[data-step="4"] input[type="number"],
+    .wiz-card[data-step="5"] input[type="text"],
+    .wiz-card[data-step="5"] input[type="number"] {
       background: #1b2431;
       color: #f1f1f1;
       border: 1px solid #2c3a4a;
@@ -104,26 +110,31 @@
     }
 
     .wiz-card[data-step="4"] input[type="text"]:focus,
-    .wiz-card[data-step="4"] input[type="number"]:focus {
+    .wiz-card[data-step="4"] input[type="number"]:focus,
+    .wiz-card[data-step="5"] input[type="text"]:focus,
+    .wiz-card[data-step="5"] input[type="number"]:focus {
       outline: none;
       border-color: #3b82f6;
       background: #202a39;
     }
 
     /* Buttons */
-    .wiz-card[data-step="4"] .btn {
+    .wiz-card[data-step="4"] .btn,
+    .wiz-card[data-step="5"] .btn {
       background: #3b82f6;
       color: #fff;
       border: none;
       transition: background 0.2s ease;
     }
 
-    .wiz-card[data-step="4"] .btn:hover {
+    .wiz-card[data-step="4"] .btn:hover,
+    .wiz-card[data-step="5"] .btn:hover {
       background: #2563eb;
     }
 
     /* Secondary helper areas */
-    .wiz-card[data-step="4"] .card-sub {
+    .wiz-card[data-step="4"] .card-sub,
+    .wiz-card[data-step="5"] .card-sub {
       background: #1a2029;
       border: 1px solid #2a3240;
       color: #ddd;
@@ -409,9 +420,41 @@
       </div>
     </section>
 
-
-    <!-- Step 5: Runge–Kutta -->
+    <!-- Step 5: Constraint params -->
     <section class="wiz-card hide" data-step="5">
+      <h3 class="step-title">Constraint Parameters</h3>
+
+      <!-- Table Section -->
+      <div>
+        <h4 class="sub-title">param constraint := [*,:]</h4>
+        <p class="muted" style="margin-bottom: 0.5rem;">
+          Fixed columns: 
+          <code>PHASE, TYPE, ROW, BODY, R_RX, R_RY, R_RZ, R_PX, R_PY, R_PZ, F_RX, F_RY, F_RZ, F_PX, F_PY, F_PZ, F_TH, F_O</code>
+        </p>
+
+        <div class="table-wrapper">
+          <table id="constraintTable" class="data-table">
+            <thead>
+              <tr id="constraintHeader">
+                <th>#</th>
+                <th>PHASE</th><th>TYPE</th><th>ROW</th><th>BODY</th><th>R_RX</th><th>R_RY</th>
+                <th>R_RZ</th><th>R_PX</th><th>R_PY</th><th>R_PZ</th><th>F_RX</th><th>F_RY</th>
+                <th>F_RZ</th><th>F_PX</th><th>F_PY</th><th>F_PZ</th><th>F_TH</th><th>F_O</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="constraintBody"></tbody>
+          </table>
+        </div>
+
+        <div class="btn-row" style="margin-top: 0.8rem;">
+          <button class="btn" id="btnAddConstraint">+ Add Row</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Step 6: Runge–Kutta -->
+    <section class="wiz-card hide" data-step="6">
       <h3 class="step-title">Runge–Kutta Method (Butcher Table)</h3>
 
       <!-- Mode Selection -->
@@ -465,8 +508,8 @@
       </p>
     </section>
 
-    <!-- Step 6: Custom -->
-    <section class="wiz-card hide" data-step="6">
+    <!-- Step 7: Custom -->
+    <section class="wiz-card hide" data-step="7">
       <h3 class="step-title">Custom Snippets</h3>
       <div class="wiz-row">
         <div>
@@ -484,8 +527,8 @@
       </div>
     </section>
 
-    <!-- Step 7: Review & Submit -->
-    <section class="wiz-card hide" data-step="7">
+    <!-- Step 8: Review & Submit -->
+    <section class="wiz-card hide" data-step="8">
       <h3 class="step-title">Review</h3>
       <div class="wiz-row g3">
         <div>
@@ -526,7 +569,7 @@
 
   <script>
 /* ====================== Wizard core ====================== */
-const STEPS = ['Model', 'Grid', 'Bézier', 'q/v/t/u', 'Robot', 'RK', 'Custom', 'Review'];
+const STEPS = ['Model', 'Grid', 'Bézier', 'q/v/t/u', 'Robot', 'Constraint', 'RK', 'Custom', 'Review'];
 let cur = 0;
 const qs  = s => document.querySelector(s);
 const qsa = s => Array.from(document.querySelectorAll(s));
@@ -592,6 +635,18 @@ function addRow(which){
   cells += `<td><button class="btn" onclick="this.closest('tr').remove()">✕</button></td>`;
   tr.innerHTML = cells;
   body.appendChild(tr);
+}
+
+function updateTableIndex(tableBody) {
+  let body = document.getElementById(tableBody);
+  let rows = Array.from(body.getElementsByTagName('tr'));
+
+  rows.forEach((_, i) => {
+    let indexCell = rows[i].querySelector('.rowIndex');
+    if (indexCell) {
+      indexCell.textContent = i + 1;
+    }
+  });
 }
 
 /* add column (controls live on first data header) */
@@ -885,9 +940,9 @@ function addRobotRow(){
     0,0,0, 0,0,0
   ];
   const tds = [
-    `<td>${idx}</td>`,
+    `<td class="rowIndex">${idx}</td>`,
     ...defaults.map(v=>`<td><input type="text" class="small" value="${v}"/></td>`),
-    `<td><button class="btn" onclick="this.closest('tr').remove()">✕</button></td>`
+    `<td><button class="btn" onclick="this.closest('tr').remove(); updateTableIndex('robotBody')">✕</button></td>`
   ];
   const tr = document.createElement('tr');
   tr.innerHTML = tds.join('');
@@ -1007,6 +1062,25 @@ urdfInput?.addEventListener('change', async (e) => {
   alert(`URDF imported: ${joints.length} joint(s) mapped to AMPL robot table (values preserved).`);
 });
 
+/* ====================== Constraint table ====================== */
+function addConstraintRow(){
+  const body = qs('#constraintBody');
+  const idx = body.children.length + 1;
+  const defaults = [
+    1,'p',1,5,0,0,0,1,0,
+    0,0,0,0,0,-1,0,0.4,0
+  ];
+  const tds = [
+    `<td class="rowIndex">${idx}</td>`,
+    ...defaults.map(v=>`<td><input type="text" class="small" value="${v}"/></td>`),
+    `<td><button class="btn" onclick="this.closest('tr').remove(); updateTableIndex('constraintBody')">✕</button></td>`
+  ];
+  const tr = document.createElement('tr');
+  tr.innerHTML = tds.join('');
+  body.appendChild(tr);
+}
+qs('#btnAddConstraint').addEventListener('click', addConstraintRow);
+
 /* ====================== Runge–Kutta Butcher tables ====================== */
 function rkButcher(name) {
   switch (name) {
@@ -1082,6 +1156,14 @@ document.querySelectorAll('input[name="rkMode"]').forEach(r => {
 
 
 /* ====================== Collectors & formatters ====================== */
+function collectGridSubphases(){
+  const tb = qs('table #subphaseBody'); const out=[];
+  Array.from(tb.children).forEach(tr=>{
+    const [lbl, beg, end] = Array.from(tr.querySelectorAll('input')).slice(0,3).map(x=>x.value);
+    out.push({lbl, beg, end});
+  });
+  return out;
+}
 function collectMatrix(which){
   const body = qs('#'+which+'Body'); const rows = [];
   Array.from(body.children).forEach((tr,i)=>{
@@ -1104,7 +1186,22 @@ function collectRobot(){
   const body = qs('#robotBody'); const rows=[];
   Array.from(body.children).forEach((tr,rowIdx)=>{
     const inputs = Array.from(tr.querySelectorAll('input'));
-    const vals = inputs.map(inp=>inp.value.trim());
+    const vals = inputs.map(inp=>{
+      trimmedInput = inp.value.trim();
+      return Number.isInteger(Number(trimmedInput)) ? `${trimmedInput}.` : trimmedInput;
+    });
+    rows.push({row: rowIdx+1, vals});
+  });
+  return rows;
+}
+function collectConstraint(){
+  const body = qs('#constraintBody'); const rows=[];
+  Array.from(body.children).forEach((tr,rowIdx)=>{
+    const inputs = Array.from(tr.querySelectorAll('input'));
+    const vals = inputs.map(inp=>{
+      trimmedInput = inp.value.trim();
+      return Number.isInteger(Number(trimmedInput)) ? `${trimmedInput}.` : trimmedInput;
+    });
     rows.push({row: rowIdx+1, vals});
   });
   return rows;
@@ -1126,6 +1223,16 @@ function collectBezSG(){
   return out;
 }
 
+function fmtGridBlock(gridMax, subPhasesRows){
+  let s  = `param GRID_MAX := ${gridMax}.;\n`;
+  s += `set SUBPHASES := `;
+  subPhasesRows.forEach(r=>{ s += `${r.lbl} ` });
+  s = s.trimEnd() + ';\n';
+  s += `param subphases := [*,:]\n`;
+  s += `    :PHASE   BEG   END :=\n`;
+  subPhasesRows.forEach(r=>{ s += `${r.lbl}   ${r.lbl.split('.')[0]}.       ${r.beg}.    ${r.end}.\n`; });
+  return s.trimEnd() + ';\n';
+}
 function fmtMatrixBlock(name, rows){
   const maxCols = rows.reduce((m,r)=>Math.max(m, r.vals.length), 0);
   const header = Array.from({length:maxCols}, (_,i)=> (i+1)).join('   ');
@@ -1149,7 +1256,14 @@ function fmtRobotBlock(rows){
   });
   return s.trimEnd() + ';\n';
 }
-function fmtConstraintsBlock(){ return `param nr := 0.;\nparam constraint;\n`; }
+function fmtConstraintBlock(rows){
+  const cols = ['PHASE', 'TYPE', 'ROW', 'BODY', 'R_RX', 'R_RY', 'R_RZ', 'R_PX', 'R_PY', 'R_PZ', 'F_RX', 'F_RY', 'F_RZ', 'F_PX', 'F_PY', 'F_PZ', 'F_TH', 'F_O'];
+  let s = `param nr := ${rows.length}.;\nparam constraint := [*,:]\n  :${cols.join('   ')} :=\n`;
+  rows.forEach(r=>{
+    s += `${r.row}   ${r.vals.map(v => (v===''?'0':v)).join('   ')}\n`;
+  });
+  return s.trimEnd() + ';\n';
+}
 
 function fmtBezierBlocks(lbls, bezRows, sgSets, sgRows){
   let s = `set BEZ_LBLS := ${lbls.join(' ')};\n`;
@@ -1194,15 +1308,17 @@ function buildDat() {
   const robotRows = collectRobot();
   const bezRows = collectBez();
   const bezSgRows = collectBezSG();
+  const gridSubphasesRows = collectGridSubphases();
+  const constraintRows = collectConstraint();
 
   const nqInfer = (qRows[0]?.vals?.length || (modelType() === 'five' ? 5 : 1)) || 1;
 
   let dat = '';
-  dat += `# grid\nparam GRID_MAX := ${gm}.;\nset SUBPHASES := 1.1;\nparam subphases := [*,:]\n    :PHASE   BEG   END :=\n1.1   1.       0.    ${gm}.;\n\n`;
+  dat += `# grid\n${fmtGridBlock(gm, gridSubphasesRows)}\n`;
   dat += `# seed\n${fmtMatrixBlock('q', qRows)}\n${fmtMatrixBlock('v', vRows)}\n${fmtVectorBlock('t', tRows)}\n${fmtMatrixBlock('u', uRows)}\n`;
   dat += `# state\nparam nq := ${nqInfer}.;\n\n`;
   dat += `# robot\n${fmtRobotBlock(robotRows)}\n`;
-  dat += `# constraints\n${fmtConstraintsBlock()}\n`;
+  dat += `# constraint\n${fmtConstraintBlock(constraintRows)}\n`;
   dat += `# M and b (spatial gravity)\nparam spat_ag := [*]\n1   0.\n2   0.\n3   0.\n4   0.\n5   ${g}\n6   0.;\n\n`;
   dat += `# eom\nset PIM := ${pimTxt ? '(' + pimTxt + ')' : ''};\n\n`;
 
