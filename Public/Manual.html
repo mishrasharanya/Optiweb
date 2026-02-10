@@ -42,33 +42,33 @@
     .grid-legend .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:middle}
     .grid-legend > div{margin-top:6px}
     /* --- Robot Parameters (Dark Theme) --- */
-    .wiz-card[data-step="4"] {
+    .wiz-card[data-step="3"] {
       background: #11161e; /* subtle deep gray-blue background */
       color: #f1f1f1;
       border: 1px solid #222b35;
       border-radius: 10px;
     }
 
-    .wiz-card[data-step="4"] h3,
-    .wiz-card[data-step="4"] h4 {
+    .wiz-card[data-step="3"] h3,
+    .wiz-card[data-step="3"] h4 {
       color: #ffffff;
     }
 
-    .wiz-card[data-step="4"] .muted {
+    .wiz-card[data-step="3"] .muted {
       color: #aaa;
     }
 
-    .wiz-card[data-step="4"] .toggle label {
+    .wiz-card[data-step="3"] .toggle label {
       color: #ddd;
     }
 
-    .wiz-card[data-step="4"] input[type="radio"] {
+    .wiz-card[data-step="3"] input[type="radio"] {
       accent-color: #3b82f6; /* blue highlight */
     }
 
     /* Table wrapper and table */
-    .wiz-card[data-step="4"] .table-wrapper,
-    .wiz-card[data-step="5"] .table-wrapper {
+    .wiz-card[data-step="3"] .table-wrapper,
+    .wiz-card[data-step="4"] .table-wrapper {
       border: 1px solid #222b35;
       background: #0f141c;
       border-radius: 8px;
@@ -76,32 +76,32 @@
       box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.3);
     }
 
-    .wiz-card[data-step="4"] .data-table,
-    .wiz-card[data-step="5"] .data-table {
+    .wiz-card[data-step="3"] .data-table,
+    .wiz-card[data-step="4"] .data-table {
       width: 100%;
       border-collapse: collapse;
       color: #e0e0e0;
       font-size: 0.9rem;
     }
 
-    .wiz-card[data-step="4"] .data-table th,
-    .wiz-card[data-step="5"] .data-table th {
+    .wiz-card[data-step="3"] .data-table th,
+    .wiz-card[data-step="4"] .data-table th {
       background: #1a2029;
       color: #ccc;
       font-weight: 600;
       border-bottom: 1px solid #2a3240;
     }
 
-    .wiz-card[data-step="4"] .data-table td,
-    .wiz-card[data-step="5"] .data-table td {
+    .wiz-card[data-step="3"] .data-table td,
+    .wiz-card[data-step="4"] .data-table td {
       border-bottom: 1px solid #222b35;
       background: #0f141c;
     }
 
+    .wiz-card[data-step="3"] input[type="text"],
+    .wiz-card[data-step="3"] input[type="number"],
     .wiz-card[data-step="4"] input[type="text"],
-    .wiz-card[data-step="4"] input[type="number"],
-    .wiz-card[data-step="5"] input[type="text"],
-    .wiz-card[data-step="5"] input[type="number"] {
+    .wiz-card[data-step="4"] input[type="number"] {
       background: #1b2431;
       color: #f1f1f1;
       border: 1px solid #2c3a4a;
@@ -109,32 +109,32 @@
       text-align: center;
     }
 
+    .wiz-card[data-step="3"] input[type="text"]:focus,
+    .wiz-card[data-step="3"] input[type="number"]:focus,
     .wiz-card[data-step="4"] input[type="text"]:focus,
-    .wiz-card[data-step="4"] input[type="number"]:focus,
-    .wiz-card[data-step="5"] input[type="text"]:focus,
-    .wiz-card[data-step="5"] input[type="number"]:focus {
+    .wiz-card[data-step="4"] input[type="number"]:focus {
       outline: none;
       border-color: #3b82f6;
       background: #202a39;
     }
 
     /* Buttons */
-    .wiz-card[data-step="4"] .btn,
-    .wiz-card[data-step="5"] .btn {
+    .wiz-card[data-step="3"] .btn,
+    .wiz-card[data-step="4"] .btn {
       background: #3b82f6;
       color: #fff;
       border: none;
       transition: background 0.2s ease;
     }
 
-    .wiz-card[data-step="4"] .btn:hover,
-    .wiz-card[data-step="5"] .btn:hover {
+    .wiz-card[data-step="3"] .btn:hover,
+    .wiz-card[data-step="4"] .btn:hover {
       background: #2563eb;
     }
 
     /* Secondary helper areas */
-    .wiz-card[data-step="4"] .card-sub,
-    .wiz-card[data-step="5"] .card-sub {
+    .wiz-card[data-step="3"] .card-sub,
+    .wiz-card[data-step="4"] .card-sub {
       background: #1a2029;
       border: 1px solid #2a3240;
       color: #ddd;
@@ -155,18 +155,8 @@
     <!-- Step indicators -->
     <div class="steps" id="steps"></div>
 
-    <!-- Step 0: Model type -->
-    <section class="wiz-card" data-step="0">
-      <h3 class="step-title">Model Type</h3>
-      <div class="radio">
-        <label><input type="radio" name="modelType" value="moving" /> Moving Block</label>
-        <label><input type="radio" name="modelType" value="five" checked /> Five-Linked Robot</label>
-      </div>
-      <p class="muted">This sets defaults like <code>nq</code> and enables robot/constraints sections.</p>
-    </section>
-
     <!-- Step 1: GRID -->
-    <section class="wiz-card" data-step="1" id="gridStep">
+    <section class="wiz-card" data-step="0" id="gridStep">
       <h3 class="step-title">Grid</h3>
 
       <div class="g3 wiz-row">
@@ -229,7 +219,7 @@
 
 
     <!-- Step 2: Bézier -->
-    <section class="wiz-card hide" data-step="2">
+    <section class="wiz-card hide" data-step="1">
       <h3 class="step-title">Bézier Curve Data</h3>
 
       <div class="wiz-row g2">
@@ -271,7 +261,7 @@
     </section>
 
     <!-- Step 3: q, v, t, u -->
-    <section class="wiz-card hide" data-step="3">
+    <section class="wiz-card hide" data-step="2">
       <h3 class="step-title">Seed Variables</h3>
 
       <!-- q -->
@@ -359,7 +349,7 @@
 
 
     <!-- Step 4: Robot params -->
-    <section class="wiz-card hide" data-step="4">
+    <section class="wiz-card hide" data-step="3">
       <h3 class="step-title">Robot Parameters</h3>
 
       <!-- Mode toggle -->
@@ -421,7 +411,7 @@
     </section>
 
     <!-- Step 5: Constraint params -->
-    <section class="wiz-card hide" data-step="5">
+    <section class="wiz-card hide" data-step="4">
       <h3 class="step-title">Constraint Parameters</h3>
 
       <!-- Table Section -->
@@ -454,7 +444,7 @@
     </section>
 
     <!-- Step 6: Runge–Kutta -->
-    <section class="wiz-card hide" data-step="6">
+    <section class="wiz-card hide" data-step="5">
       <h3 class="step-title">Runge–Kutta Method (Butcher Table)</h3>
 
       <!-- Mode Selection -->
@@ -509,7 +499,7 @@
     </section>
 
     <!-- Step 7: Custom -->
-    <section class="wiz-card hide" data-step="7">
+    <section class="wiz-card hide" data-step="6">
       <h3 class="step-title">Custom Snippets</h3>
       <div class="wiz-row">
         <div>
@@ -528,7 +518,7 @@
     </section>
 
     <!-- Step 8: Review & Submit -->
-    <section class="wiz-card hide" data-step="8">
+    <section class="wiz-card hide" data-step="7">
       <h3 class="step-title">Review</h3>
       <div class="wiz-row g3">
         <div>
@@ -569,7 +559,7 @@
 
   <script>
 /* ====================== Wizard core ====================== */
-const STEPS = ['Model', 'Grid', 'Bézier', 'q/v/t/u', 'Robot', 'Constraint', 'RK', 'Custom', 'Review'];
+const STEPS = ['Grid', 'Bézier', 'q/v/t/u', 'Robot', 'Constraint', 'RK', 'Custom', 'Review'];
 let cur = 0;
 const qs  = s => document.querySelector(s);
 const qsa = s => Array.from(document.querySelectorAll(s));
@@ -596,10 +586,6 @@ qs('#btnNext').addEventListener('click', async ()=>{
   if (cur<STEPS.length-1) showStep(cur+1);
 });
 showStep(0);
-
-/* model type */
-const modelRadios = qsa('input[name="modelType"]');
-const modelType = () => (modelRadios.find(r=>r.checked)?.value)||'five';
 
 /* ====================== Seed tables (q, v, u, t) ====================== */
 /* Column count helper: prefer th[data-col], else infer (Index + controls) */
@@ -948,14 +934,8 @@ function addRobotRow(){
   tr.innerHTML = tds.join('');
   body.appendChild(tr);
 }
+addRobotRow();
 qs('#btnAddRobot').addEventListener('click', addRobotRow);
-function seedRobot(){
-  qs('#robotBody').innerHTML='';
-  const n = (modelType()==='five') ? 5 : 1;
-  for (let i=0;i<n;i++) addRobotRow();
-}
-modelRadios.forEach(r=>r.addEventListener('change', seedRobot));
-seedRobot();
 
 /* ====================== URDF toggle + importer (unchanged logic) ====================== */
 const robotModeRadios = qsa('input[name="robotMode"]');
@@ -1311,7 +1291,7 @@ function buildDat() {
   const gridSubphasesRows = collectGridSubphases();
   const constraintRows = collectConstraint();
 
-  const nqInfer = (qRows[0]?.vals?.length || (modelType() === 'five' ? 5 : 1)) || 1;
+  const nqInfer = (qRows[0]?.vals?.length || 1);
 
   let dat = '';
   dat += `# grid\n${fmtGridBlock(gm, gridSubphasesRows)}\n`;
@@ -1829,10 +1809,7 @@ minimize UTOT : utot;`;
 
 
 function buildRun(){
-  const caseType = (modelType()==='five') ? 'five' : 'moving';
-  let run = '';
-  if (caseType === 'moving'){
-    run = `
+  let run = `
 #----------- options
 option presolve_eps 1e-5;
 
@@ -1861,41 +1838,6 @@ print {j in 1.._nvars : match(_varname[j], '^t\\[') > 0} : j, _varname[j], _var[
 print {j in 1.._nvars : match(_varname[j], '^u\\[') > 0} : j, _varname[j], _var[j] >> test.out;
 close test.out;
 option send_email yes;`.trim();
-  } else {
-    run = `
-#----------- clear and reload
-reset;
-model test.mod;
-data test.dat;
-
-#----------- options
-option presolve_eps 1e-5;
-
-#----------- gait problem
-problem FIVELINKTEST :
-  UTOT,
-  t, q, v, a, u,
-  EOM,
-  TPI,
-  ODE_hK,
-  ODE_DEFQ, ODE_COLQ, ODE_DEFV, ODE_COLV,
-  ODE_DEFTIME, ODE_COLTIME, ODE_DEFSTEP,
-  T0, TF,
-  XT, U
-;
-
-#----------- solve
-solve FIVELINKTEST > nul;
-if solve_result != 'solved' then {
-  print 'failed!', 'FIVELINKTEST', '--', FIVELINKTEST.result, '--',  FIVELINKTEST.message;
-}
-print 'IPOPT cost (in local coordinates): ', utot;
-
-print {j in 1.._nvars : match(_varname[j], '^q\\[') > 0} : j, _varname[j], _var[j] > test.out;
-print {j in 1.._nvars : match(_varname[j], '^t\\[') > 0} : j, _varname[j], _var[j] >> test.out;
-print {j in 1.._nvars : match(_varname[j], '^u\\[') > 0} : j, _varname[j], _var[j] >> test.out;
-close test.out;`.trim();
-  }
   const extra = qs('#runExtra').value.trim();
   if (extra) run += `\n\n# extra run\n${extra}\n`;
   return run + '\n';
