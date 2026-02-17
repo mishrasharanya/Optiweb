@@ -119,6 +119,9 @@
     }
 
     /* Buttons */
+    .wiz-card[data-step="0"] .btn,
+    .wiz-card[data-step="1"] .btn,
+    .wiz-card[data-step="2"] .btn,
     .wiz-card[data-step="3"] .btn,
     .wiz-card[data-step="4"] .btn {
       background: #3b82f6;
@@ -191,15 +194,11 @@
             </tr>
           </thead>
           <tbody id="subphaseBody">
-            <tr>
-              <td><input type="text" value="1.1" placeholder="e.g., 1.1" /></td>
-              <td><input type="number" value="0" step="1" /></td>
-              <td><input type="number" value="29" step="1" /></td>
-              <td><button type="button" class="btn btn--ghost" onclick="removeRow(this)">✕</button></td>
-            </tr>
           </tbody>
         </table>
-        <button type="button" class="btn" id="btnAddSubphase">+ Add Subphase</button>
+        <div class="btn-row" style="margin-top: 0.8rem;">
+          <button type="button" class="btn" id="btnAddSubphase">+ Add Subphase</button>
+        </div>
       </div>
 
       <!-- === Grid Visualization === -->
@@ -703,10 +702,6 @@ window.addRow     = addRow;
 window.addColumn  = addColumn;
 window.delColumn  = delColumn;
 
-/* seed defaults */
-['q','v','u'].forEach(w => { addRow(w); addRow(w); }); 
-addRow('t');
-
 /* ====================== Bézier rows ====================== */
 // make sure helpers exist (won't override if you already have them)
 window.qs   = window.qs   || (sel => document.querySelector(sel));
@@ -740,39 +735,6 @@ qs('#btnAddBezSG').addEventListener('click', ()=>{
     <td><button class="btn" onclick="this.closest('tr').remove()">✕</button></td>`;
   tb.appendChild(tr);
 });
-
-// --- Seed a visible demo (3 control points: (0,0)->(1,2)->(2,0)) ---
-(function seedBezierDemo(){
-  const tb = qs('#bezTable tbody');
-  if (!tb) return;
-  tb.innerHTML = '';
-  const seed = [
-    {der:0, x:0, y:0},
-    {der:0, x:1, y:2},
-    {der:0, x:2, y:0},
-  ];
-  seed.forEach((p, i) => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${i}</td>
-      <td><input type="number" step="any" class="small" value="${p.der}"/></td>
-      <td><input type="number" step="any" class="small" value="${p.x}"/></td>
-      <td><input type="number" step="any" class="small" value="${p.y}"/></td>
-      <td><button class="btn" onclick="this.closest('tr').remove()">✕</button></td>`;
-    tb.appendChild(tr);
-  });
-
-  // one subgrid row (not required for drawing)
-  const sgtb = qs('#bezSGTable tbody');
-  if (sgtb && !sgtb.children.length) {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td><input type="text" class="small" value="0"/></td>
-      <td><input type="number" class="small" value="1"/></td>
-      <td><input type="number" step="any" class="small" value="0"/></td>
-      <td><input type="number" step="any" class="small" value="25"/></td>
-      <td><button class="btn" onclick="this.closest('tr').remove()">✕</button></td>`;
-    sgtb.appendChild(tr);
-  }
-})();
 
 /* ====================== Bézier Curve Visualization ====================== */
 qs('#btnGenerateBez').addEventListener('click', drawBezierCurve);
@@ -934,7 +896,6 @@ function addRobotRow(){
   tr.innerHTML = tds.join('');
   body.appendChild(tr);
 }
-addRobotRow();
 qs('#btnAddRobot').addEventListener('click', addRobotRow);
 
 /* ====================== URDF toggle + importer (unchanged logic) ====================== */
@@ -1276,6 +1237,7 @@ function fmtRKBlocks(method, tag, gridMax){
   return out;
 }
 
+const selectionMap = new Map();
 /* ====================== Build previews ====================== */
 function buildDat() {
   const gm = parseInt(qs('#gridMax').value, 10) || 1;
@@ -1292,6 +1254,13 @@ function buildDat() {
   const constraintRows = collectConstraint();
 
   const nqInfer = (qRows[0]?.vals?.length || 1);
+
+  selectionMap.set("Grid", gridSubphasesRows.length > 0);
+  selectionMap.set("Bézier", bezRows.length > 0 && bezSgRows.length > 0);
+  selectionMap.set("q/v/t/u", qRows.length > 0 && vRows.length > 0 && uRows.length > 0 && tRows.length > 0);
+  selectionMap.set("Robot", robotRows.length > 0);
+  selectionMap.set("Constraint", constraintRows.length > 0);
+  selectionMap.set("RK", null);
 
   let dat = '';
   dat += `# grid\n${fmtGridBlock(gm, gridSubphasesRows)}\n`;
@@ -1809,7 +1778,11 @@ minimize UTOT : utot;`;
 
 
 function buildRun(){
-  let run = `
+  let run = ''
+  selectionMap.forEach((v, k) => {
+    run += `MODULE ${k} ${v? '' : 'NOT'} USED\n`;
+  });
+  run += `
 #----------- options
 option presolve_eps 1e-5;
 
