@@ -465,6 +465,7 @@
       <div id="rkPresetBlock">
         <label class="label">Preset Method</label>
         <select id="rkMethod">
+          <option value="">None</option>
           <option value="rk2">RK2 — midpoint</option>
           <option value="heun3">Heun’s RK3</option>
           <option value="kutta3">Kutta’s RK3 (3/8)</option>
@@ -1260,7 +1261,7 @@ function buildDat() {
   selectionMap.set("q/v/t/u", qRows.length > 0 && vRows.length > 0 && uRows.length > 0 && tRows.length > 0);
   selectionMap.set("Robot", robotRows.length > 0);
   selectionMap.set("Constraint", constraintRows.length > 0);
-  selectionMap.set("RK", null);
+  selectionMap.set("RK", Boolean(qs('#rkMethod').value));
 
   let dat = '';
   dat += `# grid\n${fmtGridBlock(gm, gridSubphasesRows)}\n`;
