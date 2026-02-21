@@ -143,6 +143,57 @@
       color: #ddd;
     }
 
+    /* Overlay */
+    .upload-modal.hidden {
+      display: none;
+    }
+
+    .upload-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      color: black;
+    }
+
+    .upload-modal-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+    }
+
+    .upload-modal-content {
+      position: relative;
+      width: 400px;
+      margin: 10% auto;
+      background: lightslategrey;
+      padding: 30px;
+      border-radius: 8px;
+      text-align: center;
+      z-index: 1001;
+    }
+
+    .upload-close {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      cursor: pointer;
+      font-size: 20px;
+    }
+
+    .upload-drop-zone {
+      margin-top: 20px;
+      padding: 25px;
+      border: 2px dashed #aaa;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .upload-drop-zone.dragover {
+      background: #f0f8ff;
+      border-color: #007bff;
+    }
+
   </style>
 </head>
 <body class="page">
@@ -153,6 +204,7 @@
       <p class="subtitle">Fill the steps, auto-compose <code>test.dat</code>/<code>test.mod</code>/<code>test.run</code>, and submit.</p>
     </div>
   </header>
+  <script src="uploadModal.js"></script>
 
   <main class="container wizard">
     <!-- Step indicators -->
@@ -198,6 +250,7 @@
         </table>
         <div class="btn-row" style="margin-top: 0.8rem;">
           <button type="button" class="btn" id="btnAddSubphase">+ Add Subphase</button>
+          <button id="open-upload" class="btn" onclick="uploader.open(0)">Import Subphase</button>
         </div>
       </div>
 
@@ -281,7 +334,10 @@
             <tbody id="qBody"></tbody>
           </table>
         </div>
-        <div class="btn-row"><button class="btn" onclick="addRow('q')">+ Row</button></div>
+        <div class="btn-row">
+          <button class="btn" onclick="addRow('q', row = null)">+ Row</button>
+          <button id="open-upload" class="btn" onclick="uploader.open('q')">Import Row</button>
+        </div>
       </div>
 
       <!-- v -->
@@ -302,7 +358,10 @@
             <tbody id="vBody"></tbody>
           </table>
         </div>
-        <div class="btn-row"><button class="btn" onclick="addRow('v')">+ Row</button></div>
+        <div class="btn-row">
+          <button class="btn" onclick="addRow('v', row = null)">+ Row</button>
+          <button id="open-upload" class="btn" onclick="uploader.open('v')">Import Row</button>
+        </div>
       </div>
 
       <!-- u -->
@@ -323,7 +382,10 @@
             <tbody id="uBody"></tbody>
           </table>
         </div>
-        <div class="btn-row"><button class="btn" onclick="addRow('u')">+ Row</button></div>
+        <div class="btn-row">
+          <button class="btn" onclick="addRow('u', row = null)">+ Row</button>
+          <button id="open-upload" class="btn" onclick="uploader.open('u')">Import Row</button>
+        </div>
       </div>
 
       <!-- t -->
@@ -341,7 +403,10 @@
             <tbody id="tBody"></tbody>
           </table>
         </div>
-        <div class="btn-row"><button class="btn" onclick="addRow('t')">+ Row</button></div>
+        <div class="btn-row">
+          <button class="btn" onclick="addRow('t', row = null)">+ Row</button>
+          <button id="open-upload" class="btn" onclick="uploader.open('t')">Import Row</button>
+        </div>
       </div>
     </section>
 
@@ -398,6 +463,7 @@
 
         <div class="btn-row" style="margin-top: 0.8rem;">
           <button class="btn" id="btnAddRobot">+ Add Row</button>
+          <button id="open-upload" class="btn" onclick="uploader.open(3)">Import Row</button>
         </div>
       </div>
 
@@ -438,6 +504,7 @@
 
         <div class="btn-row" style="margin-top: 0.8rem;">
           <button class="btn" id="btnAddConstraint">+ Add Row</button>
+          <button id="open-upload" class="btn" onclick="uploader.open(4)">Import Row</button>
         </div>
       </div>
     </section>
@@ -560,6 +627,79 @@
   </main>
 
   <script>
+    const uploader = new UploadModal({
+      acceptedTypes: [".csv"],
+      onFileParsed: (step, data) => {
+        populateTable(step, data);
+      }
+    });
+      
+
+function populateTable(step, data) {
+  const rows = data;
+  if (step == 0) {
+    data.forEach(row => {
+      addSubphaseRow(row);
+    });
+  }
+  else if (step == 'q') {
+    const cols = data && data[0].length;
+    const colsNow = countDataCols('q');
+    if (cols < colsNow) {
+      for (let j = colsNow; j > cols; j--) delColumn('q');
+    }
+    else if (colsNow < cols) {
+      for (let j = colsNow; j < cols; j++) addColumn('q');
+    }
+    data.forEach(row => {
+      addRow('q', row);
+    });
+  }
+  else if (step == 'v') {
+    const cols = data && data[0].length;
+    const colsNow = countDataCols('v');
+    if (cols < colsNow) {
+      for (let j = colsNow; j > cols; j--) delColumn('v');
+    }
+    else if (colsNow < cols) {
+      for (let j = colsNow; j < cols; j++) addColumn('v');
+    }
+    data.forEach(row => {
+      addRow('v', row);
+    });
+  }
+  else if (step == 'u') {
+    const cols = data && data[0].length;
+    const colsNow = countDataCols('u');
+    if (cols < colsNow) {
+      for (let j = colsNow; j > cols; j--) delColumn('u');
+    }
+    else if (colsNow < cols) {
+      for (let j = colsNow; j < cols; j++) addColumn('u');
+    }
+    data.forEach(row => {
+      addRow('u', row);
+    });
+  }
+  else if (step == 't') {
+    for (let j = 1; j < data.length; j++) addColumn('t');
+    data.forEach(row => {
+      addRow('t', row);
+    });
+  }
+  else if (step == 3) {
+    data.forEach(row => {
+      addRobotRow(row);
+    });
+  }
+  else if (step == 4) {
+    data.forEach(row => {
+      addConstraintRow(row);
+    });
+  }
+  
+}
+
 /* ====================== Wizard core ====================== */
 const STEPS = ['Grid', 'Bézier', 'q/v/t/u', 'Robot', 'Constraint', 'RK', 'Custom', 'Review'];
 let cur = 0;
@@ -602,14 +742,14 @@ function countDataCols(which){
 }
 
 /* add row */
-function addRow(which){
+function addRow(which, row = null){
   const body = qs('#'+which+'Body');
   const idx = body.children.length;
   const tr = document.createElement('tr');
 
   if (which === 't') {
     tr.innerHTML = `<td><input data-kind="idx" value="${idx}"/></td>
-      <td><input data-kind="val" class="small" /></td>
+      <td><input data-kind="val" class="small" value="${row? row[0] : ''}" /></td>
       <td><button class="btn" onclick="this.closest('tr').remove()">✕</button></td>`;
     body.appendChild(tr);
     return;
@@ -618,7 +758,7 @@ function addRow(which){
   const cols = countDataCols(which);
   let cells = `<td><input data-kind="idx" value="${idx}"/></td>`;
   for (let c=1; c<=cols; c++){
-    cells += `<td><input data-kind="val" data-col="${c}" class="small" /></td>`;
+    cells += `<td><input data-kind="val" data-col="${c}" class="small" value="${row? row[c-1] : ''}" /></td>`;
   }
   cells += `<td><button class="btn" onclick="this.closest('tr').remove()">✕</button></td>`;
   tr.innerHTML = cells;
@@ -881,7 +1021,7 @@ function bezierEval(points, t) {
 }
 
 /* ====================== Robot table ====================== */
-function addRobotRow(){
+function addRobotRow(row = null){
   const body = qs('#robotBody');
   const idx = body.children.length + 1;
   const defaults = [
@@ -890,16 +1030,17 @@ function addRobotRow(){
     1, 0,0,0, 0,0,0, 0,
     0,0,0, 0,0,0
   ];
+  const rowData = row || defaults;
   const tds = [
     `<td class="rowIndex">${idx}</td>`,
-    ...defaults.map(v=>`<td><input type="text" class="small" value="${v}"/></td>`),
+    ...rowData.map(v=>`<td><input type="text" class="small" value="${v}"/></td>`),
     `<td><button class="btn" onclick="this.closest('tr').remove(); updateTableIndex('robotBody')">✕</button></td>`
   ];
   const tr = document.createElement('tr');
   tr.innerHTML = tds.join('');
   body.appendChild(tr);
 }
-qs('#btnAddRobot').addEventListener('click', addRobotRow);
+qs('#btnAddRobot').addEventListener('click', () => addRobotRow(row = null));
 
 /* ====================== URDF toggle + importer (unchanged logic) ====================== */
 const robotModeRadios = qsa('input[name="robotMode"]');
@@ -1007,23 +1148,24 @@ urdfInput?.addEventListener('change', async (e) => {
 });
 
 /* ====================== Constraint table ====================== */
-function addConstraintRow(){
+function addConstraintRow(row = null){
   const body = qs('#constraintBody');
   const idx = body.children.length + 1;
   const defaults = [
     1,'p',1,5,0,0,0,1,0,
     0,0,0,0,0,-1,0,0.4,0
   ];
+  const rowData = row || defaults;
   const tds = [
     `<td class="rowIndex">${idx}</td>`,
-    ...defaults.map(v=>`<td><input type="text" class="small" value="${v}"/></td>`),
+    ...rowData.map(v=>`<td><input type="text" class="small" value="${v}"/></td>`),
     `<td><button class="btn" onclick="this.closest('tr').remove(); updateTableIndex('constraintBody')">✕</button></td>`
   ];
   const tr = document.createElement('tr');
   tr.innerHTML = tds.join('');
   body.appendChild(tr);
 }
-qs('#btnAddConstraint').addEventListener('click', addConstraintRow);
+qs('#btnAddConstraint').addEventListener('click', () => addConstraintRow(row = null));
 
 /* ====================== Runge–Kutta Butcher tables ====================== */
 function rkButcher(name) {
@@ -1945,19 +2087,29 @@ function updateGridViz() {
     gridLegend.appendChild(line);
   });
 }
-document.getElementById('btnAddSubphase')?.addEventListener('click', () => {
+function addSubphaseRow(row = null) {
+  let col1, col2;
+
+  if (row) {
+    [col1, col2] = row;
+  } else {
+    [col1, col2] = [1.1, 0];
+  }
   const tb = document.getElementById('subphaseBody');
   if (!tb) return;
   const GRID_MAX = +document.getElementById('gridMax')?.value || 0;
   const tr = document.createElement('tr');
   tr.innerHTML = `
-    <td><input type="text" value="1.1" placeholder="e.g., 1.1" /></td>
-    <td><input type="number" value="0" step="1" /></td>
+    <td><input type="text" value="${col1}" placeholder="e.g., 1.1" /></td>
+    <td><input type="number" value="${col2}" step="1" /></td>
     <td><input type="number" value="${GRID_MAX || 0}" step="1" /></td>
     <td><button type="button" class="btn btn--ghost" onclick="removeRow(this)">✕</button></td>
   `;
   tb.appendChild(tr);
   updateGridViz();
+}
+document.getElementById('btnAddSubphase')?.addEventListener('click', () => {
+  addSubphaseRow(row = null);
 });
 window.removeRow = (btn) => { btn.closest('tr')?.remove(); updateGridViz(); };
 
