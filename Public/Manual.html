@@ -1124,7 +1124,7 @@ function populateTable(step, data) {
 const examples = {};
 examples.robotAMPL = `
 param robot := [*,:]
-
+  :PARENT   S_RX   S_RY   S_RZ   S_PX   S_PY   S_PZ        Q_LB       Q_UB   F_RX   F_RY   F_RZ   F_PX   F_PY   F_PZ   F_TH   MASS   M_RX   M_RY   M_RZ   M_PX   M_PY   M_PZ    M_TH   IXX   IYY    IZZ   IXY   IXZ   IYZ :=
 1 0 0 0 1 0 0 -Infinity Infinity 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0
 2 1 0 0 1 0 0 -1 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0;
 `;
@@ -1147,7 +1147,7 @@ examples.robotURDF = `
 
 examples.constraint = `
 param constraint := [*,:]
-
+   :PHASE   TYPE   ROW   BODY   R_RX   R_RY   R_RZ   R_PX   R_PY   R_PZ   F_RX   F_RY   F_RZ   F_PX   F_PY   F_PZ   F_TH   F_O :=
 1 1 p 1 3 0 0 0 1 0 0 0 0 0 0 0 0 0 0
 2 1 p 2 3 0 0 0 0 1 0 0 0 0 0 0 0 0 0;
 `;
