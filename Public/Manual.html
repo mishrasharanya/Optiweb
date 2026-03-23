@@ -41,6 +41,7 @@
     .phase-chunk{position:absolute;top:0;bottom:0;border-radius:6px}
     .grid-legend .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:middle}
     .grid-legend > div{margin-top:6px}
+    td input.small { width: 40px; }
     /* --- Robot Parameters (Dark Theme) --- */
     .wiz-card[data-step="3"] {
       background: #11161e; /* subtle deep gray-blue background */
@@ -141,6 +142,99 @@
       background: #1a2029;
       border: 1px solid #2a3240;
       color: #ddd;
+    }
+
+    /* Drag and drop */
+    .upload-zone {
+      border: 2px dashed #bbb;
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .upload-zone.dragover {
+      border-color: #4CAF50;
+      background: #f6fff6;
+    }
+
+    /* Modal */
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .modal.hide {
+      display: none;
+    }
+
+    .modal-content {
+      background: #1e1e1e;
+      color: #f5f5f5;
+      width: min(900px, 90vw);
+      max-height: 85vh;
+      padding: 1.5rem;
+      border-radius: 8px;
+      overflow: auto;
+      box-shadow: 0 6px 30px rgba(0, 0, 0, 0.6);
+      border: 1px solid #333;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .modal-header h3 {
+      margin: 0;
+      color: #f5f5f5;
+    }
+
+    .modal-header button {
+      color: #f5f5f5;
+      background: transparent;
+      border: 1px solid #666;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .modal-header button:hover {
+      background: #333;
+      border-color: #aaa;
+    }
+
+    .modal-content pre {
+      background: #2a2a2a;
+      color: #dcdcdc;
+      padding: 12px;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-size: 0.9rem;
+      line-height: 1.35;
+      border: 1px solid #444;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    /* Help wrapper */
+    .btn-help-wrapper,
+    .btn-download-wrapper {
+      display: flex;
+      justify-content: space-between;
+    }
+    .btn-help-wrapper .btn-help {
+      height: fit-content;
+    }
+    .btn-download-wrapper .btn-download {
+      display: none;
     }
 
   </style>
@@ -261,87 +355,102 @@
 
     <!-- Step 3: q, v, t, u -->
     <section class="wiz-card hide" data-step="2">
-      <h3 class="step-title">Seed Variables</h3>
-
-      <!-- q -->
-      <div class="seed-wrap">
-        <h4>var q [:,*]</h4>
-        <div class="col-controls" data-table="q">
-          <button type="button" class="btn btn-slim" data-action="add-col">+ Col</button>
-          <button type="button" class="btn btn-slim" data-action="del-col">– Col</button>
-        </div>
-        <div class="table-scroll">
-          <table id="qTable" class="seed-matrix">
-            <thead>
-              <tr id="qHeader">
-                <th style="width:80px;">Index</th>
-                <th data-col="1">:1</th>
-              </tr>
-            </thead>
-            <tbody id="qBody"></tbody>
-          </table>
-        </div>
-        <div class="btn-row"><button class="btn" onclick="addRow('q')">+ Row</button></div>
+      <div class="btn-help-wrapper">
+        <h3 class="step-title">Seed Variables</h3>
+        <button class="btn btn-help" data-type="seed" title="Help">❔</button>
       </div>
 
-      <!-- v -->
-      <div class="seed-wrap">
-        <h4>var v [:,*]</h4>
-        <div class="col-controls" data-table="v">
-          <button type="button" class="btn btn-slim" data-action="add-col">+ Col</button>
-          <button type="button" class="btn btn-slim" data-action="del-col">– Col</button>
-        </div>
-        <div class="table-scroll">
-          <table id="vTable" class="seed-matrix">
-            <thead>
-              <tr id="vHeader">
-                <th style="width:80px;">Index</th>
-                <th data-col="1">:1</th>
-              </tr>
-            </thead>
-            <tbody id="vBody"></tbody>
-          </table>
-        </div>
-        <div class="btn-row"><button class="btn" onclick="addRow('v')">+ Row</button></div>
+      <div class="upload-zone" data-allowed="seed">
+        <p>Drag & Drop a seed file here or click to upload</p>
+        <input type="file" hidden />
       </div>
 
-      <!-- u -->
-      <div class="seed-wrap">
-        <h4>var u [:,*]</h4>
-        <div class="col-controls" data-table="u">
-          <button type="button" class="btn btn-slim" data-action="add-col">+ Col</button>
-          <button type="button" class="btn btn-slim" data-action="del-col">– Col</button>
-        </div>
-        <div class="table-scroll">
-          <table id="uTable" class="seed-matrix">
-            <thead>
-              <tr id="uHeader">
-                <th style="width:80px;">Index</th>
-                <th data-col="1">:1</th>
-              </tr>
-            </thead>
-            <tbody id="uBody"></tbody>
-          </table>
-        </div>
-        <div class="btn-row"><button class="btn" onclick="addRow('u')">+ Row</button></div>
+      <div class="btn-download-wrapper btn-row">
+        <button class="btn btn-manual" data-target="seedManual">Enter Manually</button>
+        <button class="btn btn-download" data-type="seed">Download</button>
       </div>
 
-      <!-- t -->
-      <div class="seed-wrap">
-        <h4>var t [*]</h4>
-        <div class="table-scroll">
-          <table id="tTable" class="seed-matrix">
-            <thead>
-              <tr>
-                <th style="width:80px;">Index</th>
-                <th>Value</th>
-                <th style="width:52px;"></th>
-              </tr>
-            </thead>
-            <tbody id="tBody"></tbody>
-          </table>
+      <div id="seedManual" class="manual-section hide">
+        <!-- q -->
+        <div class="seed-wrap">
+          <h4>var q [:,*]</h4>
+          <div class="col-controls" data-table="q">
+            <button type="button" class="btn btn-slim" data-action="add-col">+ Col</button>
+            <button type="button" class="btn btn-slim" data-action="del-col">– Col</button>
+          </div>
+          <div class="table-scroll">
+            <table id="qTable" class="seed-matrix">
+              <thead>
+                <tr id="qHeader">
+                  <th style="width:80px;">Index</th>
+                  <th data-col="1">:1</th>
+                </tr>
+              </thead>
+              <tbody id="qBody"></tbody>
+            </table>
+          </div>
+          <div class="btn-row"><button class="btn" onclick="addRow('q', row = null)">+ Row</button></div>
         </div>
-        <div class="btn-row"><button class="btn" onclick="addRow('t')">+ Row</button></div>
+
+        <!-- v -->
+        <div class="seed-wrap">
+          <h4>var v [:,*]</h4>
+          <div class="col-controls" data-table="v">
+            <button type="button" class="btn btn-slim" data-action="add-col">+ Col</button>
+            <button type="button" class="btn btn-slim" data-action="del-col">– Col</button>
+          </div>
+          <div class="table-scroll">
+            <table id="vTable" class="seed-matrix">
+              <thead>
+                <tr id="vHeader">
+                  <th style="width:80px;">Index</th>
+                  <th data-col="1">:1</th>
+                </tr>
+              </thead>
+              <tbody id="vBody"></tbody>
+            </table>
+          </div>
+          <div class="btn-row"><button class="btn" onclick="addRow('v', row = null)">+ Row</button></div>
+        </div>
+
+        <!-- u -->
+        <div class="seed-wrap">
+          <h4>var u [:,*]</h4>
+          <div class="col-controls" data-table="u">
+            <button type="button" class="btn btn-slim" data-action="add-col">+ Col</button>
+            <button type="button" class="btn btn-slim" data-action="del-col">– Col</button>
+          </div>
+          <div class="table-scroll">
+            <table id="uTable" class="seed-matrix">
+              <thead>
+                <tr id="uHeader">
+                  <th style="width:80px;">Index</th>
+                  <th data-col="1">:1</th>
+                </tr>
+              </thead>
+              <tbody id="uBody"></tbody>
+            </table>
+          </div>
+          <div class="btn-row"><button class="btn" onclick="addRow('u', row = null)">+ Row</button></div>
+        </div>
+
+        <!-- t -->
+        <div class="seed-wrap">
+          <h4>var t [*]</h4>
+          <div class="table-scroll">
+            <table id="tTable" class="seed-matrix">
+              <thead>
+                <tr>
+                  <th style="width:80px;">Index</th>
+                  <th>Value</th>
+                  <th style="width:52px;"></th>
+                </tr>
+              </thead>
+              <tbody id="tBody"></tbody>
+            </table>
+          </div>
+          <div class="btn-row"><button class="btn" onclick="addRow('t', row = null)">+ Row</button></div>
+        </div>
       </div>
     </section>
 
@@ -349,31 +458,26 @@
 
     <!-- Step 4: Robot params -->
     <section class="wiz-card hide" data-step="3">
-      <h3 class="step-title">Robot Parameters</h3>
-
-      <!-- Mode toggle -->
-      <div class="toggle" style="margin-bottom: 1rem;">
-        <label class="radio-option">
-          <input type="radio" name="robotMode" value="manual" checked />
-          <span>Manual Entry</span>
-        </label>
-        <label class="radio-option">
-          <input type="radio" name="robotMode" value="urdf" />
-          <span>Import from URDF</span>
-        </label>
+      <div class="btn-help-wrapper">
+        <h3 class="step-title">Robot Parameters</h3>
+        <button class="btn btn-help" data-type="robot" title="Help">❔</button>
       </div>
 
-      <!-- URDF Upload Section -->
-      <div id="robotURDF" class="hide card-sub" style="margin-bottom: 1.2rem;">
-        <p class="muted">
-          Upload a <code>.urdf</code> or <code>.xml</code> file to prefill the table automatically.<br>
-          You can still edit parameters manually afterwards.
+      <div class="upload-zone" data-allowed="robot">
+        <p>
+          Drag & Drop a robot file here or click to upload<br>
+          <small>Supported formats: AMPL or URDF</small>
         </p>
-        <input type="file" id="urdfFile" accept=".urdf,.xml" class="file-input" />
+        <input type="file" accept=".urdf,.dat,.txt,.mod" hidden />
+      </div>
+
+      <div class="btn-download-wrapper btn-row">
+        <button class="btn btn-manual" data-target="robotManual">Enter Manually</button>
+        <button class="btn btn-download" data-type="robot">Download</button>
       </div>
 
       <!-- Manual Table Section -->
-      <div id="robotManual">
+      <div id="robotManual" class="manual-section hide">
         <h4 class="sub-title">param robot := [*,:]</h4>
         <p class="muted" style="margin-bottom: 0.5rem;">
           Fixed columns: 
@@ -411,10 +515,23 @@
 
     <!-- Step 5: Constraint params -->
     <section class="wiz-card hide" data-step="4">
-      <h3 class="step-title">Constraint Parameters</h3>
+      <div class="btn-help-wrapper">
+        <h3 class="step-title">Constraint Parameters</h3>
+        <button class="btn btn-help" data-type="constraint" title="Help">❔</button>
+      </div>
+      
+      <div class="upload-zone" data-allowed="constraint">
+        <p>Drag & Drop a constraint file here or click to upload</p>
+        <input type="file" hidden />
+      </div>
+
+      <div class="btn-download-wrapper btn-row">
+        <button class="btn btn-manual" data-target="constraintManual">Enter Manually</button>
+        <button class="btn btn-download" data-type="constraint">Download</button>
+      </div>
 
       <!-- Table Section -->
-      <div>
+      <div id="constraintManual" class="manual-section hide">
         <h4 class="sub-title">param constraint := [*,:]</h4>
         <p class="muted" style="margin-bottom: 0.5rem;">
           Fixed columns: 
@@ -559,6 +676,24 @@
     </div>
   </main>
 
+  <div id="helpModal" class="modal hide">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="helpTitle"></h3>
+        <div>
+          <button class="btn" onclick="copyExample(this)" title="Copy">⧉</button>
+          <button class="btn" onclick="closeHelp()" title="Close">✕</button>
+        </div>
+      </div>
+      <div id="helpTabs" class="help-tabs hide">
+        <button class="tab-btn active" data-tab="ampl">AMPL</button>
+        <button class="tab-btn" data-tab="urdf">URDF</button>
+      </div>
+
+      <pre id="helpContent"></pre>
+    </div>
+  </div>
+
   <script>
 /* ====================== Wizard core ====================== */
 const STEPS = ['Grid', 'Bézier', 'q/v/t/u', 'Robot', 'Constraint', 'RK', 'Custom', 'Review'];
@@ -589,6 +724,617 @@ qs('#btnNext').addEventListener('click', async ()=>{
 });
 showStep(0);
 
+/* Drag and drop upload */
+document.querySelectorAll(".upload-zone").forEach(zone => {
+  const allowedType = zone.dataset.allowed;
+  createUploadZone(zone, allowedType);
+});
+
+document.querySelectorAll(".btn-manual").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const target = btn.dataset.target;
+    const section = document.getElementById(target);
+    section.classList.remove("hide");
+  });
+});
+
+function createUploadZone(zone, allowedType) {
+  const input = zone.querySelector("input");
+  zone.addEventListener("click", () => input.click());
+  zone.addEventListener("dragover", e => {
+    e.preventDefault();
+    zone.classList.add("dragover");
+  });
+  zone.addEventListener("dragleave", () => {
+    zone.classList.remove("dragover");
+  });
+  zone.addEventListener("drop", e => {
+    e.preventDefault();
+    zone.classList.remove("dragover");
+    const file = e.dataTransfer.files[0];
+    if (file) handleFileUpload(file, allowedType);
+    input.value = "";
+  });
+  input.addEventListener("change", () => {
+    const file = input.files[0];
+    if (file) handleFileUpload(file, allowedType);
+    input.value = "";
+  });
+}
+
+const uploadSchemas = {
+  seed: {
+    required: ["q", "v", "u", "t"],
+    rules: {
+      q: { type: "matrix", minRows: 1 },
+      v: { type: "matrix", minRows: 1 },
+      u: { type: "matrix", minRows: 1 },
+      t: { type: "vector", minRows: 1 }
+    }
+  },
+
+  robot: {
+    required: ["robot"],
+    rules: {
+      robot: {
+        type: "matrix",
+        minRows: 1,
+        columns: 30
+      }
+    }
+  },
+
+  constraint: {
+    required: ["constraint"],
+    rules: {
+      constraint: {
+        type: "matrix",
+        minRows: 1,
+        columns: 18
+      }
+    }
+  }
+};
+
+function handleFileUpload(file, allowedType) {
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const text = e.target.result;
+    
+    /* Handle URDF before AMPL parsing */
+    if (allowedType === "robot") {
+      const type = detectRobotFileType(file, text);
+      if (type === "urdf") {
+        showManualSection("robot");
+        importURDF(text);
+        return;
+      }
+      if (type === "unknown") {
+        alert("Unsupported robot file format. Upload URDF or AMPL robot file.");
+        return;
+      }
+    }
+
+    /* AMPL pipeline */
+    const parsed = parseWizardFile(text);
+    const result = validateParsedFile(parsed, allowedType);
+
+    if (!result.valid) {
+      alert(result.error);
+      return;
+    }
+
+    if (allowedType === "seed") {
+      showManualSection("seed");
+      populateTable("q", parsed.q.data);
+      populateTable("v", parsed.v.data);
+      populateTable("u", parsed.u.data);
+      populateTable("t", parsed.t);
+    }
+
+    if (allowedType === "robot") {
+      showManualSection("robot");
+      populateTable("robot", parsed.robot.data);
+    }
+
+    if (allowedType === "constraint") {
+      showManualSection("constraint");
+      populateTable("constraint", parsed.constraint.data);
+    }
+  };
+
+  reader.readAsText(file);
+
+  function showManualSection(type) {
+    const zone = document.querySelector(`.upload-zone[data-allowed="${type}"]`);
+    const step = zone.closest(".wiz-card");
+    const manual = step.querySelector(".manual-section");
+    if (manual) manual.classList.remove("hide");
+  }
+}
+
+function detectRobotFileType(file, text) {
+  const name = file.name.toLowerCase();
+  if (name.endsWith(".urdf")) return "urdf";
+  const t = text.trim();
+  if (t.includes("<robot")) return "urdf";
+  if (/param\s+robot\s*:=/i.test(t)) return "ampl";
+  return "unknown";
+}
+
+function parseWizardFile(text) {
+  /* Split lines, trim, remove empty lines and comment lines */
+  const lines = text
+    .split(/\r?\n/)
+    .map(l => l.trim())
+    .filter(l => l && !l.startsWith("#"));
+
+  const parsed = {};
+  let i = 0;
+
+  while (i < lines.length) {
+    const line = lines[i];
+
+    /* Variable block */
+    const varMatch = line.match(/^\s*var\s+(\w+)\s*:=\s*(.*)$/i);
+    if (varMatch) {
+      const name = varMatch[1];
+      const header = varMatch[2].trim();
+      const blockLines = [];
+
+      i++;
+      while (
+        i < lines.length &&
+        !lines[i].endsWith(";") &&
+        !/^\s*(var|param)\s+\w+\s*:=/.test(lines[i])
+      ) {
+        blockLines.push(lines[i]);
+        i++;
+      }
+      // Include last line if part of block
+      if (i < lines.length && !/^\s*(var|param)\s+\w+\s*:=/.test(lines[i])) {
+        blockLines.push(lines[i]);
+        i++;
+      }
+
+      // Determine type
+      if (header.startsWith("[:,*]")) {
+        parsed[name] = parseMatrix(blockLines);
+      } else if (header.startsWith("[*]")) {
+        parsed[name] = parseVector(blockLines);
+      } else {
+        parsed[name] = parseValue(header);
+      }
+      continue;
+    }
+
+    /* Param block */
+    const paramMatch = line.match(/^\s*param\s+(\w+)\s*:=\s*(.*)$/i);
+    if (paramMatch) {
+      const name = paramMatch[1];
+      const header = paramMatch[2].trim();
+      const blockLines = [];
+
+      i++;
+      while (
+        i < lines.length &&
+        !lines[i].endsWith(";") &&
+        !/^\s*(var|param)\s+\w+\s*:=/.test(lines[i])
+      ) {
+        blockLines.push(lines[i]);
+        i++;
+      }
+      if (i < lines.length && !/^\s*(var|param)\s+\w+\s*:=/.test(lines[i])) {
+        blockLines.push(lines[i]);
+        i++;
+      }
+
+      // Determine type
+      if (header.startsWith("[*,:]")) {
+        parsed[name] = parseMatrix(blockLines);
+      } else if (header.startsWith("[*]")) {
+        parsed[name] = parseVector(blockLines);
+      } else {
+        parsed[name] = parseValue(header);
+      }
+      continue;
+    }
+
+    // Skip lines that don't match var or param
+    i++;
+  }
+
+  return parsed;
+}
+
+function parseSection(sectionName, lines) {
+  const result = { vars: {}, params: {} };
+  let i = 0;
+
+  while (i < lines.length) {
+    const line = lines[i];
+
+    // Skip comments
+    if (line.startsWith("#") || line === "") { i++; continue; }
+
+    // Variable blocks: var <name> := [...]
+    let varMatch = line.match(/^var\s+(\w+)\s*:=\s*(.*)$/);
+    if (varMatch) {
+      const varName = varMatch[1];
+      const header = varMatch[2].trim();
+      const varLines = [];
+
+      i++; // move to next line
+      while (i < lines.length && !lines[i].endsWith(";")) {
+        varLines.push(lines[i]);
+        i++;
+      }
+      // Include the last line ending with ;
+      if (i < lines.length) varLines.push(lines[i]);
+      i++;
+
+      if (header.startsWith("[:,*]")) {
+        result.vars[varName] = { type: "matrix", data: parseMatrix(varLines) };
+      } else if (header.startsWith("[*]")) {
+        result.vars[varName] = { type: "vector", data: parseVector(varLines) };
+      }
+
+      continue;
+    }
+
+    // Param blocks: param <name> := ...
+    let paramMatch = line.match(/^param\s+(\w+)\s*:=\s*(.*)$/);
+    if (paramMatch) {
+      const paramName = paramMatch[1];
+      const header = paramMatch[2].trim();
+      const paramLines = [];
+
+      i++;
+      while (i < lines.length && !lines[i].endsWith(";")) {
+        paramLines.push(lines[i]);
+        i++;
+      }
+      if (i < lines.length) paramLines.push(lines[i]);
+      i++;
+
+      if (header.startsWith("[*,:]")) {
+        result.params[paramName] = { type: "matrix", data: parseMatrix(paramLines) };
+      } else if (header.startsWith("[*]")) {
+        result.params[paramName] = { type: "vector", data: parseVector(paramLines) };
+      } else {
+        result.params[paramName] = { type: "value", data: parseValue(header) };
+      }
+
+      continue;
+    }
+
+    i++;
+  }
+
+  return result;
+}
+
+function parseMatrix(lines) {
+
+  let columns = [];
+  let dataLines = lines;
+
+  // Detect column header line
+  const headerLine = lines.find(l => l.startsWith(":"));
+
+  if (headerLine) {
+    columns = headerLine
+      .replace(/^:/, "")
+      .replace(":=", "")
+      .trim()
+      .split(/\s+/);
+
+    dataLines = lines.filter(l => !l.startsWith(":"));
+  }
+
+  const data = dataLines
+    .map(line =>
+      line
+        .trim()
+        .split(/\s+/)
+        .map(v => v.replace(/;$/, ""))
+    )
+    .map(row => row.slice(1)) // remove row index
+    .map(row =>
+      row.map(v => {
+        const n = Number(v);
+        return Number.isNaN(n) ? v : n;
+      })
+    );
+
+  return { columns, data };
+}
+
+function parseVector(lines) {
+  return lines
+    .map(line =>
+      line
+        .trim()
+        .split(/\s+/)
+        .map(v => v.replace(/;$/, "")) // remove trailing ;
+    )
+    .filter(row => row.length > 1) // ensure there is a value column
+    .map(row => parseFloat(row[1])); // take the actual value (second column)
+}
+
+function parseValue(text) {
+  return Number(text.replace(/;$/, "").trim());
+}
+
+function validateParsedFile(parsed, type) {
+  const schema = uploadSchemas[type];
+  if (!schema) return { valid: false, error: "Unknown upload type." };
+
+  for (const key of schema.required) {
+    if (!parsed[key]) {
+      return { valid: false, error: `${key} section missing.` };
+    }
+    const rule = schema.rules[key];
+    const data = parsed[key].data || parsed[key];
+    if (rule.minRows && data.length < rule.minRows) {
+      return { valid: false, error: `${key} contains no rows.` };
+    }
+    if (rule.type === "matrix" && rule.columns) {
+      if (data[0].length !== rule.columns) {
+        return {
+          valid: false,
+          error: `${key} must contain ${rule.columns} columns.`
+        };
+      }
+    }
+  }
+
+  return { valid: true };
+}
+
+function populateTable(step, data) {
+  if (!data || !data.length) return;
+  if (step === 0) {
+    data.forEach(row => addSubphaseRow(row));
+  }
+  else if (step === 'q' || step === 'v' || step === 'u') {
+    const cols = data[0].length;
+    const colsNow = countDataCols(step);
+    if (cols < colsNow) {
+      for (let j = colsNow; j > cols; j--) delColumn(step);
+    }
+    else if (colsNow < cols) {
+      for (let j = colsNow; j < cols; j++) addColumn(step);
+    }
+    data.forEach(row => addRow(step, row));
+  }
+  else if (step === 't') {
+    for (let j = 1; j < data.length; j++) addColumn('t');
+    data.forEach(value => addRow('t', value));
+  }
+  else if (step === 'robot') {
+    data.forEach(row => addRobotRow(row));
+  }
+  else if (step === 'constraint') {
+    data.forEach(row => addConstraintRow(row));
+  }
+}
+
+/* Help modal */
+const examples = {};
+examples.robotAMPL = `
+param robot := [*,:]
+  :PARENT   S_RX   S_RY   S_RZ   S_PX   S_PY   S_PZ        Q_LB       Q_UB   F_RX   F_RY   F_RZ   F_PX   F_PY   F_PZ   F_TH   MASS   M_RX   M_RY   M_RZ   M_PX   M_PY   M_PZ    M_TH   IXX   IYY    IZZ   IXY   IXZ   IYZ :=
+1 0 0 0 1 0 0 -Infinity Infinity 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+2 1 0 0 1 0 0 -1 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0;
+`;
+
+examples.robotURDF = `
+<robot name="example">
+  <link name="base_link">
+    <inertial>
+      <mass value="1"/>
+      <inertia ixx="0.1" iyy="0.1" izz="0.1" ixy="0" ixz="0" iyz="0"/>
+    </inertial>
+  </link>
+  <joint name="joint1" type="revolute">
+    <parent link="base_link"/>
+    <child link="link1"/>
+    <axis xyz="0 0 1"/>
+  </joint>
+</robot>
+`;
+
+examples.constraint = `
+param constraint := [*,:]
+   :PHASE   TYPE   ROW   BODY   R_RX   R_RY   R_RZ   R_PX   R_PY   R_PZ   F_RX   F_RY   F_RZ   F_PX   F_PY   F_PZ   F_TH   F_O :=
+1 1 p 1 3 0 0 0 1 0 0 0 0 0 0 0 0 0 0
+2 1 p 2 3 0 0 0 0 1 0 0 0 0 0 0 0 0 0;
+`;
+
+examples.seed = `
+var q := [:,*]
+     :1 2 :=
+0    0   0
+1    0.1 0.2;
+
+var v := [:,*]
+     :1 2 :=
+0    0   0
+1    0   0;
+
+var u := [:,*]
+     :1 :=
+0    0
+1    0.1;
+
+var t := [*]
+0    0
+1    0.5
+2    1;
+`;
+
+document.querySelectorAll(".btn-help").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const type = btn.dataset.type;
+    const modal = document.getElementById("helpModal");
+
+    document.getElementById("helpTitle").textContent = type.toUpperCase() + " Example";
+
+    if (type === "robot") {
+      const tabs = document.getElementById("helpTabs");
+      tabs.classList.remove("hide");
+
+      document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+      document.querySelector('.tab-btn[data-tab="ampl"]').classList.add("active");
+      document.getElementById("helpContent").textContent = examples.robotAMPL;
+
+      document.querySelectorAll(".tab-btn").forEach(tabBtn => {
+        tabBtn.onclick = () => {
+          const tab = tabBtn.dataset.tab;
+          document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+          tabBtn.classList.add("active");
+
+          document.getElementById("helpContent").textContent =
+            tab === "ampl" ? examples.robotAMPL : examples.robotURDF;
+        };
+      });
+
+    } else {
+      // Other steps (seed, constraint)
+      document.getElementById("helpTabs").classList.add("hide");
+      document.getElementById("helpContent").textContent =
+        examples[type] || "No example available.";
+    }
+
+    modal.classList.remove("hide");
+  });
+});
+
+function closeHelp() {
+  document.getElementById("helpModal").classList.add("hide");
+}
+
+function copyExample(btn) {
+  const txt = document.getElementById("helpContent").textContent;
+  navigator.clipboard.writeText(txt).then(() => {
+    const original = btn.textContent;
+    btn.textContent = "✓";
+    setTimeout(() => {
+      btn.textContent = original;
+      btn.style.color = "";
+    }, 1500);
+  }).catch(() => {
+    alert("Copy failed.");
+  });
+}
+
+/* Download table content */
+document.querySelectorAll(".btn-download").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const type = btn.dataset.type;
+    const text = exportTable(type);
+    const blob = new Blob([text], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = type + ".txt";
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+});
+
+// Automatically show/hide step download button when table rows change
+document.querySelectorAll('.wiz-card').forEach(step => {
+  const btn = step.querySelector('.btn-download-wrapper .btn-download');
+  if (!btn) return;
+
+  const updateButton = () => {
+    const hasRows = Array.from(step.querySelectorAll('tbody')).some(tbody => tbody.children.length > 0);
+    btn.style.display = hasRows ? 'inline-block' : 'none';
+  };
+
+  updateButton();
+
+  const observer = new MutationObserver(updateButton);
+  step.querySelectorAll('tbody').forEach(tbody => {
+    observer.observe(tbody, { childList: true });
+  });
+});
+
+function exportTable(type) {
+  if (type === "robot") {
+    return exportMatrix("robotBody", "param robot := [*,:]");
+  }
+  if (type === "constraint") {
+    return exportMatrix("constraintBody", "param constraint := [*,:]");
+  }
+  if (type === "seed") {
+    return exportSeed();
+  }
+}
+
+function exportMatrix(bodyId, header) {
+  const rows = [...document.querySelectorAll(`#${bodyId} tr`)];
+  const data = rows.map((tr, i) => {
+    const inputs = [...tr.querySelectorAll("input")];
+    const values = inputs.map(inp => inp.value.trim()).join(" ");
+    return `${i + 1} ${values}`;
+  });
+  if (data.length) {
+    data[data.length - 1] += ";";
+  }
+  return header + "\n" + data.join("\n");
+}
+
+function exportSeed() {
+  const parts = [];
+  parts.push(exportSeedMatrix("q"));
+  parts.push("");
+  parts.push(exportSeedMatrix("v"));
+  parts.push("");
+  parts.push(exportSeedMatrix("u"));
+  parts.push("");
+  parts.push(exportSeedVector("t"));
+  return parts.join("\n");
+}
+
+function exportSeedMatrix(name) {
+  const header = document.querySelector(`#${name}Header`);
+  const body   = document.querySelector(`#${name}Body`);
+  const cols = header.querySelectorAll("th[data-col]").length;
+  const rows = [...body.querySelectorAll("tr")];
+  const lines = [];
+  lines.push(`var ${name} := [:,*]`);
+  const colNums = Array.from({length: cols}, (_,i)=>i+1).join("     ");
+  lines.push(`     :${colNums} :=`);
+  rows.forEach((tr) => {
+    const idx = tr.children[0].textContent.trim();   // use existing index
+    const inputs = [...tr.querySelectorAll("input")];
+    const vals = inputs.map(inp => inp.value.trim()).join("     ");
+    lines.push(`${idx}    ${vals}`);
+  });
+  if (lines.length > 2)
+    lines[lines.length-1] += ";";
+  return lines.join("\n");
+}
+
+function exportSeedVector(name) {
+  const body = document.querySelector(`#${name}Body`);
+  const rows = [...body.querySelectorAll("tr")];
+  const lines = [];
+  lines.push(`var ${name} := [*]`);
+  rows.forEach((tr, i) => {
+    const idx = tr.children[0].textContent.trim() || i;
+    const valInput = tr.children[1].querySelector("input");
+    const val = valInput ? valInput.value.trim() : "";
+    lines.push(`${idx}    ${val}`);
+  });
+  if (lines.length > 1)
+    lines[lines.length - 1] += ";";
+  return lines.join("\n");
+}
+
 /* ====================== Seed tables (q, v, u, t) ====================== */
 /* Column count helper: prefer th[data-col], else infer (Index + controls) */
 function countDataCols(which){
@@ -602,14 +1348,14 @@ function countDataCols(which){
 }
 
 /* add row */
-function addRow(which){
+function addRow(which, row = null){
   const body = qs('#'+which+'Body');
   const idx = body.children.length;
   const tr = document.createElement('tr');
 
   if (which === 't') {
     tr.innerHTML = `<td><input data-kind="idx" value="${idx}"/></td>
-      <td><input data-kind="val" class="small" /></td>
+      <td><input data-kind="val" class="small" value="${row != null? row : ''}" /></td>
       <td><button class="btn" onclick="this.closest('tr').remove()">✕</button></td>`;
     body.appendChild(tr);
     return;
@@ -618,7 +1364,7 @@ function addRow(which){
   const cols = countDataCols(which);
   let cells = `<td><input data-kind="idx" value="${idx}"/></td>`;
   for (let c=1; c<=cols; c++){
-    cells += `<td><input data-kind="val" data-col="${c}" class="small" /></td>`;
+    cells += `<td><input data-kind="val" data-col="${c}" class="small" value="${row? row[c-1] : ''}" /></td>`;
   }
   cells += `<td><button class="btn" onclick="this.closest('tr').remove()">✕</button></td>`;
   tr.innerHTML = cells;
@@ -881,7 +1627,7 @@ function bezierEval(points, t) {
 }
 
 /* ====================== Robot table ====================== */
-function addRobotRow(){
+function addRobotRow(row = null){
   const body = qs('#robotBody');
   const idx = body.children.length + 1;
   const defaults = [
@@ -890,36 +1636,19 @@ function addRobotRow(){
     1, 0,0,0, 0,0,0, 0,
     0,0,0, 0,0,0
   ];
+  const rowData = row || defaults;
   const tds = [
     `<td class="rowIndex">${idx}</td>`,
-    ...defaults.map(v=>`<td><input type="text" class="small" value="${v}"/></td>`),
+    ...rowData.map(v=>`<td><input type="text" class="small" value="${v}"/></td>`),
     `<td><button class="btn" onclick="this.closest('tr').remove(); updateTableIndex('robotBody')">✕</button></td>`
   ];
   const tr = document.createElement('tr');
   tr.innerHTML = tds.join('');
   body.appendChild(tr);
 }
-qs('#btnAddRobot').addEventListener('click', addRobotRow);
+qs('#btnAddRobot').addEventListener('click', () => addRobotRow(row = null));
 
 /* ====================== URDF toggle + importer (unchanged logic) ====================== */
-const robotModeRadios = qsa('input[name="robotMode"]');
-const robotManualWrap = qs('#robotManual');
-const robotURDFWrap  = qs('#robotURDF');
-const robotURDFHelp  = qs('#robotURDFHelp');
-const urdfInput      = qs('#urdfFile');
-
-function currentRobotMode() { return robotModeRadios.find(r => r.checked)?.value || 'manual'; }
-function renderRobotMode() {
-  const mode = currentRobotMode();
-  const isURDF = mode === 'urdf';
-  robotManualWrap?.classList.toggle('hide',  isURDF);
-  robotURDFWrap?.classList.toggle('hide',   !isURDF);
-  robotURDFHelp?.classList.toggle('hide',   !isURDF);
-  urdfInput?.classList.toggle('hide',       !isURDF);
-}
-robotModeRadios.forEach(r => r.addEventListener('change', renderRobotMode));
-renderRobotMode();
-
 function splitTokens(str, n = 3, fill = '0') {
   if (!str || !str.trim()) return Array(n).fill(fill);
   const parts = str.trim().split(/\s+/);
@@ -938,11 +1667,8 @@ function safeParseXML(xmlText) {
   return xml;
 }
 
-urdfInput?.addEventListener('change', async (e) => {
-  const f = e.target.files?.[0];
-  if (!f) return;
-  let xmlText, xml;
-  try { xmlText = await f.text(); } catch { alert('Could not read file.'); return; }
+function importURDF(xmlText) {
+  let xml;
   try { xml = safeParseXML(xmlText); } catch (err) { alert('URDF parse error: ' + err.message); return; }
 
   const inertialByLink = new Map();
@@ -999,31 +1725,28 @@ urdfInput?.addEventListener('change', async (e) => {
     body.appendChild(tr);
   });
 
-  // reveal values in Manual mode
-  robotModeRadios.forEach(r => { if (r.value === 'manual') r.checked = true; });
-  renderRobotMode();
-
   alert(`URDF imported: ${joints.length} joint(s) mapped to AMPL robot table (values preserved).`);
-});
+};
 
 /* ====================== Constraint table ====================== */
-function addConstraintRow(){
+function addConstraintRow(row = null){
   const body = qs('#constraintBody');
   const idx = body.children.length + 1;
   const defaults = [
     1,'p',1,5,0,0,0,1,0,
     0,0,0,0,0,-1,0,0.4,0
   ];
+  const rowData = row || defaults;
   const tds = [
     `<td class="rowIndex">${idx}</td>`,
-    ...defaults.map(v=>`<td><input type="text" class="small" value="${v}"/></td>`),
+    ...rowData.map(v=>`<td><input type="text" class="small" value="${v}"/></td>`),
     `<td><button class="btn" onclick="this.closest('tr').remove(); updateTableIndex('constraintBody')">✕</button></td>`
   ];
   const tr = document.createElement('tr');
   tr.innerHTML = tds.join('');
   body.appendChild(tr);
 }
-qs('#btnAddConstraint').addEventListener('click', addConstraintRow);
+qs('#btnAddConstraint').addEventListener('click', () => addConstraintRow(row = null));
 
 /* ====================== Runge–Kutta Butcher tables ====================== */
 function rkButcher(name) {
