@@ -124,7 +124,8 @@
     .wiz-card[data-step="1"] .btn,
     .wiz-card[data-step="2"] .btn,
     .wiz-card[data-step="3"] .btn,
-    .wiz-card[data-step="4"] .btn {
+    .wiz-card[data-step="4"] .btn,
+    .wiz-card[data-step="5"] .btn {
       background: #3b82f6;
       color: #fff;
       border: none;
@@ -237,6 +238,60 @@
       display: none;
     }
 
+    /* Runge-Kutta */
+    .rk-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .rk-cell {
+      display: flex;
+      gap: 4px;
+      justify-content: space-between;
+      width: 100%;
+      min-width: 0;
+    }
+
+    .rk-cell input {
+      width: 48%;
+      box-sizing: border-box;
+    }
+    #rungeKuttaContainer td:last-child {
+      width: auto;
+      text-align: left;
+    }
+    .rk-method-select {
+      background-color: #1e1e1e;
+    }
+
+    .rk-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+    }
+
+    .rk-modal.hide {
+      display: none;
+    }
+
+    .rk-modal-content {
+      background: #1e1e1e;
+      color: #fff;
+      padding: 20px;
+      border-radius: 6px;
+      width: 600px;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
   </style>
 </head>
 <body class="page">
@@ -562,6 +617,11 @@
     <!-- Step 6: Runge–Kutta -->
     <section class="wiz-card hide" data-step="5">
       <h3 class="step-title">Runge–Kutta Method (Butcher Table)</h3>
+      <div id="rungeKuttaContainer">
+        <div class="btn-row">
+          <button class="btn" onclick="addRKPanel()">+ Method</button>
+        </div>
+      </div>
 
       <!-- Mode Selection -->
       <div class="g2 wiz-row">
@@ -594,8 +654,9 @@
         </select>
       </div>
 
+      <!-- TODO: The code below has been implemented in the dropdown. To be removed. -->
       <!-- Custom Tableau Input -->
-      <div id="rkCustomBlock" class="hide" style="margin-top:1rem;">
+      <!-- <div id="rkCustomBlock" class="hide" style="margin-top:1rem;">
         <label class="label">Custom Butcher’s Tableau</label>
         <div class="wiz-row">
           <div>
@@ -608,7 +669,7 @@
         </div>
 
         <div id="tableauContainer" class="table-wrapper" style="margin-top:1rem;"></div>
-      </div>
+      </div> -->
 
       <p class="muted">
         We’ll emit <code>param ODE_K</code>, <code>param ODE_AK</code>, 
@@ -691,6 +752,31 @@
       </div>
 
       <pre id="helpContent"></pre>
+    </div>
+  </div>
+
+  <div id="rkCustomModal" class="rk-modal hide">
+    <div class="rk-modal-content">
+
+      <h3>Custom Butcher’s Tableau</h3>
+
+      <div class="wiz-row">
+        <div>
+          <label>Number of Stages (s)</label>
+          <input type="number" id="numStages" min="2" max="6" value="4" />
+        </div>
+        <div style="align-self:end;">
+          <button type="button" onclick="renderTableau()">Generate Tableau</button>
+        </div>
+      </div>
+
+      <div id="tableauContainer" style="margin-top:1rem;"></div>
+
+      <div class="btn-row" style="margin-top:1rem;">
+        <button class="btn" onclick="saveCustomRK()">Save</button>
+        <button class="btn" onclick="closeRKModal()">Cancel</button>
+      </div>
+
     </div>
   </div>
 
@@ -1747,6 +1833,151 @@ function addConstraintRow(row = null){
   body.appendChild(tr);
 }
 qs('#btnAddConstraint').addEventListener('click', () => addConstraintRow(row = null));
+
+/* ====================== Runge Kutta ===================================== */
+let currentRKPanel = null;
+let rkCustomData = new Map();
+
+function addRKPanel() {
+  const container = document.getElementById('rungeKuttaContainer');
+
+  const panel = document.createElement('div');
+  panel.className = 'seed-wrap rk-panel';
+
+  panel.innerHTML = `
+    <div class="rk-header">
+      <label class="label">Method:</label>
+      <select class="rk-method-select">
+        <option value="HERM_SIMP">Hermite-Simpson</option>
+        <option value="TRAP">Trapezoidal</option>
+        <option value="rk2">RK2 — midpoint</option>
+        <option value="heun3">Heun’s RK3</option>
+        <option value="kutta3">Kutta’s RK3 (3/8)</option>
+        <option value="ralston3">Ralston RK3</option>
+        <option value="rk4">RK4 — classic</option>
+        <option value="rk4_38">RK4 — 3/8 rule</option>
+        <option value="custom">Custom</option>
+      </select>
+
+      <button class="btn" onclick="removeRKPanel(this)">✕</button>
+    </div>
+
+    <div class="col-controls" data-table="rungeKutta">
+      <button type="button" class="btn btn-slim" onclick="addRKColumn(this)">+ Col</button>
+      <button type="button" class="btn btn-slim" onclick="delRKColumn(this)">– Col</button>
+    </div>
+
+    <div class="table-scroll">
+      <table class="seed-matrix rk-table">
+        <thead>
+          <tr class="rk-header-row">
+            <th style="width:80px;">Index</th>
+            <th data-col="1">:1</th>
+          </tr>
+        </thead>
+        <tbody class="rk-body">
+          <tr>
+            <td class="rowIndex">1</td>
+            <td><div class="rk-cell"><input data-kind="val" class="small"><input data-kind="val" class="small"></div></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  container.appendChild(panel);
+
+  const select = panel.querySelector('.rk-method-select');
+  select.onchange = function () {
+    if (this.value === 'custom') {
+      currentRKPanel = this.closest('.rk-panel');
+      openRKModal();
+    }
+  };
+}
+
+function removeRKPanel(btn) {
+  btn.closest('.rk-panel').remove();
+}
+
+function addRKColumn(btn) {
+  const panel = btn.closest('.rk-panel');
+  const headerRow = panel.querySelector('.rk-header-row');
+  const body = panel.querySelector('.rk-body');
+
+  const colsNow = headerRow.querySelectorAll('th[data-col]').length;
+  const nextCol = colsNow + 1;
+
+  const th = document.createElement('th');
+  th.setAttribute('data-col', nextCol);
+  th.textContent = `:${nextCol}`;
+  headerRow.appendChild(th);
+
+  body.querySelectorAll('tr').forEach(tr => {
+    const td = document.createElement('td');
+    td.innerHTML = `<div class="rk-cell"><input data-kind="val" class="small"><input data-kind="val" class="small"></div>`;
+    tr.appendChild(td);
+  });
+}
+
+function delRKColumn(btn) {
+  const panel = btn.closest('.rk-panel');
+  const headerRow = panel.querySelector('.rk-header-row');
+  const body = panel.querySelector('.rk-body');
+
+  const colsNow = headerRow.querySelectorAll('th[data-col]').length;
+  if (colsNow <= 1) return;
+
+  headerRow.querySelector(`th[data-col="${colsNow}"]`)?.remove();
+
+  body.querySelectorAll('tr').forEach(tr => {
+    tr.querySelector('td:last-child')?.remove();
+  });
+}
+
+function openRKModal() {
+  document.getElementById('rkCustomModal').classList.remove('hide');
+}
+
+function closeRKModal() {
+  document.getElementById('rkCustomModal').classList.add('hide');
+}
+
+function saveCustomRK() {
+  const container = document.getElementById('tableauContainer');
+
+  if (!container.innerHTML.trim()) {
+    alert('Please click "Generate" to create the tableau first.');
+    return;
+  }
+
+  const s = parseInt(document.getElementById('numStages').value);
+
+  const c = [];
+  const a = [];
+  const b = [];
+
+  for (let i = 1; i <= s; i++) {
+    c.push(document.querySelector(`.cVal[data-i="${i}"]`)?.value || "");
+
+    let row = [];
+    for (let j = 1; j <= s; j++) {
+      row.push(document.querySelector(`.aVal[data-i="${i}"][data-j="${j}"]`)?.value || "");
+    }
+    a.push(row);
+  }
+
+  for (let j = 1; j <= s; j++) {
+    b.push(document.querySelector(`.bVal[data-j="${j}"]`)?.value || "");
+  }
+
+  rkCustomData.set(currentRKPanel, { s, c, a, b });
+
+  const select = currentRKPanel.querySelector('select');
+  select.options[select.selectedIndex].text = `Custom (s=${s})`;
+
+  closeRKModal();
+}
 
 /* ====================== Runge–Kutta Butcher tables ====================== */
 function rkButcher(name) {
