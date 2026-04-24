@@ -697,8 +697,60 @@
       </div>
     </section>
 
-    <!-- Step 8: Review & Submit -->
+    <!-- Step 7: Solver choice -->
     <section class="wiz-card hide" data-step="7">
+      <h3 class="step-title">Solver</h3>
+      <p class="muted">Pick a NEOS-hosted solver. The corresponding <code>option solver &lt;name&gt;;</code> line will be added to <code>test.run</code>.</p>
+      <div class="wiz-row g2">
+        <div>
+          <label class="label" for="neosSolver">NEOS solver</label>
+          <select id="neosSolver" class="mono" style="width:100%;padding:8px;">
+            <optgroup label="Nonlinear — continuous">
+              <option value="ipopt" selected>Ipopt — interior-point, NLP (recommended)</option>
+              <option value="knitro">KNITRO — NLP / MINLP</option>
+              <option value="conopt">CONOPT — large constrained NLP</option>
+              <option value="snopt">SNOPT — sparse SQP NLP</option>
+              <option value="filter">filterMPEC / filterSQP</option>
+              <option value="loqo">LOQO — interior-point NLP</option>
+              <option value="minos">MINOS — reduced-gradient NLP</option>
+              <option value="lancelot">LANCELOT — augmented Lagrangian</option>
+            </optgroup>
+            <optgroup label="Mixed-integer nonlinear">
+              <option value="bonmin">Bonmin — open-source MINLP</option>
+              <option value="couenne">Couenne — global MINLP</option>
+              <option value="baron">BARON — global MINLP</option>
+              <option value="scip">SCIP — MINLP / MILP</option>
+              <option value="dicopt">DICOPT — MINLP</option>
+              <option value="alphaecp">AlphaECP — MINLP</option>
+            </optgroup>
+            <optgroup label="Linear / mixed-integer linear">
+              <option value="cplex">CPLEX — LP / MILP / QP</option>
+              <option value="gurobi">Gurobi — LP / MILP / QP</option>
+              <option value="xpress">Xpress — LP / MILP</option>
+              <option value="cbc">Cbc — open-source MILP</option>
+              <option value="clp">Clp — open-source LP</option>
+              <option value="mosek">MOSEK — LP / QP / SOCP / SDP</option>
+              <option value="gurobi-nonlinear">Gurobi Non-Linear</option>
+            </optgroup>
+            <optgroup label="Complementarity / semidefinite / other">
+              <option value="path">PATH — complementarity (MCP)</option>
+              <option value="sdpa">SDPA — semidefinite</option>
+              <option value="csdp">CSDP — semidefinite</option>
+              <option value="lrambo">LRAMBO</option>
+            </optgroup>
+          </select>
+          <p class="muted">Default: <strong>Ipopt</strong> — suitable for the large, sparse NLP produced by this wizard.</p>
+        </div>
+        <div>
+          <label class="label">Extra solver options (optional)</label>
+          <textarea id="solverOpts" rows="6" class="mono" placeholder="# e.g. for Ipopt:&#10;option ipopt_options 'max_iter=3000 tol=1e-6';"></textarea>
+          <p class="muted">Pasted verbatim into <code>test.run</code> right after <code>option solver …;</code>.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Step 8: Review & Submit -->
+    <section class="wiz-card hide" data-step="8">
       <h3 class="step-title">Review</h3>
       <div class="wiz-row g3">
         <div>
@@ -782,7 +834,7 @@
 
   <script>
 /* ====================== Wizard core ====================== */
-const STEPS = ['Grid', 'Bézier', 'q/v/t/u', 'Robot', 'Constraint', 'RK', 'Custom', 'Review'];
+const STEPS = ['Grid', 'Bézier', 'q/v/t/u', 'Robot', 'Constraint', 'RK', 'Custom', 'Solver', 'Review'];
 let cur = 0;
 const qs  = s => document.querySelector(s);
 const qsa = s => Array.from(document.querySelectorAll(s));
@@ -2214,74 +2266,183 @@ function buildDat() {
   const gridSubphasesRows = collectGridSubphases();
   const constraintRows = collectConstraint();
 
-  const nqInfer = (qRows[0]?.vals?.length || 1);
-
-  selectionMap.set("Grid", gridSubphasesRows.length > 0);
-  selectionMap.set("Bézier", bezRows.length > 0 && bezSgRows.length > 0);
-  selectionMap.set("q/v/t/u", qRows.length > 0 && vRows.length > 0 && uRows.length > 0 && tRows.length > 0);
-  selectionMap.set("Robot", robotRows.length > 0);
-  selectionMap.set("Constraint", constraintRows.length > 0);
-  selectionMap.set("RK", Boolean(qs('#rkMethod').value));
-
-  let dat = '';
-  dat += `# grid\n${fmtGridBlock(gm, gridSubphasesRows)}\n`;
-  dat += `# seed\n${fmtMatrixBlock('q', qRows)}\n${fmtMatrixBlock('v', vRows)}\n${fmtVectorBlock('t', tRows)}\n${fmtMatrixBlock('u', uRows)}\n`;
-  dat += `# state\nparam nq := ${nqInfer}.;\n\n`;
-  dat += `# robot\n${fmtRobotBlock(robotRows)}\n`;
-  dat += `# constraint\n${fmtConstraintBlock(constraintRows)}\n`;
-  dat += `# M and b (spatial gravity)\nparam spat_ag := [*]\n1   0.\n2   0.\n3   0.\n4   0.\n5   ${g}\n6   0.;\n\n`;
-  dat += `# eom\nset PIM := ${pimTxt ? '(' + pimTxt + ')' : ''};\n\n`;
-
-  // ===================== 🧩 Runge–Kutta Section =====================
-  dat += `# Runge–Kutta\n`;
-  const specificTag = ['HERM_SIMP', 'TRAP'].includes(qs('#rkMethod').value) && qs('#rkMethod').value; 
-  const rkTag = specificTag || qs('#rkTag').value.trim() || 'RK';
+  // ---------- empty-detection helpers ----------
+  // Robot/Constraint collectors append "." to integers (so empty "" -> "."). Strip that before
+  // deciding whether a user actually entered something.
+  const cleanVal    = v => (v == null ? '' : v.toString()).replace(/^\.$/, '').trim();
+  const hasMatrix   = rows => rows.some(r => (r.vals || []).some(v => cleanVal(v) !== ''));
+  const hasVector   = rows => rows.some(r => cleanVal(r.val) !== '');
+  const hasSubph    = rows => rows.some(r => cleanVal(r.lbl) !== '' || cleanVal(r.beg) !== '' || cleanVal(r.end) !== '');
+  const hasBezData  = (L, B, S) =>
+    (L || []).some(l => (l || '').trim() !== '') ||
+    (B || []).some(r => cleanVal(r.der) !== '' || cleanVal(r.r) !== '' || cleanVal(r.c) !== '') ||
+    (S || []).some(r => cleanVal(r.lbl) !== '' || cleanVal(r.idx) !== '' || cleanVal(r.beg) !== '' || cleanVal(r.end) !== '');
   const rkMode = document.querySelector('input[name="rkMode"]:checked')?.value || 'preset';
-  let rk;
+  const hasRKData = () => {
+    if (rkMode === 'custom') {
+      const anyCustom = sel => Array.from(document.querySelectorAll(sel))
+        .some(i => (i.value || '').trim() !== '' && parseFloat(i.value) !== 0);
+      return anyCustom('.aVal') || anyCustom('.bVal') || anyCustom('.cVal');
+    }
+    // preset: only count as "user-provided" if a non-empty method is selected
+    return Boolean((qs('#rkMethod').value || '').trim());
+  };
 
-  if (rkMode === 'custom') {
-    rk = getCustomButcher(); // from your new UI
+  // Per-module flags
+  const hasGrid   = hasSubph(gridSubphasesRows);
+  const hasQ      = hasMatrix(qRows);
+  const hasV      = hasMatrix(vRows);
+  const hasU      = hasMatrix(uRows);
+  const hasT      = hasVector(tRows);
+  const hasSeed   = hasQ || hasV || hasU || hasT;
+  const hasRobot  = hasMatrix(robotRows);       // robotRows use .vals too
+  const hasConstr = hasMatrix(constraintRows);
+  const hasBez    = hasBezData(lbls, bezRows, bezSgRows);
+  const hasRK     = hasRKData();
+
+  selectionMap.set("Grid", hasGrid);
+  selectionMap.set("Bézier", hasBez);
+  selectionMap.set("q/v/t/u", hasSeed);
+  selectionMap.set("Robot", hasRobot);
+  selectionMap.set("Constraint", hasConstr);
+  selectionMap.set("RK", hasRK);
+
+  const nqInfer = (qRows[0]?.vals?.length || 1);
+  let dat = '';
+
+  // ---------- Grid ----------
+  dat += `# grid\n`;
+  if (hasGrid) {
+    dat += `${fmtGridBlock(gm, gridSubphasesRows)}\n`;
   } else {
-    rk = rkButcher(qs('#rkMethod').value); // preset
+    dat += `# (skipped) no subphases provided by the user — fill the Grid step to emit this block\n`
+        +  `# param GRID_MAX := <int>;\n`
+        +  `# set SUBPHASES := <labels...>;\n`
+        +  `# param subphases := [*,:] :PHASE BEG END := ... ;\n\n`;
   }
 
-  dat += `set ODE_SOLVERS := ${rkTag};\n`;
-  dat += `param ODE_K := [*]\n`;
-  dat += `${rkTag}   ${rk.s}.;\n`;
-
-  // A matrix
-  dat += `param ODE_AK :=\n`;
-  dat += `[${rkTag},*,:]\n`;
-  for (let j = 1; j <= rk.s; j++) dat += `    ${j == 1? ':' : ''}${j}`;
-  dat += ` :=\n`;
-  for (let i = 1; i <= rk.s; i++) {
-    dat += `${i}    `;
-    for (let j = 1; j <= rk.s; j++) dat += `${Number.isInteger(Number(rk.A[i - 1][j - 1])) ? `${rk.A[i - 1][j - 1]}.` : rk.A[i - 1][j - 1]}   `;
-    dat += `\n`;
+  // ---------- Seed: q, v, t, u ----------
+  dat += `# seed\n`;
+  if (hasSeed) {
+    dat += hasQ ? `${fmtMatrixBlock('q', qRows)}\n` : `# (skipped) no q seed provided\n# var q := [:,*] ... ;\n\n`;
+    dat += hasV ? `${fmtMatrixBlock('v', vRows)}\n` : `# (skipped) no v seed provided\n# var v := [:,*] ... ;\n\n`;
+    dat += hasT ? `${fmtVectorBlock('t', tRows)}\n` : `# (skipped) no t seed provided\n# var t := [*] ... ;\n\n`;
+    dat += hasU ? `${fmtMatrixBlock('u', uRows)}\n` : `# (skipped) no u seed provided\n# var u := [:,*] ... ;\n\n`;
+  } else {
+    dat += `# (skipped) no q/v/t/u seed provided — fill the q/v/t/u step to emit this block\n`
+        +  `# var q := [:,*] ... ;\n# var v := [:,*] ... ;\n# var t := [*] ... ;\n# var u := [:,*] ... ;\n\n`;
   }
-  dat = `${dat.trimEnd()};\n`;
 
-  // b vector
-  dat += `param ODE_bK := [*,:]\n`;
-  for (let j = 1; j <= rk.s; j++) dat += `    ${j == 1? ':' : ''}${j}`;
-  dat += ` :=\n`;
-  dat += `${rkTag}    `;
-  for (let j = 1; j <= rk.s; j++) dat += `${Number.isInteger(Number(rk.b[j - 1])) ? `${rk.b[j - 1]}.` : rk.b[j - 1]}   `;
-  dat = `${dat.trimEnd()};\n`;
+  // ---------- State (depends on q) ----------
+  dat += `# state\n`;
+  if (hasQ) {
+    dat += `param nq := ${nqInfer}.;\n\n`;
+  } else {
+    dat += `# (skipped) nq inferred from q, but q was not provided\n# param nq := <int>;\n\n`;
+  }
 
-  // c vector
-  dat += `param ODE_cK := [*,:]\n`;
-  for (let j = 1; j <= rk.s; j++) dat += `    ${j == 1? ':' : ''}${j}`;
-  dat += ` :=\n`;
-  dat += `${rkTag}    `;
-  for (let i = 1; i <= rk.s; i++) dat += `${Number.isInteger(Number(rk.c[i - 1])) ? `${rk.c[i - 1]}.` : rk.c[i - 1]}    `;
-  dat = `${dat.trimEnd()};\n`;
+  // ---------- Robot ----------
+  dat += `# robot\n`;
+  if (hasRobot) {
+    dat += `${fmtRobotBlock(robotRows)}\n`;
+  } else {
+    dat += `# (skipped) no robot data provided — upload URDF/AMPL or fill the Robot step\n`
+        +  `# param robot := [*,:] :PARENT S_RX ... IYZ := ... ;\n\n`;
+  }
 
-  dat += `set ODE_SUBGRID[${rkTag}] := (0, ${gm});\n\n`;
-  // ================================================================
+  // ---------- Constraint ----------
+  dat += `# constraint\n`;
+  if (hasConstr) {
+    dat += `${fmtConstraintBlock(constraintRows)}\n`;
+  } else {
+    dat += `# (skipped) no constraints provided — fill the Constraint step to emit this block\n`
+        +  `# param nr := 0.;\n# param constraint := [*,:] :PHASE TYPE ROW BODY ... F_O := ... ;\n\n`;
+  }
 
-  dat += `# modules\nset MOD_MODULES := ODE PIM;\n\n`;
-  dat += `# Bézier\n${fmtBezierBlocks(lbls, bezRows, sgSets, bezSgRows)}\n`;
+  // ---------- Gravity (always emitted: tiny, harmless, depends only on g) ----------
+  dat += `# M and b (spatial gravity)\nparam spat_ag := [*]\n1   0.\n2   0.\n3   0.\n4   0.\n5   ${g}\n6   0.;\n\n`;
+
+  // ---------- PIM / eom ----------
+  dat += `# eom\n`;
+  if (pimTxt) {
+    dat += `set PIM := (${pimTxt});\n\n`;
+  } else {
+    dat += `# (skipped) no PIM expression provided\n# set PIM := (<pairs>);\nset PIM := ;\n\n`;
+  }
+
+  // ---------- Runge–Kutta ----------
+  dat += `# Runge–Kutta\n`;
+  if (hasRK) {
+    const specificTag = ['HERM_SIMP', 'TRAP'].includes(qs('#rkMethod').value) && qs('#rkMethod').value;
+    const rkTag = specificTag || qs('#rkTag').value.trim() || 'RK';
+    const rk = rkMode === 'custom' ? getCustomButcher() : rkButcher(qs('#rkMethod').value);
+
+    dat += `set ODE_SOLVERS := ${rkTag};\n`;
+    dat += `param ODE_K := [*]\n`;
+    dat += `${rkTag}   ${rk.s}.;\n`;
+
+    // A matrix
+    dat += `param ODE_AK :=\n`;
+    dat += `[${rkTag},*,:]\n`;
+    for (let j = 1; j <= rk.s; j++) dat += `    ${j == 1 ? ':' : ''}${j}`;
+    dat += ` :=\n`;
+    for (let i = 1; i <= rk.s; i++) {
+      dat += `${i}    `;
+      for (let j = 1; j <= rk.s; j++) dat += `${Number.isInteger(Number(rk.A[i - 1][j - 1])) ? `${rk.A[i - 1][j - 1]}.` : rk.A[i - 1][j - 1]}   `;
+      dat += `\n`;
+    }
+    dat = `${dat.trimEnd()};\n`;
+
+    // b vector
+    dat += `param ODE_bK := [*,:]\n`;
+    for (let j = 1; j <= rk.s; j++) dat += `    ${j == 1 ? ':' : ''}${j}`;
+    dat += ` :=\n`;
+    dat += `${rkTag}    `;
+    for (let j = 1; j <= rk.s; j++) dat += `${Number.isInteger(Number(rk.b[j - 1])) ? `${rk.b[j - 1]}.` : rk.b[j - 1]}   `;
+    dat = `${dat.trimEnd()};\n`;
+
+    // c vector
+    dat += `param ODE_cK := [*,:]\n`;
+    for (let j = 1; j <= rk.s; j++) dat += `    ${j == 1 ? ':' : ''}${j}`;
+    dat += ` :=\n`;
+    dat += `${rkTag}    `;
+    for (let i = 1; i <= rk.s; i++) dat += `${Number.isInteger(Number(rk.c[i - 1])) ? `${rk.c[i - 1]}.` : rk.c[i - 1]}    `;
+    dat = `${dat.trimEnd()};\n`;
+
+    dat += `set ODE_SUBGRID[${rkTag}] := (0, ${gm});\n\n`;
+  } else {
+    dat += `# (skipped) no Runge–Kutta tableau provided — pick a preset or fill the custom Butcher tableau\n`
+        +  `# set ODE_SOLVERS := RK;\n`
+        +  `# param ODE_K := [*]  RK <stages>.;\n`
+        +  `# param ODE_AK := [RK,*,:] ... ;\n`
+        +  `# param ODE_bK := [*,:]   RK ... ;\n`
+        +  `# param ODE_cK := [*,:]   RK ... ;\n`
+        +  `# set ODE_SUBGRID[RK] := (0, ${gm});\n\n`;
+  }
+
+  // ---------- modules (declared dynamically so AMPL's redeclare MOD_GRID stays valid) ----------
+  const activeModules = [];
+  if (hasRK)    activeModules.push('ODE');
+  if (pimTxt)   activeModules.push('PIM');
+  dat += `# modules\n`;
+  if (activeModules.length) {
+    dat += `set MOD_MODULES := ${activeModules.join(' ')};\n\n`;
+  } else {
+    dat += `# (skipped) no ODE/PIM modules active — declaring an empty MOD_MODULES set\n`
+        +  `set MOD_MODULES := ;\n\n`;
+  }
+
+  // ---------- Bézier ----------
+  dat += `# Bézier\n`;
+  if (hasBez) {
+    dat += `${fmtBezierBlocks(lbls, bezRows, sgSets, bezSgRows)}\n`;
+  } else {
+    dat += `# (skipped) no Bézier data provided — add labels, control-point rows, or subgrid ranges\n`
+        +  `# set BEZ_LBLS := <labels>;\n`
+        +  `# param bez := [*,:] :DER CP_ROW CP_COL := ... ;\n`
+        +  `# set BEZ_SUBGRID[<lbl>] := <n>;\n`
+        +  `# param bez_subgrid := [*,*,:] :BEG END := ... ;\n\n`;
+  }
 
   const tail = qs('#datExtra').value.trim();
   if (tail) dat += `\n# extra\n${tail}\n`;
@@ -2749,42 +2910,60 @@ minimize UTOT : utot;`;
 
 
 function buildRun(){
-  let run = ''
-  selectionMap.forEach((v, k) => {
-    run += `MODULE ${k} ${v? '' : 'NOT'} USED\n`;
+  // Re-use module flags set by buildDat() via selectionMap, so buildRun()
+  // only references symbols that were actually emitted in the .dat/.mod.
+  const used       = k => selectionMap.get(k) === true;
+  const hasRK      = used("RK");
+  const hasConstr  = used("Constraint");
+  const hasSeed    = used("q/v/t/u");
+  const hasPIM     = (qs('#pimSet').value || '').trim() !== '';
+
+  // Note: Bézier is purely data (BEZ_LBLS / bez / bez_subgrid); nothing in
+  // the problem/solve block depends on it, so buildRun() is unchanged whether
+  // Bézier was used or not.
+
+  // ---------- problem block ----------
+  const members = ['UTOT', 't', 'q', 'v', 'a', 'u'];
+  if (hasConstr) members.push('f', 'g_des', 'gdot_des', 'gddot_des', 'CONA', 'EOM');
+  if (hasRK)     members.push('ODE_hK', 'ODE_DEFSTEP',
+                              'ODE_DEFQ', 'ODE_COLQ', 'ODE_DEFV', 'ODE_COLV',
+                              'ODE_DEFTIME', 'ODE_COLTIME');
+  if (hasPIM)    members.push('I', 'TPI', 'IME', 'POSTQ', 'POSTV');
+  // Boundary names (Q0..TF) typically come from the user's custom .mod; only
+  // include the ones actually defined there, otherwise AMPL errors out.
+  const customMod = qs('#modCustomCode').value || '';
+  ['Q0','QF','QT','V0','VF','U','T0','TF'].forEach(name => {
+    if (new RegExp(`\\b${name}\\b`).test(customMod)) members.push(name);
   });
-  run += `
-#----------- options
-option presolve_eps 1e-5;
 
-#----------- block problem
-problem BLOCKTEST :
-  UTOT,
-  t, q, v, a, u, f, I,
-  g_des, gdot_des, gddot_des,
-  CONA, EOM,
-  TPI, IME, POSTQ, POSTV,
-  ODE_hK,
-  ODE_DEFSTEP,
-  ODE_DEFQ, ODE_COLQ, ODE_DEFV, ODE_COLV,
-  ODE_DEFTIME, ODE_COLTIME,
-  Q0, QF, QT, V0, VF, U, T0, TF
-;
+  let run  = `#----------- options\n`;
+      run += `option presolve_eps 1e-5;\n`;
+      // NEOS solver choice (from the Solver wizard step)
+      const neosSolver = (qs('#neosSolver')?.value || 'ipopt').trim();
+      run += `option solver ${neosSolver};\n`;
+      const solverOpts = (qs('#solverOpts')?.value || '').trim();
+      if (solverOpts) run += `${solverOpts}\n`;
+      run += `\n`;
+      run += `#----------- block problem\n`;
+      run += `problem BLOCKTEST :\n  ${members.join(',\n  ')}\n;\n\n`;
+      run += `#----------- solve\n`;
+      run += `solve BLOCKTEST > nul;\n`;
+      run += `if solve_result != 'solved' then {\n`;
+      run += `  print 'failed!', 'BLOCKTEST', '--', BLOCKTEST.result, '--',  BLOCKTEST.message;\n`;
+      run += `}\n\n`;
 
-#----------- solve
-solve BLOCKTEST > nul;
-if solve_result != 'solved' then {
-  print 'failed!', 'BLOCKTEST', '--', BLOCKTEST.result, '--',  BLOCKTEST.message;
-}
+  // ---------- result dump (only if seed vars exist) ----------
+  if (hasSeed) {
+    run += `print {j in 1.._nvars : match(_varname[j], '^q\\\\[') > 0} : j, _varname[j], _var[j] > test.out;\n`;
+    run += `print {j in 1.._nvars : match(_varname[j], '^t\\\\[') > 0} : j, _varname[j], _var[j] >> test.out;\n`;
+    run += `print {j in 1.._nvars : match(_varname[j], '^u\\\\[') > 0} : j, _varname[j], _var[j] >> test.out;\n`;
+    run += `close test.out;\n`;
+  }
+  run += `option send_email yes;`;
 
-print {j in 1.._nvars : match(_varname[j], '^q\\[') > 0} : j, _varname[j], _var[j] > test.out;
-print {j in 1.._nvars : match(_varname[j], '^t\\[') > 0} : j, _varname[j], _var[j] >> test.out;
-print {j in 1.._nvars : match(_varname[j], '^u\\[') > 0} : j, _varname[j], _var[j] >> test.out;
-close test.out;
-option send_email yes;`.trim();
   const extra = qs('#runExtra').value.trim();
   if (extra) run += `\n\n# extra run\n${extra}\n`;
-  return run + '\n';
+  return run.trim() + '\n';
 }
 function buildAllPreviews(){
   qs('#preview').value    = buildDat();
@@ -2957,5 +3136,6 @@ document.querySelectorAll('.col-controls').forEach(bar => {
   });
 });
 </script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"7f7b0fd8732c4326aae4b9d58d5c514a","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body>
 </html>
