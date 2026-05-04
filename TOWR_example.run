@@ -1,0 +1,49 @@
+reset;
+model TOWR_example.mod;
+data TOWR_example.dat;
+
+option solver ipopt;
+# option ipopt_options "hessian_approximation=limited-memory";
+# option ipopt_options '';
+
+
+# Initial values close to TOWR's linear interpolation.
+let {n in BASE_NODES} bp[n,1] := n / 20.0;
+let {n in BASE_NODES} bp[n,2] := 0.0;
+let {n in BASE_NODES} bp[n,3] := 0.5;
+let {n in BASE_NODES, d in DIM} bv[n,d] := if d = 1 then 0.5 else 0.0;
+let {n in BASE_NODES, d in DIM} ap[n,d] := 0.0;
+let {n in BASE_NODES, d in DIM} av[n,d] := 0.0;
+
+let {p in EE_STANCE_POLYS} ep_stance[p,1] := p / 10.0;
+let {p in EE_STANCE_POLYS} ep_stance[p,2] := 0.0;
+let {p in EE_STANCE_POLYS} ep_stance[p,3] := 0.0;
+let {n in EE_SWING_MID_NODES} ep_swing[n,1] := n / 10.0;
+let {n in EE_SWING_MID_NODES} ep_swing[n,2] := 0.0;
+let {n in EE_SWING_MID_NODES} ep_swing[n,3] := 0.0;
+let {n in EE_SWING_MID_NODES, d in XY} ev_swing_xy[n,d] := 0.0;
+
+let {n in FORCE_CONE_NODES, d in DIM} fp_stance[n,d] := if d = 3 then mass*grav else 0.0;
+let {n in FORCE_CONE_NODES, d in DIM} fv_stance[n,d] := 0.0;
+
+solve;
+
+display towrlike_objective;
+
+# C++ hopper_example.cc prints samples every 0.2s.  DYN_K uses 0.1s spacing
+# plus a duplicated final sample, so print even-index samples 0,2,...,20.
+printf "\n====================\nAMPL trajectory samples:\n====================\n";
+printf {k in DYN_K: k <= 20 and k mod 2 = 0}
+  "t=%.2f  base=(% .4f,% .4f,% .4f)  euler_deg=(% .3f,% .3f,% .3f)  foot=(% .4f,% .4f,% .4f)  force=(% .2f,% .2f,% .2f)\n",
+  tdyn[k],
+  c[k,1], c[k,2], c[k,3],
+  57.29577951308232*ang[k,1],
+  57.29577951308232*ang[k,2],
+  57.29577951308232*ang[k,3],
+  foot[k,1], foot[k,2], foot[k,3],
+  force[k,1], force[k,2], force[k,3];
+
+# display bp, bv;  # base linear spline node (position, velocity) - base-lin
+# display ap, av;  # base angular spline node (Euler angle, Euler rate) - base-ang
+# display ep, ev;  # foot end spline node (position, velocity) - ee-motion_0
+# display fp, fv;  # foot end contact force spline node (force, force derivative) -ee-force_0
