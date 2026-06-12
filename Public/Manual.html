@@ -9,7 +9,7 @@
     .wizard { max-width: 1100px; margin: 0 auto; }
     .steps { display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
     .step-dot { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center;
-      background: rgba(255,255,255,.08); color:#cfd8dc; font-size:13px; }
+      background: rgba(255,255,255,.08); color:#cfd8dc; font-size:13px; cursor: pointer; }
     .step-dot.active { background:#8ab4f8; color:#0b1220; font-weight:700; }
     .step-title { margin:6px 0 16px; opacity:.9 }
     .wiz-card { border:1px solid rgba(255,255,255,.12); border-radius:14px; padding:16px; background: rgba(255,255,255,.03); }
@@ -430,6 +430,7 @@
         <div class="seed-wrap">
           <h4>var q [:,*]</h4>
           <div class="col-controls" data-table="q">
+            <button class="btn btn-slim btn-clear" data-type="q">Clear</button>
             <button type="button" class="btn btn-slim" data-action="add-col">+ Col</button>
             <button type="button" class="btn btn-slim" data-action="del-col">– Col</button>
           </div>
@@ -451,6 +452,7 @@
         <div class="seed-wrap">
           <h4>var v [:,*]</h4>
           <div class="col-controls" data-table="v">
+            <button class="btn btn-slim btn-clear" data-type="v">Clear</button>
             <button type="button" class="btn btn-slim" data-action="add-col">+ Col</button>
             <button type="button" class="btn btn-slim" data-action="del-col">– Col</button>
           </div>
@@ -472,6 +474,7 @@
         <div class="seed-wrap">
           <h4>var u [:,*]</h4>
           <div class="col-controls" data-table="u">
+            <button class="btn btn-slim btn-clear" data-type="u">Clear</button>
             <button type="button" class="btn btn-slim" data-action="add-col">+ Col</button>
             <button type="button" class="btn btn-slim" data-action="del-col">– Col</button>
           </div>
@@ -492,6 +495,9 @@
         <!-- t -->
         <div class="seed-wrap">
           <h4>var t [*]</h4>
+          <div class="col-controls" data-table="t">
+            <button class="btn btn-slim btn-clear" data-type="t">Clear</button>
+          </div>
           <div class="table-scroll">
             <table id="tTable" class="seed-matrix">
               <thead>
@@ -528,7 +534,10 @@
 
       <div class="btn-download-wrapper btn-row">
         <button class="btn btn-manual" data-target="robotManual">Enter Manually</button>
-        <button class="btn btn-download" data-type="robot">Download</button>
+        <div>
+          <button class="btn btn-clear" data-type="robot">Clear</button>
+          <button class="btn btn-download" data-type="robot">Download</button>
+        </div>
       </div>
 
       <!-- Manual Table Section -->
@@ -582,7 +591,10 @@
 
       <div class="btn-download-wrapper btn-row">
         <button class="btn btn-manual" data-target="constraintManual">Enter Manually</button>
-        <button class="btn btn-download" data-type="constraint">Download</button>
+        <div>
+          <button class="btn btn-clear" data-type="constraint">Clear</button>
+          <button class="btn btn-download" data-type="constraint">Download</button>
+        </div>
       </div>
 
       <!-- Table Section -->
@@ -845,6 +857,9 @@ STEPS.forEach((_, i) => {
   const d = document.createElement('div');
   d.className = 'step-dot' + (i===0?' active':'');
   d.textContent = i+1;
+  d.addEventListener('click', () => {
+    showStep(i);
+  });
   stepsEl.appendChild(d);
 });
 function showStep(i){
@@ -1367,6 +1382,16 @@ function copyExample(btn) {
   });
 }
 
+document.querySelectorAll(".btn-clear").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const type = btn.dataset.type;
+    const tbody = document.querySelector(`#${type}Table tbody`);
+	if (tbody) {
+		tbody.innerHTML = '';
+	}
+  });
+});
+
 /* Download table content */
 document.querySelectorAll(".btn-download").forEach(btn => {
   btn.addEventListener("click", () => {
@@ -1382,19 +1407,39 @@ document.querySelectorAll(".btn-download").forEach(btn => {
   });
 });
 
-// Automatically show/hide step download button when table rows change
+// Automatically show/hide step download and clear buttons when table rows change
 document.querySelectorAll('.wiz-card').forEach(step => {
-  const btn = step.querySelector('.btn-download-wrapper .btn-download');
-  if (!btn) return;
+  const downloadBtn = step.querySelector('.btn-download-wrapper .btn-download');
+  const clearBtns = step.querySelectorAll('.btn-clear');
+  if (!downloadBtn && clearBtns.length == 0) return;
 
-  const updateButton = () => {
-    const hasRows = Array.from(step.querySelectorAll('tbody')).some(tbody => tbody.children.length > 0);
-    btn.style.display = hasRows ? 'inline-block' : 'none';
-  };
+  const updateButtons = () => {
+    const hasRows = Array.from(step.querySelectorAll('tbody')).some(tbody => tbody.rows.length > 0);
+    if (downloadBtn) {
+      downloadBtn.style.display = hasRows ? 'inline-block' : 'none';
+    }
+    clearBtns.forEach(btn => {
+	  const type = btn.dataset.type;
+	  const tbody = step.querySelector(`#${type}Table tbody`);
+	  const targetHasRows = tbody ? tbody.children.length > 0 : false;
+	  
+	  btn.style.display = targetHasRows ? 'inline-block' : 'none';
+	});
+	};
+	
+	clearBtns.forEach(btn => {
+		btn.addEventListener('click', function() {
+		  const type = this.dataset.type;
+		  const tbody = step.querySelector(`#${type}Table tbody`);
+		  if (tbody) {
+			tbody.innerHTML = '';
+		  }
+		});
+	  });
 
-  updateButton();
+  updateButtons();
 
-  const observer = new MutationObserver(updateButton);
+  const observer = new MutationObserver(updateButtons);
   step.querySelectorAll('tbody').forEach(tbody => {
     observer.observe(tbody, { childList: true });
   });
