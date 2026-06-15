@@ -1,15 +1,27 @@
-#----------- options
-option presolve_eps 1e-5;
-option solver ipopt;
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#* settings
+#----------- clear and reload
+#reset;
+#model test.mod;
+#data test.dat;
 
+#----------- options
+option presolve_eps 1e-14;
+option solver ipopt;
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#* settings!
+
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#* block test
 #----------- block problem
 problem BLOCKTEST :
   UTOT,
-  t,
-  q,
-  v,
-  a,
-  u
+  t, q, v, a, u, f, I,
+  g_des, gdot_des, gddot_des,
+  CONA, EOM,
+  TPI, IME, POSTQ, POSTV,
+  ODE_hK,
+  ODE_DEFSTEP,
+  ODE_DEFQ, ODE_COLQ, ODE_DEFV, ODE_COLV,
+  ODE_DEFTIME, ODE_COLTIME,
+  Q0, QF, QT, V0, VF, U, T0, TF
 ;
 
 #----------- solve
@@ -17,5 +29,9 @@ solve BLOCKTEST > nul;
 if solve_result != 'solved' then {
   print 'failed!', 'BLOCKTEST', '--', BLOCKTEST.result, '--',  BLOCKTEST.message;
 }
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#* block test!
 
-option send_email yes;
+print {j in 1.._nvars : match(_varname[j], '^x\[') > 0} : j, _varname[j], _var[j] > test.out;
+print {j in 1.._nvars : match(_varname[j], '^t\[') > 0} : j, _varname[j], _var[j] >> test.out;
+print {j in 1.._nvars : match(_varname[j], '^u\[') > 0} : j, _varname[j], _var[j] >> test.out;
+close test.out;

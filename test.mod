@@ -1,4 +1,3 @@
-
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#* grid
 #----------- modules
 # model-defined modules;
@@ -447,5 +446,21 @@ redeclare set MOD_GRID {i1 in MOD_MODULES} :=
 var utot = sum {i1 in ODE_SOLVERS, i2 in ODE[i1, 0]} ODE_hK[i1, i2] * sum {i3 in ODE[i1, 'K']} (ODE_bK[i1, i3] * (sum {i4 in Q} u[i4, next(i2,ODE_GRID,i3-ODE_a0[i1])]^2));
 
 minimize UTOT : utot;
-#----------- custom user-defined modules/code
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#* objective!
 
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#* block
+# state constraints
+subject to Q0 : q[1, 0] = 0;
+subject to QF : q[1, GRID_MAX] = 1;
+subject to QT {i1 in Q, i2 in GRID[0]} : 0 <= q[i1, i2] <= 1;
+
+subject to V0 {i1 in Q} : v[i1, 0] = 0;
+subject to VF {i1 in Q} : v[i1, GRID_MAX] = 0;
+
+# input constraints
+subject to U {i1 in Q, i2 in GRID[0]} : -50 <= u[i1, i2] <= 50;
+
+# time constraints
+subject to T0 : t[0] = 0;
+subject to TF : t[GRID_MAX] = 1;
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#* block!
