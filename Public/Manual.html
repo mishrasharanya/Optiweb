@@ -292,6 +292,8 @@
       max-height: 80vh;
       overflow-y: auto;
     }
+    .input-error { border-color: #dc3545 !important; outline-color: #dc3545 !important; }
+    .error-text { color: #dc3545; font-size: 0.85rem; margin-top: 0.25rem; display: block; }
   </style>
 </head>
 <body class="page">
@@ -314,11 +316,11 @@
       <div class="g3 wiz-row">
         <div>
           <label class="label" for="gridMax">param GRID_MAX</label>
-          <input type="number" id="gridMax" value="29" min="1" />
+          <input type="number" id="gridMax" value="29" min="0" required />
         </div>
         <div>
           <label class="label" for="gravity">Gravity (spat_ag[5])</label>
-          <input type="number" id="gravity" value="9.81" step="0.01" />
+          <input type="number" id="gravity" value="9.81" step="0.01" required />
         </div>
         <div>
           <label class="label" for="pimSet">PIM indices (optional)</label>
@@ -858,6 +860,20 @@ STEPS.forEach((_, i) => {
   d.className = 'step-dot' + (i===0?' active':'');
   d.textContent = i+1;
   d.addEventListener('click', () => {
+    if (i <= cur) {
+      showStep(i);
+      return;
+    }
+    for (let checkStep = cur; checkStep < i; checkStep++) {
+      const isValid = validateStep(checkStep);
+      if (!isValid) {
+        showStep(checkStep);
+        return; 
+      }
+      if (checkStep === STEPS.length - 2) {
+        buildAllPreviews();
+      }
+    }
     showStep(i);
   });
   stepsEl.appendChild(d);
@@ -872,10 +888,225 @@ function showStep(i){
 }
 qs('#btnPrev').addEventListener('click', ()=>showStep(cur-1));
 qs('#btnNext').addEventListener('click', async ()=>{
+  if (!validateStep(cur)) return;
   if (cur===STEPS.length-2) { buildAllPreviews(); }
   if (cur<STEPS.length-1) showStep(cur+1);
 });
 showStep(0);
+
+// Listen to typing or changes globally inside the wizard container
+qs('#gridStep').parentElement.addEventListener('input', (event) => {
+  const input = event.target;
+  
+  if (input.classList.contains('input-error')) {
+    input.classList.remove('input-error');
+    
+    const errorSibling = input.nextElementSibling;
+    if (errorSibling && errorSibling.classList.contains('error-text')) {
+      errorSibling.remove();
+    }
+  }
+});
+
+// Define custom validation rules for each step index. Return true if valid, or an error object if invalid.
+const stepValidators = {
+  0: (container) => {
+    const gridMaxInput = container.querySelector('#gridMax');
+    const pimSetInput = container.querySelector('#pimSet');
+    
+    const maxLimit = Number(gridMaxInput.value); 
+    const pimValue = pimSetInput.value.trim();
+
+    // 1. Validate pimSet ONLY if it has text entered
+    if (pimValue !== '') {
+      const numbers = pimValue.split(',').map(num => num.trim());
+
+      for (let item of numbers) {
+        if (item === '') {
+          return { 
+            element: pimSetInput, 
+            message: "Format error. Remove extra or trailing commas." 
+          };
+        }
+
+        const currentNum = Number(item);
+
+        if (isNaN(currentNum) || currentNum < 0 || currentNum > maxLimit) {
+          return { 
+            element: pimSetInput, 
+            message: `Each index must be a number between 0 and your GRID_MAX (${maxLimit}).` 
+          };
+        }
+      }
+    }
+
+    // 2. Validate subphase rows (This will now run even if pimSet is empty)
+    const rows = container.querySelectorAll('#subphaseBody tr');
+    const seenLabels = new Set();
+    const intervals = [];
+
+    for (let row of rows) {
+      const inputs = row.querySelectorAll('input');
+      const labelInput = inputs[0];
+      const begInput = inputs[1];
+      const endInput = inputs[2];
+
+      const labelVal = labelInput.value.trim();
+      const begVal = Number(begInput.value);
+      const endVal = Number(endInput.value);
+
+      // --- RULE 1: Validate distinct LABELS ---
+      if (labelVal === '') {
+        return { element: labelInput, message: "Label cannot be empty." };
+      }
+      if (seenLabels.has(labelVal)) {
+        return { element: labelInput, message: `Duplicate label "${labelVal}". Each subphase label must be unique.` };
+      }
+      seenLabels.add(labelVal);
+
+      // --- RULE 2: Validate BEG and END within interval boundaries [0, GRID_MAX] ---
+      if (begVal < 0 || begVal > maxLimit) {
+        return { element: begInput, message: `BEG must be between 0 and GRID_MAX (${maxLimit}).` };
+      }
+      if (endVal < 0 || endVal > maxLimit) {
+        return { element: endInput, message: `END must be between 0 and GRID_MAX (${maxLimit}).` };
+      }
+      if (begVal > endVal) {
+        return { element: begInput, message: "BEG value cannot be greater than END value." };
+      }
+
+      // --- RULE 3: Validate overlapping range boundaries ---
+      for (let existing of intervals) {
+        if (begVal <= existing.end && existing.beg <= endVal) {
+          return { 
+            element: begInput, 
+            message: `Range (${begVal} - ${endVal}) overlaps with label "${existing.label}" (${existing.beg} - ${existing.end}).` 
+          };
+        }
+      }
+      
+      intervals.push({ label: labelVal, beg: begVal, end: endVal });
+    }
+
+    return true;
+  },
+  1: (container) => {
+    return true;
+  },
+  5: (container) => {
+    // Fetch gridMax value safely
+    const gridMaxInput = document.querySelector('#gridMax');
+    const maxLimit = gridMaxInput ? Number(gridMaxInput.value) : Infinity;
+
+    // GLOBAL COLLECTOR: Initialized outside the loops to catch overlaps across ALL panels
+    const intervals = [];
+
+    // Target all individual dynamic rows across all generated panels
+    const rows = container.querySelectorAll('.rk-body tr');
+
+    for (let row of rows) {
+      // Find each cell container wrapping a pair of inputs
+      const cellContainers = row.querySelectorAll('.rk-cell');
+
+      for (let cell of cellContainers) {
+        const inputs = cell.querySelectorAll('input[data-kind="val"]');
+        
+        // Skip structural cells that do not have both boundary inputs
+        if (inputs.length < 2) continue;
+
+        const begInput = inputs[0];
+        const endInput = inputs[1];
+
+        const begVal = Number(begInput.value);
+        const endVal = Number(endInput.value);
+
+        // --- RULE 1: Check interval value boundaries [0, GRID_MAX] ---
+        if (begInput.value.trim() === '' || isNaN(begVal) || begVal < 0 || begVal > maxLimit) {
+          return { element: begInput, message: `Beginning must be a number between 0 and ${maxLimit}.` };
+        }
+        if (endInput.value.trim() === '' || isNaN(endVal) || endVal < 0 || endVal > maxLimit) {
+          return { element: endInput, message: `End must be a number between 0 and ${maxLimit}.` };
+        }
+
+        // --- RULE 2: Represent a valid sequence (BEG <= END) ---
+        if (begVal > endVal) {
+          return { element: begInput, message: "Beginning value cannot be greater than the ending value." };
+        }
+
+        // --- RULE 3: Global Overlap Validation Check ---
+        for (let existing of intervals) {
+          if (begVal <= existing.end && existing.beg <= endVal) {
+            return { 
+              element: begInput, 
+              message: `Global conflict! Interval (${begVal} - ${endVal}) overlaps with an interval (${existing.beg} - ${existing.end}) configured elsewhere.` 
+            };
+          }
+        }
+
+        // Store this valid entry globally to cross-examine subsequent panels and columns
+        intervals.push({ beg: begVal, end: endVal });
+      }
+    }
+
+    return true;
+  }
+};
+
+function validateStep(cur) {
+  const stepContainer = qs(`section.wiz-card[data-step="${cur}"]`);
+  if (!stepContainer) return false;
+
+  clearErrors(stepContainer);
+
+  // 1. Check Native HTML5 validations
+  const inputs = stepContainer.querySelectorAll('input, select, textarea');
+  let isNativeValid = true;
+
+  inputs.forEach(input => {
+    if (!input.checkValidity()) {
+      showFieldError(input, input.validationMessage);
+      isNativeValid = false;
+    }
+  });
+
+  if (!isNativeValid) return false;
+
+  // 2. Check Custom Business Logic validations
+  const customValidator = stepValidators[cur];
+  if (customValidator) {
+    const validationResult = customValidator(stepContainer);
+    
+    if (validationResult !== true) {
+      showFieldError(validationResult.element, validationResult.message);
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function showFieldError(input, message) {
+  if (input.classList.contains('input-error')) return;
+  input.classList.add('input-error');
+  // Create the inline error element
+  const errorMsg = document.createElement('span');
+  errorMsg.className = 'error-text';
+  errorMsg.textContent = message;
+  // Insert the error text directly after the invalid input field
+  input.insertAdjacentElement('afterend', errorMsg);
+}
+
+function clearErrors(container) {
+  // Remove error boundary classes from inputs
+  container.querySelectorAll('.input-error').forEach(el => {
+    el.classList.remove('input-error');
+  });
+  // Remove any injected span elements containing the message
+  container.querySelectorAll('.error-text').forEach(el => {
+    el.remove();
+  });
+}
+
 
 /* Drag and drop upload */
 document.querySelectorAll(".upload-zone").forEach(zone => {
@@ -1538,7 +1769,7 @@ function addRow(which, row = null){
 
   if (which === 't') {
     tr.innerHTML = `<td><input data-kind="idx" value="${idx}"/></td>
-      <td><input data-kind="val" class="small" value="${row != null? row : ''}" /></td>
+      <td><input type="number" step="any" data-kind="val" class="small" value="${row != null? row : ''}" required /></td>
       <td><button class="btn" onclick="this.closest('tr').remove()">✕</button></td>`;
     body.appendChild(tr);
     return;
@@ -1547,7 +1778,7 @@ function addRow(which, row = null){
   const cols = countDataCols(which);
   let cells = `<td><input data-kind="idx" value="${idx}"/></td>`;
   for (let c=1; c<=cols; c++){
-    cells += `<td><input data-kind="val" data-col="${c}" class="small" value="${row? row[c-1] : ''}" /></td>`;
+    cells += `<td><input type="number" step="any" data-kind="val" data-col="${c}" class="small" value="${row? row[c-1] : ''}" required /></td>`;
   }
   cells += `<td><button class="btn" onclick="this.closest('tr').remove()">✕</button></td>`;
   tr.innerHTML = cells;
@@ -3130,8 +3361,8 @@ document.getElementById('btnAddSubphase')?.addEventListener('click', () => {
   const tr = document.createElement('tr');
   tr.innerHTML = `
     <td><input type="text" value="1.1" placeholder="e.g., 1.1" /></td>
-    <td><input type="number" value="0" step="1" /></td>
-    <td><input type="number" value="${GRID_MAX || 0}" step="1" /></td>
+    <td><input type="number" value="0" step="1" required /></td>
+    <td><input type="number" value="${GRID_MAX || 0}" step="1" required /></td>
     <td><button type="button" class="btn btn--ghost" onclick="removeRow(this)">✕</button></td>
   `;
   tb.appendChild(tr);
