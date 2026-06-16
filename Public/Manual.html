@@ -783,8 +783,8 @@
       <div class="g2 wiz-row" style="margin-top:10px;">
         <div>
           <label class="label">Notification email</label>
-          <input id="email" type="email" placeholder="you@example.com" />
-          <p class="muted">Shown in the success message (server sends using its configured email).</p>
+          <input id="email" type="email" placeholder="you@example.com" required />
+          <p class="muted">Required by NEOS for job submission.</p>
         </div>
         <div>
           <label class="label">NEOS Status</label>
@@ -3252,7 +3252,10 @@ async function submitToNeos() {
   const dat = qs('#preview').value || buildDat();
   const mod = qs('#modPreview').value || buildMod();
   const run = qs('#runPreview').value || buildRun();
-
+  const email = qs('#email').value.trim();
+  if (!email) {
+    throw new Error('Please enter an email address before submitting to NEOS.');
+  }
   const post = async (url, fileContent) => {
     const res = await fetch(url, {
       method: 'POST',
@@ -3272,7 +3275,7 @@ async function submitToNeos() {
   const neosResp = await fetch('/submit-neos', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({})
+    body: JSON.stringify({ email })
   });
 
   const data = await neosResp.json();

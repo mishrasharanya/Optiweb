@@ -9,13 +9,16 @@ const PORT = 3000;
 app.use(express.static("public"));
 app.use(bodyParser.json());
 
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
 // Generate .dat file
 app.post("/generate", (req, res) => {
   try {
     fs.writeFileSync("test.dat", req.body.fileContent || "");
     res.send(".dat file generated and saved successfully!");
   } catch (err) {
-    console.error("DAT Save Error:", err);
     res.status(500).json({
       error: "Error saving test.dat",
       details: err.message
@@ -29,7 +32,6 @@ app.post("/generate-mod", (req, res) => {
     fs.writeFileSync("test.mod", req.body.fileContent || "");
     res.send("test.mod saved successfully!");
   } catch (err) {
-    console.error("MOD Save Error:", err);
     res.status(500).json({
       error: "Error saving test.mod",
       details: err.message
@@ -43,7 +45,6 @@ app.post("/generate-run", (req, res) => {
     fs.writeFileSync("test.run", req.body.fileContent || "");
     res.send("test.run saved successfully!");
   } catch (err) {
-    console.error("RUN Save Error:", err);
     res.status(500).json({
       error: "Error saving test.run",
       details: err.message
@@ -51,12 +52,25 @@ app.post("/generate-run", (req, res) => {
   }
 });
 
-// Submit to NEOS only
+// Submit to NEOS
 app.post("/submit-neos", async (req, res) => {
   try {
     const category = req.body.category || "nco";
     const solver = req.body.solver || "IPOPT";
     const inputMethod = req.body.inputMethod || "AMPL";
+    const email = String(req.body.email || "").trim();
+
+    if (!email) {
+      return res.status(400).json({
+        error: "Email address is required for NEOS submission."
+      });
+    }
+
+    if (!isValidEmail(email)) {
+      return res.status(400).json({
+        error: "Please enter a valid email address."
+      });
+    }
 
     if (
       !fs.existsSync("test.mod") ||
@@ -76,14 +90,27 @@ app.post("/submit-neos", async (req, res) => {
       category,
       solver,
       inputMethod,
+      email,
       model,
       data,
-      commands,
+      commands
     });
 
     const job = await NEOS.submitJob(xml);
 
+    if (
+      !job.jobNumber ||
+      Number(job.jobNumber) === 0 ||
+      String(job.password || "").startsWith("Error")
+    ) {
+      return res.status(500).json({
+        error: "NEOS submission failed.",
+        details: job.password || "No valid job number returned from NEOS."
+      });
+    }
+
     console.log("NEOS job submitted");
+    console.log("Email:", email);
     console.log("Job Number:", job.jobNumber);
     console.log("Password:", job.password);
 
@@ -92,6 +119,7 @@ app.post("/submit-neos", async (req, res) => {
       category,
       solver,
       inputMethod,
+      email,
       jobNumber: job.jobNumber,
       password: job.password,
       status: "Submitted"
@@ -126,7 +154,6 @@ app.post("/neos-status", async (req, res) => {
     });
 
   } catch (err) {
-    console.error("NEOS Status Error:", err);
     res.status(500).json({
       error: "Error checking NEOS job status.",
       details: err.message
@@ -159,9 +186,6 @@ app.post("/neos-results", async (req, res) => {
     const results = await NEOS.getFinalResults(jobNumber, password);
     const output = results.toString();
 
-    console.log("NEOS Final Output:");
-    console.log(output);
-
     res.json({
       jobNumber,
       password,
@@ -170,7 +194,6 @@ app.post("/neos-results", async (req, res) => {
     });
 
   } catch (err) {
-    console.error("NEOS Results Error:", err);
     res.status(500).json({
       error: "Error retrieving NEOS results.",
       details: err.message
@@ -178,8 +201,6 @@ app.post("/neos-results", async (req, res) => {
   }
 });
 
-
-// Start server
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });

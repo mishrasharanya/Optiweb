@@ -56,12 +56,13 @@ var q {Q, GRID[0]};
 var v {Q, GRID[0]}; # v = dq/dt
 var a {Q, GRID[0]}; # a = d^2q/dt^2
 
+# control input
+var u {Q, GRID[0]};
+
+# defined state variables
 var x {i1 in X, i2 in GRID[0]} =
   if i1 <= nq then q[i1, i2]
   else v[i1-nq, i2];
-
-# control input
-var u {Q, GRID[0]};
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#* state!
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#* robot
@@ -87,7 +88,7 @@ set SPAT_TREE_K {i1 in SPAT_L[0]} ordered = {i1} union (union {i2 in SPAT_TREE_P
 param nr >= 0 integer; # total number of constraints across all phases
 set R = 1..nr; # constraints
 
-set CON_IDX  ordered = {'PHASE', 'TYPE', 'ROW', 'BODY', 'R_RX', 'R_RY', 'R_RZ', 'R_PX', 'R_PY', 'R_PZ', 'F_RX', 'F_RY', 'F_RZ', 'F_PX', 'F_PY', 'F_PZ', 'F_TH'};
+set CON_IDX  ordered = {'PHASE', 'TYPE', 'ROW', 'BODY', 'R_RX', 'R_RY', 'R_RZ', 'R_PX', 'R_PY', 'R_PZ', 'F_RX', 'F_RY', 'F_RZ', 'F_PX', 'F_PY', 'F_PZ', 'F_TH', 'F_O'};
 param constraint {R, CON_IDX} symbolic;
 
 #----------- indices for physical and virtual constraints
@@ -244,7 +245,7 @@ var RNEA_f {i1 in SPAT_L[-1], i2 in SPAT_M, i3 in GRID[0] : i1 > 0} = RNEA_fb[i1
 var b {i1 in SPAT_L[1], i3 in GRID[0]} = sum {i2 in SPAT_M} spat_s_ii[i1, i2] * RNEA_f[i1, i2, i3];
 
 #----------- operational space constraints
-param OSIM_r_00 {i1 in R, i2 in SPAT_M} = constraint[i1, next('R_RX', CON_IDX, i2 - 1)];
+param OSIM_r_oo {i1 in R, i2 in SPAT_M} = constraint[i1, next('R_RX', CON_IDX, i2 - 1)];
 
 # rigid bodies used in computation of constraints
 set OSIM_K {i1 in PHASES} ordered by [0, nq] := union {i2 in CON_M[i1], i3 in CON_R[i1, i2]} SPAT_TREE_K[constraint[i3, 'BODY']];
@@ -287,54 +288,58 @@ var OSIM_v_relx {i1 in PHASES, i2 in OSIM_B[i1], i3 in SPAT_TREE_K[i2], i4 in SP
 var OSIM_Xdot_bi {i1 in PHASES, i2 in OSIM_B[i1], i3 in SPAT_TREE_K[i2], i4 in SPAT_M, i5 in SPAT_M, i6 in GRID[i1]} = 
   if i3 > 0 then sum {i7 in SPAT_M} OSIM_v_relx[i1, i2, i3, i4, i7, i6] * OSIM_X_bi[i1, i2, i3, i7, i5, i6];
 
-# X_0cb = R_0b * R_bc * T_cb = frame with axes aligned 
+# X_ob = T_cb = frame with axes aligned relative to the body
+#       -or-
+# X_ob = R_0b * R_bc * T_cb = frame with axes aligned 
 # with {0} located at {c} relative to b; 0cb => (0c)b
 # R_0b * R_bc * R_cb = R_0b, so apply simplification in computation of SO(3)
 # R_0b * R_bc * (p x R_cb) = -R_0b * R_bc * R_cb * rx = -R_0b rx, need to compute
-var OSIM_X_0cb {i1 in PHASES, i2 in CON_J[i1], i3 in CON_R[i1, i2], i4 in SPAT_M, i5 in SPAT_M, i6 in GRID[i1]} =
-  if i4 <= 3 and i5 <= 3 then OSIM_R_0i[i1, constraint[i3, 'BODY'], i4, i5, i6]
+var OSIM_X_ob {i1 in PHASES, i2 in CON_J[i1], i3 in CON_R[i1, i2], i4 in SPAT_M, i5 in SPAT_M, i6 in GRID[i1]} =
+  if constraint[i3, 'F_O'] = constraint[i3, 'BODY'] then spat_Xp[x_cb + i3 - 1, i4, i5]
+  else if i4 <= 3 and i5 <= 3 then OSIM_R_0i[i1, constraint[i3, 'BODY'], i4, i5, i6]
   else if i4 > 3 and i5 > 3 then OSIM_R_0i[i1, constraint[i3, 'BODY'], i4 - 3, i5 - 3, i6]
   else if i4 > 3 and i5 <= 3 then sum {i7 in SPAT_M, i8 in SPAT_M: i7 <= 3 and i8 <= 3} OSIM_R_0i[i1, constraint[i3, 'BODY'], i4 - 3, i7, i6] * Ep[x_cb + i3 - 1, i8, i7] * spat_Xp[x_cb + i3 - 1, i8 + 3, i5];
 
-var OSIM_Xdot_0cb {i1 in PHASES, i2 in CON_J[i1], i3 in CON_R[i1, i2], i4 in SPAT_M, i5 in SPAT_M, i6 in GRID[i1]} =
-  if i4 <= 3 and i5 <= 3 then OSIM_Rdot_0i[i1, constraint[i3, 'BODY'], i4, i5, i6]
+var OSIM_Xdot_ob {i1 in PHASES, i2 in CON_J[i1], i3 in CON_R[i1, i2], i4 in SPAT_M, i5 in SPAT_M, i6 in GRID[i1]} =
+  if constraint[i3, 'F_O'] = constraint[i3, 'BODY'] then 0
+  else if i4 <= 3 and i5 <= 3 then OSIM_Rdot_0i[i1, constraint[i3, 'BODY'], i4, i5, i6]
   else if i4 > 3 and i5 > 3 then OSIM_Rdot_0i[i1, constraint[i3, 'BODY'], i4 - 3, i5 - 3, i6]
   else if i4 > 3 and i5 <= 3 then sum {i7 in SPAT_M, i8 in SPAT_M: i7 <= 3 and i8 <= 3} OSIM_Rdot_0i[i1, constraint[i3, 'BODY'], i4 - 3, i7, i6] * Ep[x_cb + i3 - 1, i8, i7] * spat_Xp[x_cb + i3 - 1, i8 + 3, i5];
 
 # variables for computing positions and angles
 # X_c0 = X_0c_0 <= this transform will give position of {c} in {0} coordinates
-var OSIM_X_c0 {i1 in PHASES, i2 in CON_M[i1], i3 in CON_R[i1, i2], i4 in SPAT_M, i5 in SPAT_M, i6 in GRID[i1]} = sum {i7 in SPAT_M} OSIM_X_0cb[i1, i2, i3, i4, i7, i6] * OSIM_X_bi[i1, constraint[i3, 'BODY'], 0, i7, i5, i6];
+var OSIM_X_c0 {i1 in PHASES, i2 in CON_M[i1], i3 in CON_R[i1, i2], i4 in SPAT_M, i5 in SPAT_M, i6 in GRID[i1]} = sum {i7 in SPAT_M} spat_Xp[x_cb + i3 - 1, i4, i7] * OSIM_X_bi[i1, constraint[i3, 'BODY'], 0, i7, i5, i6];
 
 # R_0c = R_0b * R_bc <= this transform will give angles of {c} in {0} coordinates
-var OSIM_R_0c {i1 in PHASES, i2 in CON_J[i1], i3 in CON_R[i1, i2], i4 in SPAT_M, i5 in SPAT_M, i6 in GRID[i1]: i4 <= 3 and i5 <= 3} = sum {i7 in SPAT_M: i7 <= 3} OSIM_R_0i[i1, constraint[i3, 'BODY'], i4, i7, i6] * Ep[x_cb + i3 - 1, i5, i7];
+#var OSIM_R_0c {i1 in PHASES, i2 in CON_J[i1], i3 in CON_R[i1, i2], i4 in SPAT_M, i5 in SPAT_M, i6 in GRID[i1]: i4 <= 3 and i5 <= 3} = sum {i7 in SPAT_M: i7 <= 3} OSIM_R_0i[i1, constraint[i3, 'BODY'], i4, i7, i6] * Ep[x_cb + i3 - 1, i5, i7];
 
-var J {i1 in PHASES, i2 in CON_J[i1], i3 in SPAT_L[1], i4 in GRID[i1]} = sum {i5 in CON_R[i1, i2], i6 in SPAT_M, i7 in SPAT_M, i8 in SPAT_M : i3 in SPAT_TREE_K[constraint[i5, 'BODY']]} OSIM_r_00[i5, i6] * OSIM_X_0cb[i1, i2, i5, i6, i7, i4] * OSIM_X_bi[i1, constraint[i5, 'BODY'], i3, i7, i8, i4] * spat_s_ii[i3, i8];
+var J {i1 in PHASES, i2 in CON_J[i1], i3 in SPAT_L[1], i4 in GRID[i1]} = sum {i5 in CON_R[i1, i2], i6 in SPAT_M, i7 in SPAT_M, i8 in SPAT_M : i3 in SPAT_TREE_K[constraint[i5, 'BODY']]} OSIM_r_oo[i5, i6] * OSIM_X_ob[i1, i2, i5, i6, i7, i4] * OSIM_X_bi[i1, constraint[i5, 'BODY'], i3, i7, i8, i4] * spat_s_ii[i3, i8];
 
-var phi {i1 in PHASES, i2 in CON_M[i1], i3 in GRID[i1]} = sum {i4 in CON_R[i1, i2], i5 in SPAT_TREE_K[constraint[i4, 'BODY']], i6 in SPAT_M, i7 in SPAT_M, i8 in SPAT_M : i5 > 0} (OSIM_r_00[i4, i6] * (OSIM_Xdot_0cb[i1, i2, i4, i6, i7, i3] * OSIM_X_bi[i1, constraint[i4, 'BODY'], i5, i7, i8, i3] + OSIM_X_0cb[i1, i2, i4, i6, i7, i3] * OSIM_Xdot_bi[i1, constraint[i4, 'BODY'], i5, i7, i8, i3]) * spat_s_ii[i5, i8]) * v[i5, i3];
+var phi {i1 in PHASES, i2 in CON_M[i1], i3 in GRID[i1]} = sum {i4 in CON_R[i1, i2], i5 in SPAT_TREE_K[constraint[i4, 'BODY']], i6 in SPAT_M, i7 in SPAT_M, i8 in SPAT_M : i5 > 0} (OSIM_r_oo[i4, i6] * (OSIM_Xdot_ob[i1, i2, i4, i6, i7, i3] * OSIM_X_bi[i1, constraint[i4, 'BODY'], i5, i7, i8, i3] + OSIM_X_ob[i1, i2, i4, i6, i7, i3] * OSIM_Xdot_bi[i1, constraint[i4, 'BODY'], i5, i7, i8, i3]) * spat_s_ii[i5, i8]) * v[i5, i3];
 
 var OSIM_position {i1 in PHASES, i2 in CON_M[i1], i3 in CON_R[i1, i2], i4 in SPAT_M, i5 in GRID[i1]} =
-  if i4 = 1 then atan2(-OSIM_R_0c[i1, i2, i3, 2, 3, i5],OSIM_R_0c[i1, i2, i3, 3, 3, i5])
-  else if i4 = 2 then asin(OSIM_R_0c[i1, i2, i3, 1, 3, i5])
-  else if i4 = 3 then atan2(-OSIM_R_0c[i1, i2, i3, 1, 2, i5],OSIM_R_0c[i1, i2, i3, 1, 1, i5])
+  if i4 = 1 then atan2(-OSIM_X_c0[i1, i2, i3, 3, 2, i5],OSIM_X_c0[i1, i2, i3, 3, 3, i5])
+  else if i4 = 2 then asin(OSIM_X_c0[i1, i2, i3, 3, 1, i5])
+  else if i4 = 3 then atan2(-OSIM_X_c0[i1, i2, i3, 2, 1, i5],OSIM_X_c0[i1, i2, i3, 1, 1, i5])
   else if i4 = 4 then (-(OSIM_X_c0[i1, i2, i3, 1, 3, i5]*OSIM_X_c0[i1, i2, i3, 4, 2, i5]) + OSIM_X_c0[i1, i2, i3, 1, 2, i5]*OSIM_X_c0[i1, i2, i3, 4, 3, i5] - OSIM_X_c0[i1, i2, i3, 2, 3, i5]*OSIM_X_c0[i1, i2, i3, 5, 2, i5] + OSIM_X_c0[i1, i2, i3, 2, 2, i5]*OSIM_X_c0[i1, i2, i3, 5, 3, i5] - OSIM_X_c0[i1, i2, i3, 3, 3, i5]*OSIM_X_c0[i1, i2, i3, 6, 2, i5] + OSIM_X_c0[i1, i2, i3, 3, 2, i5]*OSIM_X_c0[i1, i2, i3, 6, 3, i5])/2
   else if i4 = 5 then (OSIM_X_c0[i1, i2, i3, 1, 3, i5]*OSIM_X_c0[i1, i2, i3, 4, 1, i5] - OSIM_X_c0[i1, i2, i3, 1, 1, i5]*OSIM_X_c0[i1, i2, i3, 4, 3, i5] + OSIM_X_c0[i1, i2, i3, 2, 3, i5]*OSIM_X_c0[i1, i2, i3, 5, 1, i5] - OSIM_X_c0[i1, i2, i3, 2, 1, i5]*OSIM_X_c0[i1, i2, i3, 5, 3, i5] + OSIM_X_c0[i1, i2, i3, 3, 3, i5]*OSIM_X_c0[i1, i2, i3, 6, 1, i5] - OSIM_X_c0[i1, i2, i3, 3, 1, i5]*OSIM_X_c0[i1, i2, i3, 6, 3, i5])/2
   else if i4 = 6 then (-(OSIM_X_c0[i1, i2, i3, 1, 2, i5]*OSIM_X_c0[i1, i2, i3, 4, 1, i5]) + OSIM_X_c0[i1, i2, i3, 1, 1, i5]*OSIM_X_c0[i1, i2, i3, 4, 2, i5] - OSIM_X_c0[i1, i2, i3, 2, 2, i5]*OSIM_X_c0[i1, i2, i3, 5, 1, i5] + OSIM_X_c0[i1, i2, i3, 2, 1, i5]*OSIM_X_c0[i1, i2, i3, 5, 2, i5] - OSIM_X_c0[i1, i2, i3, 3, 2, i5]*OSIM_X_c0[i1, i2, i3, 6, 1, i5] + OSIM_X_c0[i1, i2, i3, 3, 1, i5]*OSIM_X_c0[i1, i2, i3, 6, 2, i5])/2;
 
-var g {i1 in PHASES, i2 in CON_M[i1], i3 in GRID[i1]} = sum {i4 in CON_R[i1, i2], i5 in SPAT_M} OSIM_r_00[i4, i5] * OSIM_position[i1, i2, i4, i5, i3];
+var g {i1 in PHASES, i2 in CON_M[i1], i3 in GRID[i1]} = sum {i4 in CON_R[i1, i2], i5 in SPAT_M} OSIM_r_oo[i4, i5] * OSIM_position[i1, i2, i4, i5, i3];
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#* eom
 #----------- continuous dynamics
-# decision variable: constraint forces
+# decision variable: constraint forces and motion constraints
 var f {i1 in PHASES, CON_F[i1], GRID[i1]};
+
+var g_des {i1 in PHASES, CON_M[i1], GRID[i1]} default 0;
+var gdot_des {i1 in PHASES, CON_M[i1], GRID[i1]} default 0;
+var gddot_des {i1 in PHASES, CON_M[i1], GRID[i1]} default 0;
 
 # constraint variables
 var Jv {i1 in PHASES, i2 in CON_M[i1], i3 in GRID[i1]} = sum {i4 in Q} J[i1,i2,i4,i3]*v[i4,i3];
 var Ja {i1 in PHASES, i2 in CON_M[i1], i3 in GRID[i1]} = sum {i4 in Q} J[i1,i2,i4,i3]*a[i4,i3];
 var Jtf {i1 in PHASES, i2 in Q, i3 in GRID[i1]} = sum {i4 in CON_F[i1]} J[i1,i4,i2,i3]*f[i1,i4,i3];
-
-var g_des {i1 in PHASES, CON_M[i1], GRID[i1]} default 0;
-var gdot_des {i1 in PHASES, CON_M[i1], GRID[i1]} default 0;
-var gddot_des {i1 in PHASES, CON_M[i1], GRID[i1]} default 0;
 
 # constraints
 subject to CONQ {i1 in PHASES, i2 in CON_M[i1], i3 in GRID[i1]} : g[i1,i2,i3] - g_des[i1,i2,i3] = 0;
@@ -397,6 +402,7 @@ param ODE_AK {i1 in ODE_SOLVERS, ODE[i1, 'K'], ODE[i1, 'K']};
 param ODE_bK {i1 in ODE_SOLVERS, ODE[i1, 'K']};
 param ODE_cK {i1 in ODE_SOLVERS, ODE[i1, 'K']};
 
+# decision variable: step size
 var ODE_hK {i1 in ODE_SOLVERS, ODE[i1, 0]} >= 0; # time step size
 
 param ODE_a0 {i1 in ODE_SOLVERS} = if 0 = sum {i2 in ODE[i1, 'K']} ODE_AK[i1, 1, i2] then 1;
