@@ -43,33 +43,33 @@
     .grid-legend > div{margin-top:6px}
     td input.small { width: 40px; }
     /* --- Robot Parameters (Dark Theme) --- */
-    .wiz-card[data-step="3"] {
+    .wiz-card[data-step="2"] {
       background: #11161e; /* subtle deep gray-blue background */
       color: #f1f1f1;
       border: 1px solid #222b35;
       border-radius: 10px;
     }
 
-    .wiz-card[data-step="3"] h3,
-    .wiz-card[data-step="3"] h4 {
+    .wiz-card[data-step="2"] h3,
+    .wiz-card[data-step="2"] h4 {
       color: #ffffff;
     }
 
-    .wiz-card[data-step="3"] .muted {
+    .wiz-card[data-step="2"] .muted {
       color: #aaa;
     }
 
-    .wiz-card[data-step="3"] .toggle label {
+    .wiz-card[data-step="2"] .toggle label {
       color: #ddd;
     }
 
-    .wiz-card[data-step="3"] input[type="radio"] {
+    .wiz-card[data-step="2"] input[type="radio"] {
       accent-color: #3b82f6; /* blue highlight */
     }
 
     /* Table wrapper and table */
-    .wiz-card[data-step="3"] .table-wrapper,
-    .wiz-card[data-step="4"] .table-wrapper {
+    .wiz-card[data-step="2"] .table-wrapper,
+    .wiz-card[data-step="3"] .table-wrapper {
       border: 1px solid #222b35;
       background: #0f141c;
       border-radius: 8px;
@@ -77,32 +77,32 @@
       box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.3);
     }
 
-    .wiz-card[data-step="3"] .data-table,
-    .wiz-card[data-step="4"] .data-table {
+    .wiz-card[data-step="2"] .data-table,
+    .wiz-card[data-step="3"] .data-table {
       width: 100%;
       border-collapse: collapse;
       color: #e0e0e0;
       font-size: 0.9rem;
     }
 
-    .wiz-card[data-step="3"] .data-table th,
-    .wiz-card[data-step="4"] .data-table th {
+    .wiz-card[data-step="2"] .data-table th,
+    .wiz-card[data-step="3"] .data-table th {
       background: #1a2029;
       color: #ccc;
       font-weight: 600;
       border-bottom: 1px solid #2a3240;
     }
 
-    .wiz-card[data-step="3"] .data-table td,
-    .wiz-card[data-step="4"] .data-table td {
+    .wiz-card[data-step="2"] .data-table td,
+    .wiz-card[data-step="3"] .data-table td {
       border-bottom: 1px solid #222b35;
       background: #0f141c;
     }
 
+    .wiz-card[data-step="2"] input[type="text"],
+    .wiz-card[data-step="2"] input[type="number"],
     .wiz-card[data-step="3"] input[type="text"],
-    .wiz-card[data-step="3"] input[type="number"],
-    .wiz-card[data-step="4"] input[type="text"],
-    .wiz-card[data-step="4"] input[type="number"] {
+    .wiz-card[data-step="3"] input[type="number"] {
       background: #1b2431;
       color: #f1f1f1;
       border: 1px solid #2c3a4a;
@@ -110,10 +110,10 @@
       text-align: center;
     }
 
+    .wiz-card[data-step="2"] input[type="text"]:focus,
+    .wiz-card[data-step="2"] input[type="number"]:focus,
     .wiz-card[data-step="3"] input[type="text"]:focus,
-    .wiz-card[data-step="3"] input[type="number"]:focus,
-    .wiz-card[data-step="4"] input[type="text"]:focus,
-    .wiz-card[data-step="4"] input[type="number"]:focus {
+    .wiz-card[data-step="3"] input[type="number"]:focus {
       outline: none;
       border-color: #3b82f6;
       background: #202a39;
@@ -132,14 +132,14 @@
       transition: background 0.2s ease;
     }
 
-    .wiz-card[data-step="3"] .btn:hover,
-    .wiz-card[data-step="4"] .btn:hover {
+    .wiz-card[data-step="2"] .btn:hover,
+    .wiz-card[data-step="3"] .btn:hover {
       background: #2563eb;
     }
 
     /* Secondary helper areas */
-    .wiz-card[data-step="3"] .card-sub,
-    .wiz-card[data-step="4"] .card-sub {
+    .wiz-card[data-step="2"] .card-sub,
+    .wiz-card[data-step="3"] .card-sub {
       background: #1a2029;
       border: 1px solid #2a3240;
       color: #ddd;
@@ -410,8 +410,183 @@
         style="margin-top:10px; background:#1e1e1e; border-radius:8px; width:100%;"></canvas>
     </section>
 
-    <!-- Step 3: q, v, t, u -->
+
+
+    <!-- Step 4: Robot params -->
     <section class="wiz-card hide" data-step="2">
+      <div class="btn-help-wrapper">
+        <h3 class="step-title">Robot Parameters</h3>
+        <button class="btn btn-help" data-type="robot" title="Help">❔</button>
+      </div>
+
+      <div class="upload-zone" data-allowed="robot">
+        <p>
+          Drag & Drop a robot file here or click to upload<br>
+          <small>Supported formats: AMPL or URDF</small>
+        </p>
+        <input type="file" accept=".urdf,.dat,.txt,.mod" hidden />
+      </div>
+
+      <div class="btn-download-wrapper btn-row">
+        <button class="btn btn-manual" data-target="robotManual">Enter Manually</button>
+        <div>
+          <button class="btn btn-clear" data-type="robot">Clear</button>
+          <button class="btn btn-download" data-type="robot">Download</button>
+        </div>
+      </div>
+
+      <!-- Manual Table Section -->
+      <div id="robotManual" class="manual-section hide">
+        <h4 class="sub-title">param robot := [*,:]</h4>
+        <p class="muted" style="margin-bottom: 0.5rem;">
+          Fixed columns: 
+          <code>PARENT, S_RX, S_RY, S_RZ, S_PX, S_PY, S_PZ, Q_LB, Q_UB, F_RX, F_RY, F_RZ, F_PX, F_PY, F_PZ, F_TH, MASS, M_RX, M_RY, M_RZ, M_PX, M_PY, M_PZ, M_TH, IXX, IYY, IZZ, IXY, IXZ, IYZ</code>
+        </p>
+
+        <div class="table-wrapper">
+          <table id="robotTable" class="data-table">
+            <thead>
+              <tr id="robotHeader">
+                <th>#</th>
+                <th>PARENT</th><th>S_RX</th><th>S_RY</th><th>S_RZ</th><th>S_PX</th><th>S_PY</th><th>S_PZ</th>
+                <th>Q_LB</th><th>Q_UB</th><th>F_RX</th><th>F_RY</th><th>F_RZ</th><th>F_PX</th><th>F_PY</th><th>F_PZ</th><th>F_TH</th>
+                <th>MASS</th><th>M_RX</th><th>M_RY</th><th>M_RZ</th><th>M_PX</th><th>M_PY</th><th>M_PZ</th><th>M_TH</th>
+                <th>IXX</th><th>IYY</th><th>IZZ</th><th>IXY</th><th>IXZ</th><th>IYZ</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="robotBody"></tbody>
+          </table>
+        </div>
+
+        <div class="btn-row" style="margin-top: 0.8rem;">
+          <button class="btn" id="btnAddRobot">+ Add Row</button>
+        </div>
+      </div>
+
+      <!-- Helper (non-duplicate ID) -->
+      <div id="robotURDFHelp" class="hide">
+        <p class="muted">
+          Choose a URDF file to prefill values. You can later switch to “Manual Entry” to edit them.
+        </p>
+      </div>
+    </section>
+
+    <!-- Step 5: Constraint params -->
+    <section class="wiz-card hide" data-step="3">
+      <div class="btn-help-wrapper">
+        <h3 class="step-title">Constraint Parameters</h3>
+        <button class="btn btn-help" data-type="constraint" title="Help">❔</button>
+      </div>
+      
+      <div class="upload-zone" data-allowed="constraint">
+        <p>Drag & Drop a constraint file here or click to upload</p>
+        <input type="file" hidden />
+      </div>
+
+      <div class="btn-download-wrapper btn-row">
+        <button class="btn btn-manual" data-target="constraintManual">Enter Manually</button>
+        <div>
+          <button class="btn btn-clear" data-type="constraint">Clear</button>
+          <button class="btn btn-download" data-type="constraint">Download</button>
+        </div>
+      </div>
+
+      <!-- Table Section -->
+      <div id="constraintManual" class="manual-section hide">
+        <h4 class="sub-title">param constraint := [*,:]</h4>
+        <p class="muted" style="margin-bottom: 0.5rem;">
+          Fixed columns: 
+          <code>PHASE, TYPE, ROW, BODY, R_RX, R_RY, R_RZ, R_PX, R_PY, R_PZ, F_RX, F_RY, F_RZ, F_PX, F_PY, F_PZ, F_TH, F_O</code>
+        </p>
+
+        <div class="table-wrapper">
+          <table id="constraintTable" class="data-table">
+            <thead>
+              <tr id="constraintHeader">
+                <th>#</th>
+                <th>PHASE</th><th>TYPE</th><th>ROW</th><th>BODY</th><th>R_RX</th><th>R_RY</th>
+                <th>R_RZ</th><th>R_PX</th><th>R_PY</th><th>R_PZ</th><th>F_RX</th><th>F_RY</th>
+                <th>F_RZ</th><th>F_PX</th><th>F_PY</th><th>F_PZ</th><th>F_TH</th><th>F_O</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="constraintBody"></tbody>
+          </table>
+        </div>
+
+        <div class="btn-row" style="margin-top: 0.8rem;">
+          <button class="btn" id="btnAddConstraint">+ Add Row</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Step 6: Runge–Kutta -->
+    <section class="wiz-card hide" data-step="4">
+      <h3 class="step-title">Runge–Kutta Method (Butcher Table)</h3>
+      <div id="rungeKuttaContainer">
+        <div class="btn-row">
+          <button class="btn" onclick="addRKPanel()">+ Method</button>
+        </div>
+      </div>
+
+      <!-- Mode Selection -->
+      <div class="g2 wiz-row">
+        <div>
+          <label class="label">Selection Mode</label>
+          <div>
+            <label><input type="radio" name="rkMode" value="preset" checked> Preset</label>
+            <label><input type="radio" name="rkMode" value="custom"> Custom</label>
+          </div>
+        </div>
+        <div>
+          <label class="label">Subgrid Tag</label>
+          <input type="text" id="rkTag" value="RK" />
+        </div>
+      </div>
+
+      <!-- Preset RK Method -->
+      <div id="rkPresetBlock">
+        <label class="label">Preset Method</label>
+        <select id="rkMethod">
+          <option value="">None</option>
+          <option value="HERM_SIMP">Hermite-Simpson</option>
+          <option value="TRAP">Trapezoidal</option>
+          <option value="rk2">RK2 — midpoint</option>
+          <option value="heun3">Heun’s RK3</option>
+          <option value="kutta3">Kutta’s RK3 (3/8)</option>
+          <option value="ralston3">Ralston RK3</option>
+          <option value="rk4">RK4 — classic</option>
+          <option value="rk4_38">RK4 — 3/8 rule</option>
+        </select>
+      </div>
+
+      <!-- TODO: The code below has been implemented in the dropdown. To be removed. -->
+      <!-- Custom Tableau Input -->
+      <!-- <div id="rkCustomBlock" class="hide" style="margin-top:1rem;">
+        <label class="label">Custom Butcher’s Tableau</label>
+        <div class="wiz-row">
+          <div>
+            <label>Number of Stages (s)</label>
+            <input type="number" id="numStages" min="2" max="6" value="4" />
+          </div>
+          <div style="align-self:end;">
+            <button type="button" onclick="renderTableau()">Generate Tableau</button>
+          </div>
+        </div>
+
+        <div id="tableauContainer" class="table-wrapper" style="margin-top:1rem;"></div>
+      </div> -->
+
+      <p class="muted">
+        We’ll emit <code>param ODE_K</code>, <code>param ODE_AK</code>, 
+        <code>param ODE_bK</code>, <code>param ODE_cK</code>, and 
+        <code>set ODE_SUBGRID[&lt;tag&gt;]</code>.
+      </p>
+    </section>
+
+    <!-- Step 3: q, v, t, u -->
+    <section class="wiz-card hide" data-step="5">
       <div class="btn-help-wrapper">
         <h3 class="step-title">Seed Variables</h3>
         <button class="btn btn-help" data-type="seed" title="Help">❔</button>
@@ -515,181 +690,6 @@
           <div class="btn-row"><button class="btn" onclick="addRow('t', row = null)">+ Row</button></div>
         </div>
       </div>
-    </section>
-
-
-
-    <!-- Step 4: Robot params -->
-    <section class="wiz-card hide" data-step="3">
-      <div class="btn-help-wrapper">
-        <h3 class="step-title">Robot Parameters</h3>
-        <button class="btn btn-help" data-type="robot" title="Help">❔</button>
-      </div>
-
-      <div class="upload-zone" data-allowed="robot">
-        <p>
-          Drag & Drop a robot file here or click to upload<br>
-          <small>Supported formats: AMPL or URDF</small>
-        </p>
-        <input type="file" accept=".urdf,.dat,.txt,.mod" hidden />
-      </div>
-
-      <div class="btn-download-wrapper btn-row">
-        <button class="btn btn-manual" data-target="robotManual">Enter Manually</button>
-        <div>
-          <button class="btn btn-clear" data-type="robot">Clear</button>
-          <button class="btn btn-download" data-type="robot">Download</button>
-        </div>
-      </div>
-
-      <!-- Manual Table Section -->
-      <div id="robotManual" class="manual-section hide">
-        <h4 class="sub-title">param robot := [*,:]</h4>
-        <p class="muted" style="margin-bottom: 0.5rem;">
-          Fixed columns: 
-          <code>PARENT, S_RX, S_RY, S_RZ, S_PX, S_PY, S_PZ, Q_LB, Q_UB, F_RX, F_RY, F_RZ, F_PX, F_PY, F_PZ, F_TH, MASS, M_RX, M_RY, M_RZ, M_PX, M_PY, M_PZ, M_TH, IXX, IYY, IZZ, IXY, IXZ, IYZ</code>
-        </p>
-
-        <div class="table-wrapper">
-          <table id="robotTable" class="data-table">
-            <thead>
-              <tr id="robotHeader">
-                <th>#</th>
-                <th>PARENT</th><th>S_RX</th><th>S_RY</th><th>S_RZ</th><th>S_PX</th><th>S_PY</th><th>S_PZ</th>
-                <th>Q_LB</th><th>Q_UB</th><th>F_RX</th><th>F_RY</th><th>F_RZ</th><th>F_PX</th><th>F_PY</th><th>F_PZ</th><th>F_TH</th>
-                <th>MASS</th><th>M_RX</th><th>M_RY</th><th>M_RZ</th><th>M_PX</th><th>M_PY</th><th>M_PZ</th><th>M_TH</th>
-                <th>IXX</th><th>IYY</th><th>IZZ</th><th>IXY</th><th>IXZ</th><th>IYZ</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody id="robotBody"></tbody>
-          </table>
-        </div>
-
-        <div class="btn-row" style="margin-top: 0.8rem;">
-          <button class="btn" id="btnAddRobot">+ Add Row</button>
-        </div>
-      </div>
-
-      <!-- Helper (non-duplicate ID) -->
-      <div id="robotURDFHelp" class="hide">
-        <p class="muted">
-          Choose a URDF file to prefill values. You can later switch to “Manual Entry” to edit them.
-        </p>
-      </div>
-    </section>
-
-    <!-- Step 5: Constraint params -->
-    <section class="wiz-card hide" data-step="4">
-      <div class="btn-help-wrapper">
-        <h3 class="step-title">Constraint Parameters</h3>
-        <button class="btn btn-help" data-type="constraint" title="Help">❔</button>
-      </div>
-      
-      <div class="upload-zone" data-allowed="constraint">
-        <p>Drag & Drop a constraint file here or click to upload</p>
-        <input type="file" hidden />
-      </div>
-
-      <div class="btn-download-wrapper btn-row">
-        <button class="btn btn-manual" data-target="constraintManual">Enter Manually</button>
-        <div>
-          <button class="btn btn-clear" data-type="constraint">Clear</button>
-          <button class="btn btn-download" data-type="constraint">Download</button>
-        </div>
-      </div>
-
-      <!-- Table Section -->
-      <div id="constraintManual" class="manual-section hide">
-        <h4 class="sub-title">param constraint := [*,:]</h4>
-        <p class="muted" style="margin-bottom: 0.5rem;">
-          Fixed columns: 
-          <code>PHASE, TYPE, ROW, BODY, R_RX, R_RY, R_RZ, R_PX, R_PY, R_PZ, F_RX, F_RY, F_RZ, F_PX, F_PY, F_PZ, F_TH, F_O</code>
-        </p>
-
-        <div class="table-wrapper">
-          <table id="constraintTable" class="data-table">
-            <thead>
-              <tr id="constraintHeader">
-                <th>#</th>
-                <th>PHASE</th><th>TYPE</th><th>ROW</th><th>BODY</th><th>R_RX</th><th>R_RY</th>
-                <th>R_RZ</th><th>R_PX</th><th>R_PY</th><th>R_PZ</th><th>F_RX</th><th>F_RY</th>
-                <th>F_RZ</th><th>F_PX</th><th>F_PY</th><th>F_PZ</th><th>F_TH</th><th>F_O</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody id="constraintBody"></tbody>
-          </table>
-        </div>
-
-        <div class="btn-row" style="margin-top: 0.8rem;">
-          <button class="btn" id="btnAddConstraint">+ Add Row</button>
-        </div>
-      </div>
-    </section>
-
-    <!-- Step 6: Runge–Kutta -->
-    <section class="wiz-card hide" data-step="5">
-      <h3 class="step-title">Runge–Kutta Method (Butcher Table)</h3>
-      <div id="rungeKuttaContainer">
-        <div class="btn-row">
-          <button class="btn" onclick="addRKPanel()">+ Method</button>
-        </div>
-      </div>
-
-      <!-- Mode Selection -->
-      <div class="g2 wiz-row">
-        <div>
-          <label class="label">Selection Mode</label>
-          <div>
-            <label><input type="radio" name="rkMode" value="preset" checked> Preset</label>
-            <label><input type="radio" name="rkMode" value="custom"> Custom</label>
-          </div>
-        </div>
-        <div>
-          <label class="label">Subgrid Tag</label>
-          <input type="text" id="rkTag" value="RK" />
-        </div>
-      </div>
-
-      <!-- Preset RK Method -->
-      <div id="rkPresetBlock">
-        <label class="label">Preset Method</label>
-        <select id="rkMethod">
-          <option value="">None</option>
-          <option value="HERM_SIMP">Hermite-Simpson</option>
-          <option value="TRAP">Trapezoidal</option>
-          <option value="rk2">RK2 — midpoint</option>
-          <option value="heun3">Heun’s RK3</option>
-          <option value="kutta3">Kutta’s RK3 (3/8)</option>
-          <option value="ralston3">Ralston RK3</option>
-          <option value="rk4">RK4 — classic</option>
-          <option value="rk4_38">RK4 — 3/8 rule</option>
-        </select>
-      </div>
-
-      <!-- TODO: The code below has been implemented in the dropdown. To be removed. -->
-      <!-- Custom Tableau Input -->
-      <!-- <div id="rkCustomBlock" class="hide" style="margin-top:1rem;">
-        <label class="label">Custom Butcher’s Tableau</label>
-        <div class="wiz-row">
-          <div>
-            <label>Number of Stages (s)</label>
-            <input type="number" id="numStages" min="2" max="6" value="4" />
-          </div>
-          <div style="align-self:end;">
-            <button type="button" onclick="renderTableau()">Generate Tableau</button>
-          </div>
-        </div>
-
-        <div id="tableauContainer" class="table-wrapper" style="margin-top:1rem;"></div>
-      </div> -->
-
-      <p class="muted">
-        We’ll emit <code>param ODE_K</code>, <code>param ODE_AK</code>, 
-        <code>param ODE_bK</code>, <code>param ODE_cK</code>, and 
-        <code>set ODE_SUBGRID[&lt;tag&gt;]</code>.
-      </p>
     </section>
 
     <!-- Step 7: Custom -->
@@ -848,7 +848,7 @@
 
   <script>
 /* ====================== Wizard core ====================== */
-const STEPS = ['Grid', 'Bézier', 'q/v/t/u', 'Robot', 'Constraint', 'RK', 'Custom', 'Solver', 'Review'];
+const STEPS = ['Grid', 'Bézier', 'Robot', 'Constraint', 'RK', 'q/v/t/u', 'Custom', 'Solver', 'Review'];
 let cur = 0;
 const qs  = s => document.querySelector(s);
 const qsa = s => Array.from(document.querySelectorAll(s));
@@ -993,7 +993,7 @@ const stepValidators = {
   1: (container) => {
     return true;
   },
-  5: (container) => {
+  4: (container) => {
     // Fetch gridMax value safely
     const gridMaxInput = document.querySelector('#gridMax');
     const maxLimit = gridMaxInput ? Number(gridMaxInput.value) : Infinity;
@@ -1048,6 +1048,78 @@ const stepValidators = {
       }
     }
 
+    return true;
+  },
+  5: (container) => {
+    const gridMaxInput = document.querySelector('#gridMax');
+    const maxCols = gridMaxInput ? Number(gridMaxInput.value) : Infinity;
+    const maxRowsAllowed = typeof nq !== 'undefined' ? Number(nq) + 1 : Infinity; 
+    const maxIndexValue = typeof nq !== 'undefined' ? Number(nq) : Infinity;
+
+    const tablesToValidate = ['q', 'v', 'u', 't'];
+
+    for (let type of tablesToValidate) {
+      const tbody = container.querySelector(`#${type}Body`);
+      const headerRow = container.querySelector(`#${type}Header`);
+
+      if (!tbody) continue;
+
+      const rows = tbody.querySelectorAll('tr');
+      
+      // --- RULE 1: Validate Total Row Count (Max: nq + 1) ---
+      if (rows.length > maxRowsAllowed) {
+        return {
+          element: tbody,
+          message: `Table ${type.toUpperCase()} cannot have more than ${maxRowsAllowed} rows (degree of freedom + 1).`
+        };
+      }
+
+      // --- RULE 2: Validate Column Counts (1 to gridMax) ---
+      if (headerRow) {
+        const colCount = headerRow.querySelectorAll('th').length - 1;
+        if (colCount < 1 || colCount > maxCols) {
+          return {
+            element: headerRow,
+            message: `Table ${type.toUpperCase()} columns must be between 1 and ${maxCols} (GRID_MAX).`
+          };
+        }
+      }
+
+      // --- RULE 3: Validate Index Input Values (Unique, between 0 and nq) ---
+      const seenIndexes = new Set();
+
+      for (let row of rows) {
+        const indexInput = row.querySelector('input[data-kind="idx"]'); 
+        
+        if (!indexInput) continue;
+
+        const indexValStr = indexInput.value.trim();
+        const indexNum = Number(indexValStr);
+
+        if (indexValStr === '') {
+          return { 
+            element: indexInput, 
+            message: `Index field in table ${type.toUpperCase()} cannot be empty.` 
+          };
+        }
+
+        if (isNaN(indexNum) || !Number.isInteger(indexNum) || indexNum < 0 || indexNum > maxIndexValue) {
+          return { 
+            element: indexInput, 
+            message: `Index must be a whole number between 0 and ${maxIndexValue} (degree of freedom) for table ${type.toUpperCase()}.` 
+          };
+        }
+
+        if (seenIndexes.has(indexNum)) {
+          return { 
+            element: indexInput, 
+            message: `Duplicate index "${indexNum}" detected in table ${type.toUpperCase()}. Row index numbers must be unique.` 
+          };
+        }
+
+        seenIndexes.add(indexNum);
+      }
+    }
     return true;
   }
 };
@@ -1179,7 +1251,7 @@ const uploadSchemas = {
     }
   }
 };
-
+nq = undefined;
 function handleFileUpload(file, allowedType) {
   const reader = new FileReader();
   reader.onload = function(e) {
@@ -1218,6 +1290,7 @@ function handleFileUpload(file, allowedType) {
 
     if (allowedType === "robot") {
       showManualSection("robot");
+      nq = parsed.nq;
       populateTable("robot", parsed.robot.data);
     }
 
@@ -1764,6 +1837,18 @@ function countDataCols(which){
 /* add row */
 function addRow(which, row = null){
   const body = qs('#'+which+'Body');
+  
+  const validLimitTables = ['q', 'v', 'u', 't'];
+  if (validLimitTables.includes(which)) {
+    const maxRowsAllowed = typeof nq !== 'undefined' ? Number(nq) + 1 : Infinity;
+    const currentRowsCount = body.children.length;
+
+    if (currentRowsCount >= maxRowsAllowed) {
+      alert(`Cannot add row. The maximum row limit of ${maxRowsAllowed} (degree of freedom + 1) has been reached for table ${which.toUpperCase()}.`);
+      return; // Stop execution early
+    }
+  }
+  
   const idx = body.children.length;
   const tr = document.createElement('tr');
 
@@ -1786,7 +1871,8 @@ function addRow(which, row = null){
 }
 
 function updateTableIndex(tableBody) {
-  let body = document.getElementById(tableBody);
+  let body = typeof tableBody === 'string' ? document.getElementById(tableBody) : tableBody;
+  if (!body) return;
   let rows = Array.from(body.getElementsByTagName('tr'));
 
   rows.forEach((_, i) => {
@@ -1803,6 +1889,17 @@ function addColumn(which){
   const table  = qs('#'+which+'Table');
   const header = qs('#'+which+'Header');
   const body   = qs('#'+which+'Body');
+
+  const validLimitTables = ['q', 'u', 'v'];
+  if (validLimitTables.includes(which)) {
+    const gridMaxInput = document.querySelector('#gridMax');
+    const maxCols = gridMaxInput ? Number(gridMaxInput.value) : Infinity;
+    const colsNow = countDataCols(which);
+    if (colsNow >= maxCols) {
+      alert(`Cannot add column. The maximum column limit of ${maxCols} (GRID_MAX) has been reached for table ${which.toUpperCase()}.`);
+      return;
+    }
+  }
 
   const colsNow = countDataCols(which);
   const nextCol = colsNow + 1;
@@ -2190,26 +2287,38 @@ function addRKPanel() {
       <button class="btn" onclick="removeRKPanel(this)">✕</button>
     </div>
 
-    <div class="col-controls" data-table="rungeKutta">
-      <button type="button" class="btn btn-slim" onclick="addRKColumn(this)">+ Col</button>
-      <button type="button" class="btn btn-slim" onclick="delRKColumn(this)">– Col</button>
-    </div>
-
     <div class="table-scroll">
       <table class="seed-matrix rk-table">
         <thead>
           <tr class="rk-header-row">
             <th style="width:80px;">Index</th>
-            <th data-col="1">:1</th>
+            <th>
+              <div class="rk-cell">
+                <span data-kind="val" style="width:inherit;">BEG</span>
+                <span data-kind="val" style="width:inherit;">END</span>
+              </div>
+            </th>
+            <th style="width:50px;"></th>
           </tr>
         </thead>
         <tbody class="rk-body">
           <tr>
             <td class="rowIndex">1</td>
-            <td><div class="rk-cell"><input data-kind="val" class="small"><input data-kind="val" class="small"></div></td>
+            <td>
+              <div class="rk-cell">
+                <input data-kind="val" class="small">
+                <input data-kind="val" class="small">
+              </div>
+            </td>
+            <td>
+              <button type="button" class="btn btn-slim btn-danger" onclick="delRKRow(this)">✕</button>
+            </td>
           </tr>
         </tbody>
       </table>
+    </div>
+    <div class="btn-row" style="margin-top: 0.8rem;">
+      <button type="button" class="btn btn-slim" onclick="addRKRow(this)">+ Add Row</button>
     </div>
   `;
 
@@ -2228,39 +2337,39 @@ function removeRKPanel(btn) {
   btn.closest('.rk-panel').remove();
 }
 
-function addRKColumn(btn) {
-  const panel = btn.closest('.rk-panel');
-  const headerRow = panel.querySelector('.rk-header-row');
-  const body = panel.querySelector('.rk-body');
-
-  const colsNow = headerRow.querySelectorAll('th[data-col]').length;
-  const nextCol = colsNow + 1;
-
-  const th = document.createElement('th');
-  th.setAttribute('data-col', nextCol);
-  th.textContent = `:${nextCol}`;
-  headerRow.appendChild(th);
-
-  body.querySelectorAll('tr').forEach(tr => {
-    const td = document.createElement('td');
-    td.innerHTML = `<div class="rk-cell"><input data-kind="val" class="small"><input data-kind="val" class="small"></div>`;
-    tr.appendChild(td);
-  });
+function addRKRow(button) {
+  const panel = button.closest('.rk-panel');
+  const tbody = panel.querySelector('.rk-body');
+  
+  const newRow = document.createElement('tr');
+  newRow.innerHTML = `
+    <td class="rowIndex"></td>
+    <td>
+      <div class="rk-cell">
+        <input data-kind="val" class="small">
+        <input data-kind="val" class="small">
+      </div>
+    </td>
+    <td>
+      <button type="button" class="btn btn-slim btn-danger" onclick="delRKRow(this)">✕</button>
+    </td>
+  `;
+  
+  tbody.appendChild(newRow);
+  updateTableIndex(tbody);
 }
 
-function delRKColumn(btn) {
-  const panel = btn.closest('.rk-panel');
-  const headerRow = panel.querySelector('.rk-header-row');
-  const body = panel.querySelector('.rk-body');
-
-  const colsNow = headerRow.querySelectorAll('th[data-col]').length;
-  if (colsNow <= 1) return;
-
-  headerRow.querySelector(`th[data-col="${colsNow}"]`)?.remove();
-
-  body.querySelectorAll('tr').forEach(tr => {
-    tr.querySelector('td:last-child')?.remove();
-  });
+function delRKRow(button) {
+  const row = button.closest('tr');
+  const tbody = row.parentNode;
+  
+  // Guard clause: prevent deleting the last remaining row if a baseline is needed
+  if (tbody.rows.length > 1) {
+    row.remove();
+    updateTableIndex(tbody);
+  } else {
+    alert("A Butcher tableau method requires at least one row.");
+  }
 }
 
 function openRKModal() {
@@ -2570,18 +2679,18 @@ function buildDat() {
   const hasV      = hasMatrix(vRows);
   const hasU      = hasMatrix(uRows);
   const hasT      = hasVector(tRows);
-  const hasSeed   = hasQ || hasV || hasU || hasT;
   const hasRobot  = hasMatrix(robotRows);       // robotRows use .vals too
   const hasConstr = hasMatrix(constraintRows);
   const hasBez    = hasBezData(lbls, bezRows, bezSgRows);
   const hasRK     = hasRKData();
+  const hasSeed   = hasQ || hasV || hasU || hasT;
 
   selectionMap.set("Grid", hasGrid);
   selectionMap.set("Bézier", hasBez);
-  selectionMap.set("q/v/t/u", hasSeed);
   selectionMap.set("Robot", hasRobot);
   selectionMap.set("Constraint", hasConstr);
   selectionMap.set("RK", hasRK);
+  selectionMap.set("q/v/t/u", hasSeed);
 
   const nqInfer = (qRows[0]?.vals?.length || 1);
   let dat = '';
