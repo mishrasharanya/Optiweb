@@ -1051,8 +1051,9 @@ const stepValidators = {
   5: (container) => {
     const gridMaxInput = document.querySelector('#gridMax');
     const maxCols = gridMaxInput ? Number(gridMaxInput.value) : Infinity;
-    const maxRowsAllowed = typeof nq !== 'undefined' ? Number(nq) + 1 : Infinity; 
-    const maxIndexValue = typeof nq !== 'undefined' ? Number(nq) : Infinity;
+    
+    const nqLimit = typeof nq !== 'undefined' ? Number(nq) : Infinity;
+    const gridmaxLimit = maxCols;
 
     const tablesToValidate = ['q', 'v', 'u', 't'];
 
@@ -1064,11 +1065,15 @@ const stepValidators = {
 
       const rows = tbody.querySelectorAll('tr');
       
+      const isTableT = (type === 't');
+      const maxRowsAllowed = isTableT ? gridmaxLimit : nqLimit;
+      const labelText = isTableT ? 'gridmax' : 'degree of freedom';
+      
       // --- RULE 1: Validate Total Row Count (Max: nq + 1) ---
       if (rows.length > maxRowsAllowed) {
         return {
           element: tbody,
-          message: `Table ${type.toUpperCase()} cannot have more than ${maxRowsAllowed} rows (degree of freedom + 1).`
+          message: `Table ${type.toUpperCase()} cannot have more than ${maxRowsAllowed} rows (${labelText}).`
         };
       }
 
@@ -1101,10 +1106,10 @@ const stepValidators = {
           };
         }
 
-        if (isNaN(indexNum) || !Number.isInteger(indexNum) || indexNum < 0 || indexNum > maxIndexValue) {
+        if (isNaN(indexNum) || !Number.isInteger(indexNum) || indexNum < 1 || indexNum > maxRowsAllowed) {
           return { 
             element: indexInput, 
-            message: `Index must be a whole number between 0 and ${maxIndexValue} (degree of freedom) for table ${type.toUpperCase()}.` 
+            message: `Index must be a whole number between 1 and ${maxRowsAllowed} (${labelText}) for table ${type}.` 
           };
         }
 
@@ -1835,19 +1840,26 @@ function countDataCols(which){
 /* add row */
 function addRow(which, row = null){
   const body = qs('#'+which+'Body');
-  
-  const validLimitTables = ['q', 'v', 'u', 't'];
-  if (validLimitTables.includes(which)) {
-    const maxRowsAllowed = typeof nq !== 'undefined' ? Number(nq) + 1 : Infinity;
-    const currentRowsCount = body.children.length;
+  const currentRowsCount = body.children.length;
+  const gridMaxInput = document.querySelector('#gridMax');
+  const gridMax = gridMaxInput.value;
+  let maxRowsAllowed = Infinity;
+  let limitMessage = '';
 
-    if (currentRowsCount >= maxRowsAllowed) {
-      alert(`Cannot add row. The maximum row limit of ${maxRowsAllowed} (degree of freedom + 1) has been reached for table ${which.toUpperCase()}.`);
-      return; // Stop execution early
-    }
+  if (['q', 'v', 'u'].includes(which)) {
+    maxRowsAllowed = typeof nq !== 'undefined' ? Number(nq) : Infinity;
+    limitMessage = `${maxRowsAllowed} (degree of freedom)`;
+  } else if (which === 't') {
+    maxRowsAllowed = typeof gridMax !== 'undefined' ? Number(gridMax) : Infinity;
+    limitMessage = `${maxRowsAllowed} (gridmax)`;
+  }
+
+  if (currentRowsCount >= maxRowsAllowed) {
+    alert(`Cannot add row. The maximum row limit of ${limitMessage} has been reached for table ${which}.`);
+    return;
   }
   
-  const idx = body.children.length;
+  const idx = currentRowsCount + 1;
   const tr = document.createElement('tr');
 
   if (which === 't') {
