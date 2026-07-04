@@ -322,9 +322,25 @@
           <label class="label" for="gravity">Gravity (spat_ag[5])</label>
           <input type="number" id="gravity" value="9.81" step="0.01" required />
         </div>
-        <div>
-          <label class="label" for="pimSet">PIM indices (optional)</label>
-          <input type="text" id="pimSet" placeholder="e.g. 6, 7" />
+      </div>
+
+      <!-- === Pimset table === -->
+      <div class="row" style="margin-top:1rem">
+        <label class="label" for="pimSet">PIM indices (optional)</label>
+        <table class="table">
+          <thead>
+            <tr>
+              <th style="width:140px">Index</th>
+              <th style="width:40%">PRE</th>
+              <th style="width:40%">POST</th>
+              <th style="width:56px"></th>
+            </tr>
+          </thead>
+          <tbody id="pimSetBody">
+          </tbody>
+        </table>
+        <div class="btn-row" style="margin-top: 0.8rem;">
+          <button type="button" class="btn" id="btnAddPimSet">+ Add Pim Set</button>
         </div>
       </div>
 
@@ -339,8 +355,8 @@
           <thead>
             <tr>
               <th style="width:140px">LABEL (e.g., 1.1)</th>
-              <th>BEG</th>
-              <th>END</th>
+              <th style="width:40%">BEG</th>
+              <th style="width:40%">END</th>
               <th style="width:56px"></th>
             </tr>
           </thead>
@@ -614,7 +630,7 @@
               <thead>
                 <tr id="qHeader">
                   <th style="width:80px;">Index</th>
-                  <th data-col="1">:1</th>
+                  <th data-col="0">:0</th>
                 </tr>
               </thead>
               <tbody id="qBody"></tbody>
@@ -636,7 +652,7 @@
               <thead>
                 <tr id="vHeader">
                   <th style="width:80px;">Index</th>
-                  <th data-col="1">:1</th>
+                  <th data-col="0">:0</th>
                 </tr>
               </thead>
               <tbody id="vBody"></tbody>
@@ -658,7 +674,7 @@
               <thead>
                 <tr id="uHeader">
                   <th style="width:80px;">Index</th>
-                  <th data-col="1">:1</th>
+                  <th data-col="0">:0</th>
                 </tr>
               </thead>
               <tbody id="uBody"></tbody>
@@ -910,35 +926,46 @@ qs('#gridStep').parentElement.addEventListener('input', (event) => {
 const stepValidators = {
   0: (container) => {
     const gridMaxInput = container.querySelector('#gridMax');
-    const pimSetInput = container.querySelector('#pimSet');
-    
     const maxLimit = Number(gridMaxInput.value); 
-    const pimValue = pimSetInput.value.trim();
+    
+    // 1. Validate multiple pairs in the new pimSet table rows
+    const pimRows = container.querySelectorAll('#pimSetBody tr');
+    
+    for (let row of pimRows) {
+      const preInput = row.querySelector('.pim-pre');
+      const postInput = row.querySelector('.pim-post');
 
-    // 1. Validate pimSet ONLY if it has text entered
-    if (pimValue !== '') {
-      const numbers = pimValue.split(',').map(num => num.trim());
+      if (preInput && postInput) {
+        const preVal = preInput.value.trim();
+        const postVal = postInput.value.trim();
 
-      for (let item of numbers) {
-        if (item === '') {
+        if (preVal === '') {
+          return { element: preInput, message: "PRE value cannot be empty." };
+        }
+        if (postVal === '') {
+          return { element: postInput, message: "POST value cannot be empty." };
+        }
+
+        const preNum = Number(preVal);
+        const postNum = Number(postVal);
+
+        if (isNaN(preNum) || preNum < 0 || preNum > maxLimit) {
           return { 
-            element: pimSetInput, 
-            message: "Format error. Remove extra or trailing commas." 
+            element: preInput, 
+            message: `PRE value must be a number between 0 and your GRID_MAX (${maxLimit}).` 
           };
         }
 
-        const currentNum = Number(item);
-
-        if (isNaN(currentNum) || currentNum < 0 || currentNum > maxLimit) {
+        if (isNaN(postNum) || postNum < 0 || postNum > maxLimit) {
           return { 
-            element: pimSetInput, 
-            message: `Each index must be a number between 0 and your GRID_MAX (${maxLimit}).` 
+            element: postInput, 
+            message: `POST value must be a number between 0 and your GRID_MAX (${maxLimit}).` 
           };
         }
       }
     }
 
-    // 2. Validate subphase rows (This will now run even if pimSet is empty)
+    // 2. Validate subphase rows (Runs seamlessly after table loops)
     const rows = container.querySelectorAll('#subphaseBody tr');
     const seenLabels = new Set();
     const intervals = [];
@@ -1066,7 +1093,7 @@ const stepValidators = {
       const rows = tbody.querySelectorAll('tr');
       
       const isTableT = (type === 't');
-      const maxRowsAllowed = isTableT ? gridmaxLimit : nqLimit;
+      const maxRowsAllowed = isTableT ? gridmaxLimit+1 : nqLimit;
       const labelText = isTableT ? 'gridmax' : 'degree of freedom';
       
       // --- RULE 1: Validate Total Row Count (Max: nq + 1) ---
@@ -1077,13 +1104,13 @@ const stepValidators = {
         };
       }
 
-      // --- RULE 2: Validate Column Counts (1 to gridMax) ---
+      // --- RULE 2: Validate Column Counts (0 to gridMax) ---
       if (headerRow) {
         const colCount = headerRow.querySelectorAll('th').length - 1;
-        if (colCount < 1 || colCount > maxCols) {
+        if (colCount < 0 || colCount > maxCols) {
           return {
             element: headerRow,
-            message: `Table ${type.toUpperCase()} columns must be between 1 and ${maxCols} (GRID_MAX).`
+            message: `Table ${type.toUpperCase()} columns must be between 0 and ${maxCols} (GRID_MAX).`
           };
         }
       }
@@ -1105,11 +1132,12 @@ const stepValidators = {
             message: `Index field in table ${type.toUpperCase()} cannot be empty.` 
           };
         }
-
-        if (isNaN(indexNum) || !Number.isInteger(indexNum) || indexNum < 1 || indexNum > maxRowsAllowed) {
+        const startIndex = isTableT ? 0 : 1;
+        const endIndex = isTableT ? maxRowsAllowed-1 : maxRowsAllowed;
+        if (isNaN(indexNum) || !Number.isInteger(indexNum) || indexNum < startIndex || indexNum > endIndex) {
           return { 
             element: indexInput, 
-            message: `Index must be a whole number between 1 and ${maxRowsAllowed} (${labelText}) for table ${type}.` 
+            message: `Index must be a whole number between ${startIndex} and ${endIndex} (${labelText}) for table ${type}.` 
           };
         }
 
@@ -1850,8 +1878,8 @@ function addRow(which, row = null){
     maxRowsAllowed = typeof nq !== 'undefined' ? Number(nq) : Infinity;
     limitMessage = `${maxRowsAllowed} (degree of freedom)`;
   } else if (which === 't') {
-    maxRowsAllowed = typeof gridMax !== 'undefined' ? Number(gridMax) : Infinity;
-    limitMessage = `${maxRowsAllowed} (gridmax)`;
+    maxRowsAllowed = typeof gridMax !== 'undefined' ? Number(gridMax) + 1 : Infinity;
+    limitMessage = `${Number(gridMax)} (gridmax)`;
   }
 
   if (currentRowsCount >= maxRowsAllowed) {
@@ -1859,23 +1887,23 @@ function addRow(which, row = null){
     return;
   }
   
-  const idx = currentRowsCount + 1;
+  const idx = (which === 't') ? currentRowsCount : currentRowsCount + 1;
   const tr = document.createElement('tr');
 
   if (which === 't') {
-    tr.innerHTML = `<td><input data-kind="idx" value="${idx}"/></td>
+    tr.innerHTML = `<td><input class="rowIndex" data-kind="idx" value="${idx}"/></td>
       <td><input type="number" step="any" data-kind="val" class="small" value="${row != null? row : ''}" required /></td>
-      <td><button class="btn" onclick="this.closest('tr').remove()">✕</button></td>`;
+      <td><button class="btn" onclick="this.closest('tr').remove(); updateTableIndex('${which}Body')">✕</button></td>`;
     body.appendChild(tr);
     return;
   }
 
   const cols = countDataCols(which);
-  let cells = `<td><input data-kind="idx" value="${idx}"/></td>`;
+  let cells = `<td><input class="rowIndex" data-kind="idx" value="${idx}"/></td>`;
   for (let c=1; c<=cols; c++){
     cells += `<td><input type="number" step="any" data-kind="val" data-col="${c}" class="small" value="${row? row[c-1] : ''}" required /></td>`;
   }
-  cells += `<td><button class="btn" onclick="this.closest('tr').remove()">✕</button></td>`;
+  cells += `<td><button class="btn" onclick="this.closest('tr').remove(); updateTableIndex('${which}Body')">✕</button></td>`;
   tr.innerHTML = cells;
   body.appendChild(tr);
 }
@@ -1885,10 +1913,15 @@ function updateTableIndex(tableBody) {
   if (!body) return;
   let rows = Array.from(body.getElementsByTagName('tr'));
 
-  rows.forEach((_, i) => {
-    let indexCell = rows[i].querySelector('.rowIndex');
+  rows.forEach((row, i) => {
+    let indexCell = row.querySelector('.rowIndex');
     if (indexCell) {
-      indexCell.textContent = i + 1;
+      // Check if the target element is an input box or a plain text container
+      if (indexCell.tagName === 'INPUT') {
+        indexCell.value = i + 1;
+      } else {
+        indexCell.textContent = i + 1;
+      }
     }
   });
 }
@@ -1903,21 +1936,22 @@ function addColumn(which){
   const validLimitTables = ['q', 'u', 'v'];
   if (validLimitTables.includes(which)) {
     const gridMaxInput = document.querySelector('#gridMax');
-    const maxCols = gridMaxInput ? Number(gridMaxInput.value) : Infinity;
+    const gridMax = gridMaxInput ? Number(gridMaxInput.value) : Infinity;
     const colsNow = countDataCols(which);
-    if (colsNow >= maxCols) {
-      alert(`Cannot add column. The maximum column limit of ${maxCols} (GRID_MAX) has been reached for table ${which.toUpperCase()}.`);
+    const maxColsAllowed = gridMax + 1; 
+    
+    if (colsNow >= maxColsAllowed) {
+      alert(`Cannot add column. The maximum column limit of ${gridMax} (GRID_MAX) has been reached for table ${which.toUpperCase()}.`);
       return;
     }
   }
 
   const colsNow = countDataCols(which);
-  const nextCol = colsNow + 1;
+  const nextCol = colsNow;
 
   // If using new header style with th[data-col]
-  const firstDataTh = header.querySelector('th[data-col="1"]');
+  const firstDataTh = header.querySelector('th[data-col="0"]');
   if (firstDataTh){
-    // append new th at END; controls remain on :1 automatically
     const th = document.createElement('th');
     th.setAttribute('data-col', String(nextCol));
     th.textContent = `:${nextCol}`;
@@ -1935,7 +1969,7 @@ function addColumn(which){
   body.querySelectorAll('tr').forEach(tr=>{
     const delTd = tr.querySelector('td:last-child');
     const td = document.createElement('td');
-    td.innerHTML = `<input data-kind="val" data-col="${nextCol}" class="small" />`;
+    td.innerHTML = `<input data-kind="val" data-col="${nextCol}" class="small" required />`;
     tr.insertBefore(td, delTd);
   });
 }
@@ -1947,14 +1981,15 @@ function delColumn(name) {
   const body   = document.getElementById(name+'Body');
   const colsNow = countDataCols(name);
   if (colsNow <= 1) return;             // keep at least one data column
+  const lastColIndex = colsNow - 1;
 
   // remove last header th
   const thData = header.querySelectorAll('th[data-col]');
   if (thData.length) {
-    header.querySelector(`th[data-col="${colsNow}"]`)?.remove();
+    header.querySelector(`th[data-col="${lastColIndex}"]`)?.remove();
   } else {
     const ths = header.querySelectorAll('th');
-    const lastDataTh = ths[ths.length - 2];  // old fallback layout
+    const lastDataTh = ths[ths.length - 2]; 
     if (lastDataTh && lastDataTh.textContent.trim().startsWith(':')) lastDataTh.remove();
   }
 
@@ -2642,7 +2677,14 @@ const selectionMap = new Map();
 function buildDat() {
   const gm = parseInt(qs('#gridMax').value, 10) || 1;
   const g = parseFloat(qs('#gravity').value) || 0;
-  const pimTxt = qs('#pimSet').value.trim();
+  const pimTxt = Array.from(document.querySelectorAll('#pimSetBody tr'))
+  .map(row => {
+    const pre = row.querySelector('.pim-pre')?.value.trim();
+    const post = row.querySelector('.pim-post')?.value.trim();
+    return (pre && post) ? `${pre},${post}` : '';
+  })
+  .filter(pair => pair !== '')
+  .join('; ');
   const lbls = qs('#bezLbls').value.trim().split(/\s+/).filter(Boolean);
   const sgSets = qs('#bezSubgridSets').value.split(',').map(s => s.trim());
 
@@ -3303,7 +3345,11 @@ function buildRun(){
   const hasRK      = used("RK");
   const hasConstr  = used("Constraint");
   const hasSeed    = used("q/v/t/u");
-  const hasPIM     = (qs('#pimSet').value || '').trim() !== '';
+  const hasPIM = Array.from(document.querySelectorAll('#pimSetBody tr')).some(row => {
+    const preVal = row.querySelector('.pim-pre')?.value.trim();
+    const postVal = row.querySelector('.pim-post')?.value.trim();
+    return preVal !== '' && postVal !== '';
+  });
 
   // Note: Bézier is purely data (BEZ_LBLS / bez / bez_subgrid); nothing in
   // the problem/solve block depends on it, so buildRun() is unchanged whether
@@ -3413,6 +3459,21 @@ qs('#btnSaveSubmit').addEventListener('click', async ()=>{
 });
 
 /* ====================== Grid viz + AMPL block ====================== */
+document.getElementById('btnAddPimSet')?.addEventListener('click', () => {
+  const tb = document.getElementById('pimSetBody');
+  if (!tb) return;
+  const GRID_MAX = +document.getElementById('gridMax')?.value || 0;
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><input type="number" class="rowIndex" readonly /></td>
+    <td><input type="number" class="pim-pre" value="0" step="1" required /></td>
+    <td><input type="number" class="pim-post" value="${GRID_MAX || 0}" step="1" required /></td>
+    <td><button type="button" class="btn btn--ghost" onclick="this.closest('tr')?.remove(); updateTableIndex('pimSetBody')">✕</button></td>
+  `;
+  tb.appendChild(tr);
+  updateTableIndex(tb);
+});
+
 function readSubphasesForAMPL() {
   const tb = document.getElementById('subphaseBody');
   if (!tb) return [];
