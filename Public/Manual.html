@@ -783,8 +783,8 @@
       <div class="g2 wiz-row" style="margin-top:10px;">
         <div>
           <label class="label">Notification email</label>
-          <input id="email" type="email" placeholder="you@example.com" />
-          <p class="muted">Shown in the success message (server sends using its configured email).</p>
+          <input id="email" type="email" placeholder="you@example.com" required />
+          <p class="muted">Required by NEOS for job submission.</p>
         </div>
         <div>
           <label class="label">NEOS Status</label>
@@ -792,7 +792,7 @@
         </div>
       </div>
       <div class="btn-row">
-        <button class="btn btn--primary" id="btnSaveSubmit">Save → Submit to NEOS</button>
+        <button type="button" class="btn btn--primary" id="btnSaveSubmit">Save → Submit to NEOS</button>
       </div>
     </section>
 
@@ -3248,20 +3248,23 @@ function buildAllPreviews(){
 }
 
 /* ====================== NEOS submission ====================== */
-async function submitToNeos(){
-  const emailVal = (qs('#email').value || '').trim();
+async function submitToNeos() {
   const dat = qs('#preview').value || buildDat();
   const mod = qs('#modPreview').value || buildMod();
   const run = qs('#runPreview').value || buildRun();
-
+  const email = qs('#email').value.trim();
+  if (!email) {
+    throw new Error('Please enter an email address before submitting to NEOS.');
+  }
   const post = async (url, fileContent) => {
     const res = await fetch(url, {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ fileContent })
     });
+
     const txt = await res.text();
-    if(!res.ok) throw new Error(txt || ('HTTP '+res.status));
+    if (!res.ok) throw new Error(txt || ('HTTP ' + res.status));
     return txt;
   };
 
@@ -3270,36 +3273,49 @@ async function submitToNeos(){
   await post('/generate-run', run);
 
   const neosResp = await fetch('/submit-neos', {
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({})
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email })
   });
-  const neosMsg = await neosResp.text();
-  if(!neosResp.ok) throw new Error(neosMsg || 'NEOS submit failed');
 
-  const jobMatch   = neosMsg.match(/Job\s*Number:\s*([0-9]+)/i);
-  const passMatch  = neosMsg.match(/Password:\s*([^\s]+)/i);
-  const jobNumber  = jobMatch ? jobMatch[1] : "(not found)";
-  const password   = passMatch ? passMatch[1] : "(not found)";
-  const emailShown = emailVal || "configured on server";
+  const data = await neosResp.json();
+  if (!neosResp.ok) throw new Error(data.error || 'NEOS submit failed');
 
-  qs('#neosResponse').innerHTML =
-    `NEOS job submitted successfully!\n\n` +
-    `Job Number: ${jobNumber}\n` +
-    `Password: ${password}\n` +
-    `Email sent successfully to: ${emailShown}\n\n` +
-    `Track here: https://neos-server.org/neos/admin.html`;
-}
-qs('#btnSaveSubmit').addEventListener('click', async ()=>{
-  try {
-    qs('#neosResponse').textContent = 'Saving & submitting…';
-    buildAllPreviews();
-    await submitToNeos();
-  } catch (err) {
-    console.error(err);
-    qs('#neosResponse').textContent = 'Error: ' + err.message;
+  const jobNumber = data.jobNumber;
+  const password = data.password;
+
+  qs('#neosResponse').textContent =
+    `Job Number : ${jobNumber}\n` +
+    `Password   : ${password}\n` +
+    `Status     : Submitted\n\n` +
+    `Waiting for NEOS output...`;
+
+  let status = 'Submitted';
+
+  while (status !== 'Done') {
+    await new Promise(resolve => setTimeout(resolve, 5000));
+
+    const resultResp = await fetch('/neos-results', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ jobNumber, password })
+    });
+
+    const resultData = await resultResp.json();
+    if (!resultResp.ok) {
+      throw new Error(resultData.error || 'Could not fetch NEOS results');
+    }
+
+    status = resultData.status;
+
+    qs('#neosResponse').textContent =
+      `Job Number : ${jobNumber}\n` +
+      `Password   : ${password}\n` +
+      `Status     : ${status}\n\n` +
+      `===== NEOS Output =====\n` +
+      (resultData.output || 'Waiting for output...');
   }
-});
+}
 
 /* ====================== Grid viz + AMPL block ====================== */
 function readSubphasesForAMPL() {
@@ -3411,6 +3427,28 @@ document.querySelectorAll('.col-controls').forEach(bar => {
     if (act === 'del-col') delColumn(which);
   });
 });
+/* ====================== Save + Submit button wiring ====================== */
+const btnSaveSubmit = qs('#btnSaveSubmit');
+
+if (btnSaveSubmit) {
+  btnSaveSubmit.addEventListener('click', async (e) => {
+    e.preventDefault();
+
+    try {
+      qs('#neosResponse').textContent = 'Saving & submitting...';
+
+      buildAllPreviews();
+
+      await submitToNeos();
+
+    } catch (err) {
+      console.error(err);
+      qs('#neosResponse').textContent = 'Error: ' + err.message;
+    }
+  });
+} else {
+  console.error('btnSaveSubmit button not found');
+}
 </script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"7f7b0fd8732c4326aae4b9d58d5c514a","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body>

@@ -21,7 +21,6 @@
       <a class="tab" id="tabManual" href="#manual">Enter details manually</a>
     </div>
 
-    <!-- Upload panel -->
     <section id="upload" class="tab-panel card">
       <h3>Upload .dat / .mod / .run</h3>
 
@@ -57,28 +56,20 @@
           <textarea id="runText"></textarea>
         </div>
       </div>
-
-      <!-- Email (optional) -->
-      <div class="grid-3" style="margin-top:12px">
-        <div>
-          <label class="label" for="emailUpload">Email for NEOS Output (optional)</label>
-          <input id="emailUpload" type="email" placeholder="you@example.com" />
-        </div>
+      <div style="margin-top: 12px;">
+        <label class="label" for="neosEmail">Email for NEOS</label>
+        <input id="neosEmail" type="email" placeholder="you@example.com" required />
+        <p class="muted">Required by NEOS for job submission.</p>
       </div>
-
       <div class="btn-row" style="margin-top: 12px;">
         <button class="btn" id="btnClear" type="button">Clear</button>
         <button class="btn btn--primary" id="btnSubmitUpload" type="button">Save & Submit to NEOS</button>
       </div>
 
-      <!-- Status logs for saving + submission -->
       <div id="serverResponse" class="card mono" style="margin-top:12px; white-space:pre-wrap;"></div>
-
-      <!-- NEOS credentials display (Job Number / Password / Email) -->
-      <div id="neosResponse" class="card mono" style="margin-top:12px; white-space:pre-wrap;"></div>
+      <pre id="neosResponse" class="card mono" style="margin-top:12px; white-space:pre-wrap;"></pre>
     </section>
 
-    <!-- Manual panel (link to builder) -->
     <section id="manual" class="tab-panel card">
       <div class="info-row">
         <div>
@@ -87,91 +78,129 @@
         </div>
         <a href="manual.html" class="btn btn--primary">Open Builder</a>
       </div>
-      <p class="muted">Opens in a dedicated page with your full UI (prettified).</p>
+      <p class="muted">Opens in a dedicated page with your full UI.</p>
     </section>
   </main>
 
   <script>
-    // ----- Tabs (hash-based) -----
     function setTabFromHash() {
       const hash = location.hash || '#upload';
-      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+
+      document.querySelectorAll('.tab-panel').forEach(p => {
+        p.classList.remove('active');
+      });
+
+      document.querySelectorAll('.tab').forEach(t => {
+        t.classList.remove('active');
+      });
+
       document.querySelector(hash)?.classList.add('active');
-      (hash === '#manual' ? document.getElementById('tabManual') : document.getElementById('tabUpload')).classList.add('active');
+
+      if (hash === '#manual') {
+        document.getElementById('tabManual').classList.add('active');
+      } else {
+        document.getElementById('tabUpload').classList.add('active');
+      }
     }
+
     window.addEventListener('hashchange', setTabFromHash);
     setTabFromHash();
 
-    // ----- Elements -----
     const datFile = document.getElementById('datFile');
     const modFile = document.getElementById('modFile');
     const runFile = document.getElementById('runFile');
+
     const datText = document.getElementById('datText');
     const modText = document.getElementById('modText');
     const runText = document.getElementById('runText');
+
     const datMeta = document.getElementById('datMeta');
     const modMeta = document.getElementById('modMeta');
     const runMeta = document.getElementById('runMeta');
+
     const btnClear = document.getElementById('btnClear');
     const btnSubmit = document.getElementById('btnSubmitUpload');
+    const emailInput = document.getElementById('neosEmail');
     const serverResponse = document.getElementById('serverResponse');
     const neosResponse = document.getElementById('neosResponse');
-    const emailInput = document.getElementById('emailUpload');
 
-    // ----- File reading helper -----
-    const read = (file) => new Promise(res => {
-      if (!file) return res('');
-      const r = new FileReader();
-      r.onload = e => res(String(e.target.result));
-      r.readAsText(file);
+    const read = (file) => new Promise(resolve => {
+      if (!file) return resolve('');
+
+      const reader = new FileReader();
+
+      reader.onload = e => {
+        resolve(String(e.target.result));
+      };
+
+      reader.readAsText(file);
     });
 
     datFile.addEventListener('change', async () => {
-      const f = datFile.files[0];
-      datText.value = await read(f);
-      datMeta.textContent = f ? `Loaded: ${f.name} (${datText.value.length} chars)` : '';
+      const file = datFile.files[0];
+      datText.value = await read(file);
+      datMeta.textContent = file
+        ? `Loaded: ${file.name} (${datText.value.length} chars)`
+        : '';
     });
 
     modFile.addEventListener('change', async () => {
-      const f = modFile.files[0];
-      modText.value = await read(f);
-      modMeta.textContent = f ? `Loaded: ${f.name} (${modText.value.length} chars)` : '';
+      const file = modFile.files[0];
+      modText.value = await read(file);
+      modMeta.textContent = file
+        ? `Loaded: ${file.name} (${modText.value.length} chars)`
+        : '';
     });
 
     runFile.addEventListener('change', async () => {
-      const f = runFile.files[0];
-      runText.value = await read(f);
-      runMeta.textContent = f ? `Loaded: ${f.name} (${runText.value.length} chars)` : '';
+      const file = runFile.files[0];
+      runText.value = await read(file);
+      runMeta.textContent = file
+        ? `Loaded: ${file.name} (${runText.value.length} chars)`
+        : '';
     });
 
     btnClear.addEventListener('click', () => {
-      [datFile, modFile, runFile].forEach(inp => inp.value = '');
-      [datText, modText, runText].forEach(t => t.value = '');
-      [datMeta, modMeta, runMeta].forEach(m => m.textContent = '');
-      if (emailInput) emailInput.value = '';
+      datFile.value = '';
+      modFile.value = '';
+      runFile.value = '';
+
+      datText.value = '';
+      modText.value = '';
+      runText.value = '';
+
+      datMeta.textContent = '';
+      modMeta.textContent = '';
+      runMeta.textContent = '';
+
+      emailInput.value = '';
       serverResponse.textContent = '';
       neosResponse.textContent = '';
     });
 
-    // ----- POST helper -----
     async function postText(url, bodyObj) {
-      const resp = await fetch(url, {
+      const response = await fetch(url, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify(bodyObj || {})
       });
-      const txt = await resp.text();
-      if (!resp.ok) throw new Error(txt || ('HTTP ' + resp.status));
-      return txt;
+
+      const text = await response.text();
+
+      if (!response.ok) {
+        throw new Error(text || 'HTTP ' + response.status);
+      }
+
+      return text;
     }
 
-    // ----- Save to server as test.* then /submit-neos -----
     btnSubmit.addEventListener('click', async () => {
       const dat = (datText.value || '').trim();
       const mod = (modText.value || '').trim();
       const run = (runText.value || '').trim();
-
+      const email = (emailInput.value || '').trim();
       serverResponse.textContent =
         `Lengths → dat: ${dat.length}, mod: ${mod.length}, run: ${run.length}\n`;
 
@@ -181,38 +210,89 @@
         return;
       }
 
+      if (!email) {
+        serverResponse.textContent += 'Please enter an email address for NEOS.\n';
+        alert('Please enter an email address for NEOS.');
+        return;
+      }
       btnSubmit.disabled = true;
-      neosResponse.textContent = ''; // clear previous NEOS info
+      neosResponse.textContent = '';
       serverResponse.textContent += 'Saving files to server...\n';
 
       try {
-        // 1) Save files on server (writes test.dat / test.mod / test.run)
-        const saveDat = await postText('/generate',      { fileContent: dat });
+        const saveDat = await postText('/generate', {
+          fileContent: dat
+        });
         serverResponse.textContent += saveDat + '\n';
-        const saveMod = await postText('/generate-mod',  { fileContent: mod });
+
+        const saveMod = await postText('/generate-mod', {
+          fileContent: mod
+        });
         serverResponse.textContent += saveMod + '\n';
-        const saveRun = await postText('/generate-run',  { fileContent: run });
+
+        const saveRun = await postText('/generate-run', {
+          fileContent: run
+        });
         serverResponse.textContent += saveRun + '\n';
 
-        // 2) Submit to NEOS (server reads test.*)
         serverResponse.textContent += 'Submitting to NEOS...\n';
-        const neosMsgText = await postText('/submit-neos', {}); // server defaults; email is server-configured
 
-        // Parse Job Number, Password, and (if present) email from server message
-        const jobMatch   = neosMsgText.match(/Job\s*Number:\s*([0-9]+)/i);
-        const passMatch  = neosMsgText.match(/Password:\s*([^\s]+)/i);
-        const emailMatch = neosMsgText.match(/Results\s+will\s+be\s+sent\s+to\s+your\s+email\s*\(([^)]+)\)/i);
+        const neosResp = await fetch('/submit-neos', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ email })
+        });
 
-        const jobNumber  = jobMatch ? jobMatch[1] : "(not found)";
-        const password   = passMatch ? passMatch[1] : "(not found)";
-        const emailShown = emailMatch ? emailMatch[1] : (emailInput.value || "(configured on server)");
+        const submitData = await neosResp.json();
 
-        neosResponse.innerHTML =
-          "NEOS job submitted successfully!<br><br>" +
-          `<strong>Job Number:</strong> ${jobNumber}<br>` +
-          `<strong>Password:</strong> ${password}<br>` +
-          `<strong>Email sent successfully to:</strong> ${emailShown}<br><br>` +
-          `Track here: <a href="https://neos-server.org/neos/admin.html" target="_blank" rel="noopener">NEOS Admin</a>`;
+        if (!neosResp.ok) {
+          throw new Error(submitData.error || 'NEOS submit failed');
+        }
+
+        const jobNumber = submitData.jobNumber;
+        const password = submitData.password;
+
+        neosResponse.textContent =
+          `NEOS job submitted successfully!\n\n` +
+          `Job Number : ${jobNumber}\n` +
+          `Password   : ${password}\n` +
+          `Status     : Submitted\n\n` +
+          `Waiting for NEOS output...`;
+
+        let status = 'Submitted';
+
+        while (status !== 'Done') {
+          await new Promise(resolve => setTimeout(resolve, 5000));
+
+          const resultResp = await fetch('/neos-results', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              jobNumber,
+              password
+            })
+          });
+
+          const resultData = await resultResp.json();
+
+          if (!resultResp.ok) {
+            throw new Error(resultData.error || 'Could not fetch NEOS results');
+          }
+
+          status = resultData.status;
+
+          neosResponse.textContent =
+            `NEOS Job Information\n\n` +
+            `Job Number : ${jobNumber}\n` +
+            `Password   : ${password}\n` +
+            `Status     : ${status}\n\n` +
+            `===== NEOS Output =====\n` +
+            (resultData.output || 'Waiting for output...');
+        }
 
       } catch (err) {
         console.error(err);

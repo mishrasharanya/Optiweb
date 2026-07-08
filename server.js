@@ -9,90 +9,198 @@ const PORT = 3000;
 app.use(express.static("public"));
 app.use(bodyParser.json());
 
-//generate .dat file route
-app.post('/generate', (req, res) => {
-  const { fileContent } = req.body;
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
 
-  // e.g., write it to test.dat
-  fs.writeFileSync('test.dat', fileContent);
-  res.send('.dat file generated and saved successfully!');
+// Generate .dat file
+app.post("/generate", (req, res) => {
+  try {
+    fs.writeFileSync("test.dat", req.body.fileContent || "");
+    res.send(".dat file generated and saved successfully!");
+  } catch (err) {
+    res.status(500).json({
+      error: "Error saving test.dat",
+      details: err.message
+    });
+  }
 });
 
+// Generate .mod file
 app.post("/generate-mod", (req, res) => {
-  const { fileContent } = req.body;
   try {
-    fs.writeFileSync("test.mod", fileContent);
+    fs.writeFileSync("test.mod", req.body.fileContent || "");
     res.send("test.mod saved successfully!");
   } catch (err) {
-    console.error("MOD Save Error:", err);
-    res.status(500).send("Error saving test.mod");
+    res.status(500).json({
+      error: "Error saving test.mod",
+      details: err.message
+    });
   }
 });
 
+// Generate .run file
 app.post("/generate-run", (req, res) => {
-  const { fileContent } = req.body;
   try {
-    fs.writeFileSync("test.run", fileContent);
+    fs.writeFileSync("test.run", req.body.fileContent || "");
     res.send("test.run saved successfully!");
   } catch (err) {
-    console.error("RUN Save Error:", err);
-    res.status(500).send(" Error saving test.run");
+    res.status(500).json({
+      error: "Error saving test.run",
+      details: err.message
+    });
   }
 });
 
-
-// === NEOS SUBMIT ROUTE ===
+// Submit to NEOS
 app.post("/submit-neos", async (req, res) => {
   try {
+    const category = req.body.category || "nco";
     const solver = req.body.solver || "IPOPT";
+    const inputMethod = req.body.inputMethod || "AMPL";
+    const email = String(req.body.email || "").trim();
 
-    // Check required files exist
-    if (!fs.existsSync("test.mod") || !fs.existsSync("test.dat") || !fs.existsSync("test.run")) {
-      return res.status(400).send("Missing one or more required files: test.mod, test.dat, or test.run.");
+    if (!email) {
+      return res.status(400).json({
+        error: "Email address is required for NEOS submission."
+      });
     }
 
-    // Read the contents of the files
+    if (!isValidEmail(email)) {
+      return res.status(400).json({
+        error: "Please enter a valid email address."
+      });
+    }
+
+    if (
+      !fs.existsSync("test.mod") ||
+      !fs.existsSync("test.dat") ||
+      !fs.existsSync("test.run")
+    ) {
+      return res.status(400).json({
+        error: "Missing one or more required files: test.mod, test.dat, or test.run."
+      });
+    }
+
     const model = fs.readFileSync("test.mod", "utf8");
     const data = fs.readFileSync("test.dat", "utf8");
     const commands = fs.readFileSync("test.run", "utf8");
 
-    // Build XML string for NEOS
     const xml = await NEOS.xmlstring({
-      category: "nco",
+      category,
       solver,
-      inputMethod: "AMPL",
+      inputMethod,
+      email,
       model,
       data,
-      commands,
-      email: "sharanyamishra8@gmail.com"
+      commands
     });
 
-    // Submit to NEOS
     const job = await NEOS.submitJob(xml);
 
-    // Job confirmation
-    const msg = `
-NEOS job submitted successfully!
+    if (
+      !job.jobNumber ||
+      Number(job.jobNumber) === 0 ||
+      String(job.password || "").startsWith("Error")
+    ) {
+      return res.status(500).json({
+        error: "NEOS submission failed.",
+        details: job.password || "No valid job number returned from NEOS."
+      });
+    }
 
-Job Number: ${job.jobNumber}
-Password: ${job.password}
+    console.log("NEOS job submitted");
+    console.log("Email:", email);
+    console.log("Job Number:", job.jobNumber);
+    console.log("Password:", job.password);
 
-Results will be sent to your email (sharanyamishra8@gmail.com).
-
-You can also manually track it here:
-https://neos-server.org/neos/admin.html
-`;
-
-    console.log(msg); // Log in terminal
-    res.send(msg);    // Send to frontend
+    res.json({
+      message: "NEOS job submitted successfully!",
+      category,
+      solver,
+      inputMethod,
+      email,
+      jobNumber: job.jobNumber,
+      password: job.password,
+      status: "Submitted"
+    });
 
   } catch (err) {
     console.error("NEOS Submission Error:", err);
-    res.status(500).send("Error submitting job to NEOS.");
+    res.status(500).json({
+      error: "Error submitting job to NEOS.",
+      details: err.message
+    });
   }
 });
 
-// === START SERVER ===
+// Check NEOS job status
+app.post("/neos-status", async (req, res) => {
+  try {
+    const { jobNumber, password } = req.body;
+
+    if (!jobNumber || !password) {
+      return res.status(400).json({
+        error: "Job number and password are required."
+      });
+    }
+
+    const status = await NEOS.getJobStatus(jobNumber, password);
+
+    res.json({
+      jobNumber,
+      password,
+      status
+    });
+
+  } catch (err) {
+    res.status(500).json({
+      error: "Error checking NEOS job status.",
+      details: err.message
+    });
+  }
+});
+
+// Get NEOS results
+app.post("/neos-results", async (req, res) => {
+  try {
+    const { jobNumber, password } = req.body;
+
+    if (!jobNumber || !password) {
+      return res.status(400).json({
+        error: "Job number and password are required."
+      });
+    }
+
+    const status = await NEOS.getJobStatus(jobNumber, password);
+
+    if (status !== "Done") {
+      return res.json({
+        jobNumber,
+        password,
+        status,
+        output: `Job is not finished yet. Current status: ${status}`
+      });
+    }
+
+    const results = await NEOS.getFinalResults(jobNumber, password);
+    const output = results.toString();
+
+    res.json({
+      jobNumber,
+      password,
+      status,
+      output
+    });
+
+  } catch (err) {
+    res.status(500).json({
+      error: "Error retrieving NEOS results.",
+      details: err.message
+    });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });
