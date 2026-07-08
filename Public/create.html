@@ -6,6 +6,7 @@
   <link rel="stylesheet" href="styles.css" />
   <script defer src="app.js"></script>
 </head>
+
 <body class="page">
   <header class="site-header">
     <div class="container">
@@ -17,27 +18,44 @@
 
   <main class="container">
     <div class="tabs">
-      <a class="tab" id="tabUpload" href="#upload">Upload files</a>
+      <a class="tab active" id="tabUpload" href="#upload">Upload files</a>
       <a class="tab" id="tabManual" href="#manual">Enter details manually</a>
     </div>
 
-    <section id="upload" class="tab-panel card">
+    <section id="upload" class="tab-panel card active">
       <h3>Upload .dat / .mod / .run</h3>
 
+      <p class="muted">
+        Your <code>.run</code> file should include a solver line such as
+        <code>option solver ipopt;</code>. OptiWeb detects the solver and its
+        NEOS submission details automatically.
+      </p>
+
       <div class="grid-3">
-        <div>
-          <label class="label">.dat</label>
-          <input id="datFile" type="file" accept=".dat,text/plain" />
+        <div class="drop-zone" id="datZone">
+          <div class="label">.dat File</div>
+          <div class="drop-title">Drag & Drop</div>
+          <div class="drop-subtitle">or choose a file</div>
+          <button type="button" class="btn choose-btn">Choose File</button>
+          <input id="datFile" class="hidden-file-input" type="file" accept=".dat,text/plain" />
           <div class="muted" id="datMeta"></div>
         </div>
-        <div>
-          <label class="label">.mod</label>
-          <input id="modFile" type="file" accept=".mod,text/plain" />
+
+        <div class="drop-zone" id="modZone">
+          <div class="label">.mod File</div>
+          <div class="drop-title">Drag & Drop</div>
+          <div class="drop-subtitle">or choose a file</div>
+          <button type="button" class="btn choose-btn">Choose File</button>
+          <input id="modFile" class="hidden-file-input" type="file" accept=".mod,text/plain" />
           <div class="muted" id="modMeta"></div>
         </div>
-        <div>
-          <label class="label">.run</label>
-          <input id="runFile" type="file" accept=".run,text/plain" />
+
+        <div class="drop-zone" id="runZone">
+          <div class="label">.run File</div>
+          <div class="drop-title">Drag & Drop</div>
+          <div class="drop-subtitle">or choose a file</div>
+          <button type="button" class="btn choose-btn">Choose File</button>
+          <input id="runFile" class="hidden-file-input" type="file" accept=".run,text/plain" />
           <div class="muted" id="runMeta"></div>
         </div>
       </div>
@@ -47,26 +65,34 @@
           <label class="label">.dat preview</label>
           <textarea id="datText"></textarea>
         </div>
+
         <div>
           <label class="label">.mod preview</label>
           <textarea id="modText"></textarea>
         </div>
+
         <div>
           <label class="label">.run preview</label>
           <textarea id="runText"></textarea>
         </div>
       </div>
-      <div style="margin-top: 12px;">
+
+      <div style="margin-top:12px;">
         <label class="label" for="neosEmail">Email for NEOS</label>
         <input id="neosEmail" type="email" placeholder="you@example.com" required />
-        <p class="muted">Required by NEOS for job submission.</p>
+        <p class="muted">
+          Email is included in the NEOS XML. NEOS may skip result emails for non-authenticated jobs, so results are shown and downloadable here.
+        </p>
       </div>
-      <div class="btn-row" style="margin-top: 12px;">
+
+      <div class="btn-row" style="margin-top:12px;">
         <button class="btn" id="btnClear" type="button">Clear</button>
-        <button class="btn btn--primary" id="btnSubmitUpload" type="button">Save & Submit to NEOS</button>
+        <button class="btn btn--primary" id="btnSubmitUpload" type="button">Submit to NEOS</button>
+        <button class="btn" id="btnDownloadZip" type="button" disabled>Download Results ZIP</button>
       </div>
 
       <div id="serverResponse" class="card mono" style="margin-top:12px; white-space:pre-wrap;"></div>
+
       <pre id="neosResponse" class="card mono" style="margin-top:12px; white-space:pre-wrap;"></pre>
     </section>
 
@@ -74,10 +100,15 @@
       <div class="info-row">
         <div>
           <h3>Manual builder</h3>
-          <p>Use the interactive form to generate <code>.dat</code>, preview <code>.mod</code>/<code>.run</code>, and submit to NEOS.</p>
+          <p>
+            Use the interactive form to generate <code>.dat</code>, preview
+            <code>.mod</code>/<code>.run</code>, and submit to NEOS.
+          </p>
         </div>
+
         <a href="manual.html" class="btn btn--primary">Open Builder</a>
       </div>
+
       <p class="muted">Opens in a dedicated page with your full UI.</p>
     </section>
   </main>
@@ -86,15 +117,21 @@
     function setTabFromHash() {
       const hash = location.hash || '#upload';
 
-      document.querySelectorAll('.tab-panel').forEach(p => {
-        p.classList.remove('active');
+      document.querySelectorAll('.tab-panel').forEach(panel => {
+        panel.classList.remove('active');
       });
 
-      document.querySelectorAll('.tab').forEach(t => {
-        t.classList.remove('active');
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.classList.remove('active');
       });
 
-      document.querySelector(hash)?.classList.add('active');
+      const activePanel = document.querySelector(hash);
+
+      if (activePanel) {
+        activePanel.classList.add('active');
+      } else {
+        document.getElementById('upload').classList.add('active');
+      }
 
       if (hash === '#manual') {
         document.getElementById('tabManual').classList.add('active');
@@ -120,44 +157,79 @@
 
     const btnClear = document.getElementById('btnClear');
     const btnSubmit = document.getElementById('btnSubmitUpload');
+    const btnDownloadZip = document.getElementById('btnDownloadZip');
+
     const emailInput = document.getElementById('neosEmail');
+
     const serverResponse = document.getElementById('serverResponse');
     const neosResponse = document.getElementById('neosResponse');
 
-    const read = (file) => new Promise(resolve => {
-      if (!file) return resolve('');
+    let currentJobNumber = null;
+
+    const read = file => new Promise(resolve => {
+      if (!file) {
+        resolve('');
+        return;
+      }
 
       const reader = new FileReader();
 
-      reader.onload = e => {
-        resolve(String(e.target.result));
+      reader.onload = event => {
+        resolve(String(event.target.result));
       };
 
       reader.readAsText(file);
     });
 
+    function setupDropZone(zoneId, inputId) {
+      const zone = document.getElementById(zoneId);
+      const input = document.getElementById(inputId);
+      const button = zone.querySelector('.choose-btn');
+
+      button.addEventListener('click', () => {
+        input.click();
+      });
+
+      zone.addEventListener('dragover', e => {
+        e.preventDefault();
+        zone.classList.add('dragover');
+      });
+
+      zone.addEventListener('dragleave', () => {
+        zone.classList.remove('dragover');
+      });
+
+      zone.addEventListener('drop', e => {
+        e.preventDefault();
+        zone.classList.remove('dragover');
+
+        if (!e.dataTransfer.files.length) return;
+
+        input.files = e.dataTransfer.files;
+        input.dispatchEvent(new Event('change'));
+      });
+    }
+
+    setupDropZone('datZone', 'datFile');
+    setupDropZone('modZone', 'modFile');
+    setupDropZone('runZone', 'runFile');
+
     datFile.addEventListener('change', async () => {
       const file = datFile.files[0];
       datText.value = await read(file);
-      datMeta.textContent = file
-        ? `Loaded: ${file.name} (${datText.value.length} chars)`
-        : '';
+      datMeta.textContent = file ? `Loaded: ${file.name} (${datText.value.length} chars)` : '';
     });
 
     modFile.addEventListener('change', async () => {
       const file = modFile.files[0];
       modText.value = await read(file);
-      modMeta.textContent = file
-        ? `Loaded: ${file.name} (${modText.value.length} chars)`
-        : '';
+      modMeta.textContent = file ? `Loaded: ${file.name} (${modText.value.length} chars)` : '';
     });
 
     runFile.addEventListener('change', async () => {
       const file = runFile.files[0];
       runText.value = await read(file);
-      runMeta.textContent = file
-        ? `Loaded: ${file.name} (${runText.value.length} chars)`
-        : '';
+      runMeta.textContent = file ? `Loaded: ${file.name} (${runText.value.length} chars)` : '';
     });
 
     btnClear.addEventListener('click', () => {
@@ -174,88 +246,108 @@
       runMeta.textContent = '';
 
       emailInput.value = '';
+
       serverResponse.textContent = '';
       neosResponse.textContent = '';
+
+      currentJobNumber = null;
+      btnDownloadZip.disabled = true;
     });
 
-    async function postText(url, bodyObj) {
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(bodyObj || {})
-      });
-
-      const text = await response.text();
-
-      if (!response.ok) {
-        throw new Error(text || 'HTTP ' + response.status);
+    btnDownloadZip.addEventListener('click', async () => {
+      if (!currentJobNumber) {
+        alert('No completed NEOS job available for download.');
+        return;
       }
 
-      return text;
-    }
+      try {
+        const response = await fetch('/download-zip', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ jobNumber: currentJobNumber })
+        });
+
+        if (!response.ok) {
+          const err = await response.json();
+          throw new Error(err.error || err.details || 'Could not download ZIP.');
+        }
+
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `optiweb-job-${currentJobNumber}.zip`;
+
+        document.body.appendChild(a);
+        a.click();
+
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+      } catch (err) {
+        alert(err.message);
+      }
+    });
 
     btnSubmit.addEventListener('click', async () => {
       const dat = (datText.value || '').trim();
       const mod = (modText.value || '').trim();
       const run = (runText.value || '').trim();
       const email = (emailInput.value || '').trim();
-      serverResponse.textContent =
-        `Lengths → dat: ${dat.length}, mod: ${mod.length}, run: ${run.length}\n`;
+
+      serverResponse.textContent = '';
+      neosResponse.textContent = '';
+      btnDownloadZip.disabled = true;
+      currentJobNumber = null;
 
       if (!dat || !mod || !run) {
-        serverResponse.textContent += 'Please provide all three files: .dat, .mod, and .run.\n';
+        serverResponse.textContent = 'Please provide all three files: .dat, .mod, and .run.\n';
         alert('Please provide all three files: .dat, .mod, and .run.');
         return;
       }
 
       if (!email) {
-        serverResponse.textContent += 'Please enter an email address for NEOS.\n';
+        serverResponse.textContent = 'Email Status → Missing. Please enter an email address for NEOS.\n';
         alert('Please enter an email address for NEOS.');
         return;
       }
+
+      serverResponse.textContent =
+        `Email Status → ${email}\n` +
+        `Solver and NEOS submission details → Auto-detect from .run\n` +
+        'Preparing NEOS submission from uploaded files...\n';
+
       btnSubmit.disabled = true;
-      neosResponse.textContent = '';
-      serverResponse.textContent += 'Saving files to server...\n';
 
       try {
-        const saveDat = await postText('/generate', {
-          fileContent: dat
-        });
-        serverResponse.textContent += saveDat + '\n';
-
-        const saveMod = await postText('/generate-mod', {
-          fileContent: mod
-        });
-        serverResponse.textContent += saveMod + '\n';
-
-        const saveRun = await postText('/generate-run', {
-          fileContent: run
-        });
-        serverResponse.textContent += saveRun + '\n';
-
-        serverResponse.textContent += 'Submitting to NEOS...\n';
-
         const neosResp = await fetch('/submit-neos', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ email })
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email,
+            dat,
+            mod,
+            run
+          })
         });
 
         const submitData = await neosResp.json();
 
         if (!neosResp.ok) {
-          throw new Error(submitData.error || 'NEOS submit failed');
+          throw new Error(submitData.details || submitData.error || 'NEOS submit failed');
         }
 
         const jobNumber = submitData.jobNumber;
         const password = submitData.password;
+        currentJobNumber = jobNumber;
 
         neosResponse.textContent =
           `NEOS job submitted successfully!\n\n` +
+          `Email      : ${email}\n` +
+          `Category   : ${submitData.category}\n` +
+          `Solver     : ${submitData.solver}\n` +
+          `Input      : ${submitData.inputMethod}\n` +
           `Job Number : ${jobNumber}\n` +
           `Password   : ${password}\n` +
           `Status     : Submitted\n\n` +
@@ -268,31 +360,38 @@
 
           const resultResp = await fetch('/neos-results', {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              jobNumber,
-              password
-            })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ jobNumber, password })
           });
 
           const resultData = await resultResp.json();
 
           if (!resultResp.ok) {
-            throw new Error(resultData.error || 'Could not fetch NEOS results');
+            throw new Error(resultData.error || resultData.details || 'Could not fetch NEOS results');
           }
 
           status = resultData.status;
 
           neosResponse.textContent =
             `NEOS Job Information\n\n` +
+            `Email      : ${email}\n` +
+            `Category   : ${submitData.category}\n` +
+            `Solver     : ${submitData.solver}\n` +
+            `Input      : ${submitData.inputMethod}\n` +
             `Job Number : ${jobNumber}\n` +
             `Password   : ${password}\n` +
             `Status     : ${status}\n\n` +
             `===== NEOS Output =====\n` +
-            (resultData.output || 'Waiting for output...');
+            (resultData.output || 'Waiting for output...') +
+            `\n\n===== job.out =====\n` +
+            (resultData.jobOut || 'job.out not available yet') +
+            `\n\n===== Email Status =====\n` +
+            (resultData.emailStatus || 'Email status not available yet');
         }
+
+        btnDownloadZip.disabled = false;
+
+        serverResponse.textContent += '\nJob complete. Results ZIP is ready to download.\n';
 
       } catch (err) {
         console.error(err);
