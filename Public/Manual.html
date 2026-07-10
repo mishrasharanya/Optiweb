@@ -301,7 +301,7 @@
     <div class="container">
       <a class="back" href="index.html">← Home</a>
       <h1>Manual Builder - Wizard</h1>
-      <p class="subtitle">Fill the steps, auto-compose <code>test.dat</code>/<code>test.mod</code>/<code>test.run</code>, and submit.</p>
+      <p class="subtitle">Fill the steps, preview <code>.dat</code>/<code>.mod</code>/<code>.run</code>, and submit.</p>
     </div>
   </header>
 
@@ -728,7 +728,7 @@
     <!-- Step 7: Solver choice -->
     <section class="wiz-card hide" data-step="7">
       <h3 class="step-title">Solver</h3>
-      <p class="muted">Pick a NEOS-hosted solver. The corresponding <code>option solver &lt;name&gt;;</code> line will be added to <code>test.run</code>.</p>
+      <p class="muted">Pick a NEOS-hosted solver. The corresponding <code>option solver &lt;name&gt;;</code> line will be added to the <code>.run</code> preview.</p>
       <div class="wiz-row g2">
         <div>
           <label class="label" for="neosSolver">NEOS solver</label>
@@ -772,7 +772,7 @@
         <div>
           <label class="label">Extra solver options (optional)</label>
           <textarea id="solverOpts" rows="6" class="mono" placeholder="# e.g. for Ipopt:&#10;option ipopt_options 'max_iter=3000 tol=1e-6';"></textarea>
-          <p class="muted">Pasted verbatim into <code>test.run</code> right after <code>option solver …;</code>.</p>
+          <p class="muted">Pasted verbatim into the <code>.run</code> preview right after <code>option solver ...;</code>.</p>
         </div>
       </div>
     </section>
@@ -782,15 +782,15 @@
       <h3 class="step-title">Review</h3>
       <div class="wiz-row g3">
         <div>
-          <label class="label">test.dat</label>
+          <label class="label">.dat preview</label>
           <textarea id="preview" rows="16" class="mono"></textarea>
         </div>
         <div>
-          <label class="label">test.mod</label>
+          <label class="label">.mod preview</label>
           <textarea id="modPreview" rows="16" class="mono"></textarea>
         </div>
         <div>
-          <label class="label">test.run</label>
+          <label class="label">.run preview</label>
           <textarea id="runPreview" rows="16" class="mono"></textarea>
         </div>
       </div>
@@ -807,6 +807,7 @@
       </div>
       <div class="btn-row">
         <button type="button" class="btn btn--primary" id="btnSaveSubmit">Save → Submit to NEOS</button>
+        <button type="button" class="btn" id="btnDownloadZip">Download Results ZIP</button>
       </div>
     </section>
 
@@ -3405,43 +3406,51 @@ function buildAllPreviews(){
 }
 
 /* ====================== NEOS submission ====================== */
+let currentJobNumber = null;
+let neosResultsReady = false;
+
 async function submitToNeos() {
   const dat = qs('#preview').value || buildDat();
   const mod = qs('#modPreview').value || buildMod();
   const run = qs('#runPreview').value || buildRun();
-  const email = qs('#email').value.trim();
+  const emailInput = qs('#email');
+  const email = emailInput.value.trim();
+
+  currentJobNumber = null;
+  neosResultsReady = false;
+
+  if (!dat || !mod || !run) {
+    throw new Error('Please generate all three previews before submitting to NEOS.');
+  }
+
   if (!email) {
     throw new Error('Please enter an email address before submitting to NEOS.');
   }
-  const post = async (url, fileContent) => {
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ fileContent })
-    });
 
-    const txt = await res.text();
-    if (!res.ok) throw new Error(txt || ('HTTP ' + res.status));
-    return txt;
-  };
-
-  await post('/generate', dat);
-  await post('/generate-mod', mod);
-  await post('/generate-run', run);
+  if (!emailInput.checkValidity()) {
+    emailInput.reportValidity();
+    throw new Error('Please enter a valid email address for NEOS.');
+  }
 
   const neosResp = await fetch('/submit-neos', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email })
+    body: JSON.stringify({ email, dat, mod, run })
   });
 
   const data = await neosResp.json();
-  if (!neosResp.ok) throw new Error(data.error || 'NEOS submit failed');
+  if (!neosResp.ok) throw new Error(data.details || data.error || 'NEOS submit failed');
 
   const jobNumber = data.jobNumber;
   const password = data.password;
+  currentJobNumber = jobNumber;
 
   qs('#neosResponse').textContent =
+    `NEOS job submitted successfully!\n\n` +
+    `Email      : ${email}\n` +
+    `Category   : ${data.category}\n` +
+    `Solver     : ${data.solver}\n` +
+    `Input      : ${data.inputMethod}\n` +
     `Job Number : ${jobNumber}\n` +
     `Password   : ${password}\n` +
     `Status     : Submitted\n\n` +
@@ -3460,18 +3469,29 @@ async function submitToNeos() {
 
     const resultData = await resultResp.json();
     if (!resultResp.ok) {
-      throw new Error(resultData.error || 'Could not fetch NEOS results');
+      throw new Error(resultData.details || resultData.error || 'Could not fetch NEOS results');
     }
 
     status = resultData.status;
 
     qs('#neosResponse').textContent =
+      `NEOS Job Information\n\n` +
+      `Email      : ${email}\n` +
+      `Category   : ${data.category}\n` +
+      `Solver     : ${data.solver}\n` +
+      `Input      : ${data.inputMethod}\n` +
       `Job Number : ${jobNumber}\n` +
       `Password   : ${password}\n` +
       `Status     : ${status}\n\n` +
       `===== NEOS Output =====\n` +
-      (resultData.output || 'Waiting for output...');
+      (resultData.output || 'Waiting for output...') +
+      `\n\n===== job.out =====\n` +
+      (resultData.jobOut || 'job.out not available yet') +
+      `\n\n===== Email Status =====\n` +
+      (resultData.emailStatus || 'Email status not available yet');
   }
+
+  neosResultsReady = true;
 }
 
 /* ====================== Grid viz + AMPL block ====================== */
@@ -3601,12 +3621,58 @@ document.querySelectorAll('.col-controls').forEach(bar => {
 });
 /* ====================== Save + Submit button wiring ====================== */
 const btnSaveSubmit = qs('#btnSaveSubmit');
+const btnDownloadZip = qs('#btnDownloadZip');
+
+if (btnDownloadZip) {
+  btnDownloadZip.addEventListener('click', async () => {
+    if (!currentJobNumber) {
+      const message = 'NEOS problem has not been run yet. Submit the problem first, then download the ZIP after it finishes.';
+      alert(message);
+      qs('#neosResponse').textContent = message;
+      return;
+    }
+
+    if (!neosResultsReady) {
+      const message = 'NEOS problem is still running. The ZIP will be available after the job is done.';
+      alert(message);
+      qs('#neosResponse').textContent = message;
+      return;
+    }
+
+    try {
+      const response = await fetch('/download-zip', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jobNumber: currentJobNumber })
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.details || error.error || 'Could not download results.');
+      }
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `optiweb-job-${currentJobNumber}.zip`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error(err);
+      qs('#neosResponse').textContent = 'Error: ' + err.message;
+    }
+  });
+}
 
 if (btnSaveSubmit) {
   btnSaveSubmit.addEventListener('click', async (e) => {
     e.preventDefault();
 
     try {
+      btnSaveSubmit.disabled = true;
       qs('#neosResponse').textContent = 'Saving & submitting...';
 
       buildAllPreviews();
@@ -3616,6 +3682,8 @@ if (btnSaveSubmit) {
     } catch (err) {
       console.error(err);
       qs('#neosResponse').textContent = 'Error: ' + err.message;
+    } finally {
+      btnSaveSubmit.disabled = false;
     }
   });
 } else {

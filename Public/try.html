@@ -56,7 +56,7 @@
     <div class="container">
       <a class="back" href="index.html">← Home</a>
       <h1>Try a trajectory problem</h1>
-      <p class="subtitle">Run a NEOS example and inspect its motion in Three.js.</p>
+      <p class="subtitle">Run a NEOS example and inspect the seed trajectory in Three.js.</p>
     </div>
   </header>
 
@@ -78,7 +78,7 @@
         <div class="btn-row">
           <button class="btn" id="btnReload" type="button">Reload example</button>
           <button class="btn btn--primary" id="btnRun" type="button">Run on NEOS</button>
-          <button class="btn" id="btnDownloadZip" type="button" disabled>Download Results ZIP</button>
+          <button class="btn" id="btnDownloadZip" type="button">Download Results ZIP</button>
         </div>
       </div>
 
@@ -165,6 +165,7 @@
     let pausedProgress = 0;
     let visual = {};
     let currentJobNumber = null;
+    let neosResultsReady = false;
 
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0xf5f7fb);
@@ -316,34 +317,10 @@
       }));
     }
 
-    function parseSolverOutput(output, dof) {
-      const section = output.match(/TRAJECTORY_BEGIN\s*([\s\S]*?)\s*TRAJECTORY_END/)?.[1] || output;
-      const q = new Map();
-      const x = new Map();
-      const time = new Map();
-      for (const line of section.split(/\r?\n/)) {
-        const match = line.match(/^\s*\d+\s+(q|x|t)\[([^\]]+)\]\s+([-+.\deE]+)\s*$/);
-        if (!match) continue;
-        const indices = match[2].split(',').map(Number);
-        const value = Number(match[3]);
-        if (match[1] === 't') time.set(indices[0], value);
-        else {
-          const target = match[1] === 'q' ? q : x;
-          if (!target.has(indices[1])) target.set(indices[1], []);
-          target.get(indices[1])[indices[0] - 1] = value;
-        }
-      }
-      const source = q.size ? q : x;
-      return [...source.keys()].sort((a, b) => a - b).map((index, order) => ({
-        time: time.get(index) ?? order,
-        q: Array.from({ length: dof }, (_, component) => source.get(index)?.[component] ?? 0)
-      }));
-    }
-
     function setFrames(nextFrames, source) {
       const validFrames = nextFrames.filter(frame => frame.q.every(Number.isFinite));
       if (!validFrames.length) {
-        vizStatus.textContent = `No optimized trajectory was found in ${source}; the seed remains playable.`;
+        vizStatus.textContent = `No seed trajectory was found in ${source}.`;
         pausedProgress = 0;
         if (frames.length) updateVisual(frames[0].q);
         return false;
@@ -362,7 +339,7 @@
       cancelAnimationFrame(animationFrame);
       const config = cases[demoCase.value];
       vizTitle.textContent = config.title;
-      serverResponse.textContent = 'Loading example files…';
+      vizStatus.textContent = 'Loading example files...';
       const [datResponse, modResponse, runResponse] = await Promise.all(
         ['dat', 'mod', 'run'].map(extension => fetch(`${config.base}.${extension}`))
       );
@@ -376,9 +353,9 @@
       frames = [];
       setFrames(parseSeed(datText.value, config.dof), 'the example seed');
       currentJobNumber = null;
-      btnDownloadZip.disabled = true;
+      neosResultsReady = false;
       neosResponse.textContent = '';
-      serverResponse.textContent = 'Example loaded. Preview the seed or run it on NEOS.';
+      serverResponse.textContent = 'Example loaded. Preview the seed trajectory or run the files on NEOS.';
     }
 
     function interpolatedFrame(progress) {
@@ -428,7 +405,14 @@
     demoCase.addEventListener('change', () => loadExample().catch(showError));
 
     btnDownloadZip.addEventListener('click', async () => {
-      if (!currentJobNumber) return;
+      if (!currentJobNumber) {
+        return showWarning('NEOS problem has not been run yet. Submit the example first, then download the ZIP after it finishes.');
+      }
+
+      if (!neosResultsReady) {
+        return showWarning('NEOS problem is still running. The ZIP will be available after the job is done.');
+      }
+
       try {
         const response = await fetch('/download-zip', {
           method: 'POST',
@@ -459,12 +443,14 @@
         emailInput.reportValidity();
         return showError(new Error('Enter a valid email address for NEOS.'));
       }
+
       btnRun.disabled = true;
-      btnDownloadZip.disabled = true;
-      btnRun.textContent = 'Submitting…';
+      btnRun.textContent = 'Submitting...';
       currentJobNumber = null;
+      neosResultsReady = false;
       neosResponse.textContent = '';
-      serverResponse.textContent = 'Preparing the selected example for NEOS…';
+      serverResponse.textContent = 'Preparing the selected example for NEOS...';
+
       try {
         const submitResponse = await fetch('/submit-neos', {
           method: 'POST',
@@ -478,9 +464,11 @@
         });
         const job = await submitResponse.json();
         if (!submitResponse.ok) throw new Error(job.details || job.error);
+
         currentJobNumber = job.jobNumber;
         serverResponse.textContent =
-          `Submitted successfully\nJob: ${job.jobNumber}\nSolver: ${job.solver}\nStatus: Waiting`;
+          `Submitted successfully\nJob: ${job.jobNumber}\nSolver: ${job.solver}\nStatus: Waiting\n\n` +
+          `The Three.js animation stays on the .dat seed trajectory.`;
         neosResponse.textContent =
           `NEOS Job Information\n\n` +
           `Email      : ${email}\n` +
@@ -489,7 +477,7 @@
           `Input      : ${job.inputMethod}\n` +
           `Job Number : ${job.jobNumber}\n` +
           `Password   : ${job.password}\n` +
-          `Status     : Submitted\n\nWaiting for NEOS output…`;
+          `Status     : Submitted\n\nWaiting for NEOS output...`;
 
         let result;
         do {
@@ -501,8 +489,10 @@
           });
           result = await response.json();
           if (!response.ok) throw new Error(result.details || result.error);
+
           serverResponse.textContent =
-            `Job: ${job.jobNumber}\nSolver: ${job.solver}\nStatus: ${result.status}`;
+            `Job: ${job.jobNumber}\nSolver: ${job.solver}\nStatus: ${result.status}\n\n` +
+            `The Three.js animation stays on the .dat seed trajectory.`;
           neosResponse.textContent =
             `NEOS Job Information\n\n` +
             `Email      : ${email}\n` +
@@ -512,21 +502,13 @@
             `Job Number : ${job.jobNumber}\n` +
             `Password   : ${job.password}\n` +
             `Status     : ${result.status}\n\n` +
-            `===== NEOS Output =====\n${result.output || 'Waiting for output…'}\n\n` +
+            `===== NEOS Output =====\n${result.output || 'Waiting for output...'}\n\n` +
             `===== job.out =====\n${result.jobOut || 'job.out not available yet'}\n\n` +
             `===== Email Status =====\n${result.emailStatus || 'Email status not available yet'}`;
         } while (result.status !== 'Done');
 
-        const parsed = parseSolverOutput(
-          `${result.output || ''}\n${result.jobOut || ''}`,
-          cases[demoCase.value].dof
-        );
-        const optimizedLoaded = setFrames(parsed, 'the optimized NEOS solution');
-        pausedProgress = 0;
-        btnDownloadZip.disabled = false;
-        serverResponse.textContent += optimizedLoaded
-          ? '\nOptimization complete. Optimized trajectory loaded—press Play.'
-          : '\nOptimization complete. Output is available below; the seed trajectory remains playable.';
+        neosResultsReady = true;
+        serverResponse.textContent += '\nNEOS job complete. Results ZIP is ready to download.';
       } catch (error) {
         showError(error);
       } finally {
@@ -537,6 +519,11 @@
 
     function showError(error) {
       serverResponse.textContent = `ERROR: ${error.message}`;
+    }
+
+    function showWarning(message) {
+      alert(message);
+      serverResponse.textContent = message;
     }
 
     loadExample().catch(showError);

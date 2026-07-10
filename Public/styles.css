@@ -47,6 +47,48 @@ body{
 .btn--primary{background:var(--primary); color:#0c1218; border-color:transparent}
 .btn-row{display:flex; gap:10px; flex-wrap:wrap}
 
+.hidden-file-input{
+  display:none;
+}
+
+.drop-zone{
+  min-height:170px;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  justify-content:center;
+  gap:6px;
+  padding:18px;
+  border:2px dashed var(--border);
+  border-radius:14px;
+  background:#0b1117;
+  cursor:pointer;
+  transition:border-color .2s, background .2s, transform .2s;
+}
+.drop-zone:hover,
+.drop-zone.dragover{
+  border-color:var(--primary);
+  background:rgba(77,163,255,.08);
+  transform:translateY(-1px);
+}
+.drop-title{
+  color:var(--text);
+  font-size:20px;
+  font-weight:700;
+  line-height:1.2;
+}
+.drop-subtitle{
+  color:var(--sub);
+}
+.drop-zone .choose-btn{
+  margin-top:6px;
+}
+.drop-zone .muted{
+  min-height:22px;
+  margin-top:6px;
+  word-break:break-word;
+}
+
 .tabs{display:flex; gap:8px; border-bottom:1px solid var(--border); margin:8px 0 16px}
 .tab{padding:8px 12px; border-radius:10px 10px 0 0; background:#0b1117;
   color:var(--sub); text-decoration:none; border:1px solid transparent}

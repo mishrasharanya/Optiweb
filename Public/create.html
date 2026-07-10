@@ -88,7 +88,7 @@
       <div class="btn-row" style="margin-top:12px;">
         <button class="btn" id="btnClear" type="button">Clear</button>
         <button class="btn btn--primary" id="btnSubmitUpload" type="button">Submit to NEOS</button>
-        <button class="btn" id="btnDownloadZip" type="button" disabled>Download Results ZIP</button>
+        <button class="btn" id="btnDownloadZip" type="button">Download Results ZIP</button>
       </div>
 
       <div id="serverResponse" class="card mono" style="margin-top:12px; white-space:pre-wrap;"></div>
@@ -106,7 +106,7 @@
           </p>
         </div>
 
-        <a href="manual.html" class="btn btn--primary">Open Builder</a>
+        <a href="Manual.html" class="btn btn--primary">Open Builder</a>
       </div>
 
       <p class="muted">Opens in a dedicated page with your full UI.</p>
@@ -165,6 +165,7 @@
     const neosResponse = document.getElementById('neosResponse');
 
     let currentJobNumber = null;
+    let neosResultsReady = false;
 
     const read = file => new Promise(resolve => {
       if (!file) {
@@ -187,6 +188,11 @@
       const button = zone.querySelector('.choose-btn');
 
       button.addEventListener('click', () => {
+        input.click();
+      });
+
+      zone.addEventListener('click', e => {
+        if (e.target === input || e.target === button) return;
         input.click();
       });
 
@@ -251,12 +257,17 @@
       neosResponse.textContent = '';
 
       currentJobNumber = null;
-      btnDownloadZip.disabled = true;
+      neosResultsReady = false;
     });
 
     btnDownloadZip.addEventListener('click', async () => {
       if (!currentJobNumber) {
-        alert('No completed NEOS job available for download.');
+        alert('NEOS problem has not been run yet. Submit the problem first, then download the ZIP after it finishes.');
+        return;
+      }
+
+      if (!neosResultsReady) {
+        alert('NEOS problem is still running. The ZIP will be available after the job is done.');
         return;
       }
 
@@ -298,8 +309,8 @@
 
       serverResponse.textContent = '';
       neosResponse.textContent = '';
-      btnDownloadZip.disabled = true;
       currentJobNumber = null;
+      neosResultsReady = false;
 
       if (!dat || !mod || !run) {
         serverResponse.textContent = 'Please provide all three files: .dat, .mod, and .run.\n';
@@ -308,14 +319,20 @@
       }
 
       if (!email) {
-        serverResponse.textContent = 'Email Status → Missing. Please enter an email address for NEOS.\n';
+        serverResponse.textContent = 'Email Status -> Missing. Please enter an email address for NEOS.\n';
         alert('Please enter an email address for NEOS.');
+        return;
+      }
+
+      if (!emailInput.checkValidity()) {
+        serverResponse.textContent = 'Email Status -> Invalid. Please enter a valid email address for NEOS.\n';
+        emailInput.reportValidity();
         return;
       }
 
       serverResponse.textContent =
         `Email Status → ${email}\n` +
-        `Solver and NEOS submission details → Auto-detect from .run\n` +
+        `Solver and NEOS submission details -> Auto-detect from .run\n` +
         'Preparing NEOS submission from uploaded files...\n';
 
       btnSubmit.disabled = true;
@@ -389,7 +406,7 @@
             (resultData.emailStatus || 'Email status not available yet');
         }
 
-        btnDownloadZip.disabled = false;
+        neosResultsReady = true;
 
         serverResponse.textContent += '\nJob complete. Results ZIP is ready to download.\n';
 
