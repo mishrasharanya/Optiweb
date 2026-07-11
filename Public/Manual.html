@@ -43,33 +43,33 @@
     .grid-legend > div{margin-top:6px}
     td input.small { width: 40px; }
     /* --- Robot Parameters (Dark Theme) --- */
-    .wiz-card[data-step="2"] {
+    .wiz-card[data-step="3"] {
       background: #11161e; /* subtle deep gray-blue background */
       color: #f1f1f1;
       border: 1px solid #222b35;
       border-radius: 10px;
     }
 
-    .wiz-card[data-step="2"] h3,
-    .wiz-card[data-step="2"] h4 {
+    .wiz-card[data-step="3"] h3,
+    .wiz-card[data-step="3"] h4 {
       color: #ffffff;
     }
 
-    .wiz-card[data-step="2"] .muted {
+    .wiz-card[data-step="3"] .muted {
       color: #aaa;
     }
 
-    .wiz-card[data-step="2"] .toggle label {
+    .wiz-card[data-step="3"] .toggle label {
       color: #ddd;
     }
 
-    .wiz-card[data-step="2"] input[type="radio"] {
+    .wiz-card[data-step="3"] input[type="radio"] {
       accent-color: #3b82f6; /* blue highlight */
     }
 
     /* Table wrapper and table */
-    .wiz-card[data-step="2"] .table-wrapper,
-    .wiz-card[data-step="3"] .table-wrapper {
+    .wiz-card[data-step="3"] .table-wrapper,
+    .wiz-card[data-step="4"] .table-wrapper {
       border: 1px solid #222b35;
       background: #0f141c;
       border-radius: 8px;
@@ -77,32 +77,32 @@
       box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.3);
     }
 
-    .wiz-card[data-step="2"] .data-table,
-    .wiz-card[data-step="3"] .data-table {
+    .wiz-card[data-step="3"] .data-table,
+    .wiz-card[data-step="4"] .data-table {
       width: 100%;
       border-collapse: collapse;
       color: #e0e0e0;
       font-size: 0.9rem;
     }
 
-    .wiz-card[data-step="2"] .data-table th,
-    .wiz-card[data-step="3"] .data-table th {
+    .wiz-card[data-step="3"] .data-table th,
+    .wiz-card[data-step="4"] .data-table th {
       background: #1a2029;
       color: #ccc;
       font-weight: 600;
       border-bottom: 1px solid #2a3240;
     }
 
-    .wiz-card[data-step="2"] .data-table td,
-    .wiz-card[data-step="3"] .data-table td {
+    .wiz-card[data-step="3"] .data-table td,
+    .wiz-card[data-step="4"] .data-table td {
       border-bottom: 1px solid #222b35;
       background: #0f141c;
     }
 
-    .wiz-card[data-step="2"] input[type="text"],
-    .wiz-card[data-step="2"] input[type="number"],
     .wiz-card[data-step="3"] input[type="text"],
-    .wiz-card[data-step="3"] input[type="number"] {
+    .wiz-card[data-step="3"] input[type="number"],
+    .wiz-card[data-step="4"] input[type="text"],
+    .wiz-card[data-step="4"] input[type="number"] {
       background: #1b2431;
       color: #f1f1f1;
       border: 1px solid #2c3a4a;
@@ -110,10 +110,10 @@
       text-align: center;
     }
 
-    .wiz-card[data-step="2"] input[type="text"]:focus,
-    .wiz-card[data-step="2"] input[type="number"]:focus,
     .wiz-card[data-step="3"] input[type="text"]:focus,
-    .wiz-card[data-step="3"] input[type="number"]:focus {
+    .wiz-card[data-step="3"] input[type="number"]:focus,
+    .wiz-card[data-step="4"] input[type="text"]:focus,
+    .wiz-card[data-step="4"] input[type="number"]:focus {
       outline: none;
       border-color: #3b82f6;
       background: #202a39;
@@ -125,24 +125,58 @@
     .wiz-card[data-step="2"] .btn,
     .wiz-card[data-step="3"] .btn,
     .wiz-card[data-step="4"] .btn,
-    .wiz-card[data-step="5"] .btn {
+    .wiz-card[data-step="5"] .btn,
+    .wiz-card[data-step="6"] .btn {
       background: #3b82f6;
       color: #fff;
       border: none;
       transition: background 0.2s ease;
     }
 
-    .wiz-card[data-step="2"] .btn:hover,
-    .wiz-card[data-step="3"] .btn:hover {
+    .wiz-card[data-step="3"] .btn:hover,
+    .wiz-card[data-step="4"] .btn:hover {
       background: #2563eb;
     }
 
     /* Secondary helper areas */
-    .wiz-card[data-step="2"] .card-sub,
-    .wiz-card[data-step="3"] .card-sub {
+    .wiz-card[data-step="3"] .card-sub,
+    .wiz-card[data-step="4"] .card-sub {
       background: #1a2029;
       border: 1px solid #2a3240;
       color: #ddd;
+    }
+
+    .intro-grid {
+      display:grid;
+      grid-template-columns:repeat(3, minmax(0, 1fr));
+      gap:12px;
+      margin-top:12px;
+    }
+
+    .intro-item {
+      border:1px solid var(--border);
+      border-radius:8px;
+      padding:12px;
+      background:rgba(77,163,255,.06);
+    }
+
+    .intro-flow {
+      display:grid;
+      grid-template-columns:repeat(3, minmax(0, 1fr));
+      gap:8px;
+      margin:12px 0;
+    }
+
+    .intro-flow div {
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:8px;
+      padding:10px;
+      background:#0b1117;
+    }
+
+    @media (max-width:800px) {
+      .intro-grid,
+      .intro-flow { grid-template-columns:1fr; }
     }
 
     /* Drag and drop */
@@ -309,8 +343,48 @@
     <!-- Step indicators -->
     <div class="steps" id="steps"></div>
 
+    <!-- Step 0: Intro -->
+    <section class="wiz-card" data-step="0">
+      <h3 class="step-title">How This Builder Works</h3>
+      <p class="muted">
+        This wizard creates AMPL files for trajectory optimization problems. Fill the steps, review the generated files, then submit them to NEOS.
+      </p>
+
+      <div class="intro-grid">
+        <div class="intro-item">
+          <strong>.dat</strong>
+          <p class="muted">Numerical data: grid, seed trajectory, robot table, constraints, RK method, PIM, and optional extra data.</p>
+        </div>
+        <div class="intro-item">
+          <strong>.mod</strong>
+          <p class="muted">AMPL model: variables, dynamics, constraints, objective, and optional custom model snippets.</p>
+        </div>
+        <div class="intro-item">
+          <strong>.run</strong>
+          <p class="muted">Solver choice, problem block, solve command, output dump, and optional extra run commands.</p>
+        </div>
+      </div>
+
+      <h4 class="sub-title">Wizard Flow</h4>
+      <div class="intro-flow">
+        <div><strong>1. Grid</strong><br><span class="muted">Set the time grid, subphases, gravity, and optional PIM indices.</span></div>
+        <div><strong>2. Bézier</strong><br><span class="muted">Add curve labels, control points, and subgrid mappings.</span></div>
+        <div><strong>3. Robot</strong><br><span class="muted">Upload URDF/AMPL robot data or enter the robot table manually.</span></div>
+        <div><strong>4. Constraints</strong><br><span class="muted">Define physical, virtual, or force constraint rows.</span></div>
+        <div><strong>5. RK</strong><br><span class="muted">Choose a Runge-Kutta preset or enter a custom tableau.</span></div>
+        <div><strong>6. q/v/t/u</strong><br><span class="muted">Provide the seed trajectory for states, controls, and time.</span></div>
+        <div><strong>7. Custom</strong><br><span class="muted">Append extra .dat, .mod, or .run snippets when needed.</span></div>
+        <div><strong>8. Solver</strong><br><span class="muted">Pick one of the supported NEOS AMPL solvers.</span></div>
+        <div><strong>9. Review</strong><br><span class="muted">Inspect generated files, submit to NEOS, and download results.</span></div>
+      </div>
+
+      <p class="muted">
+        The generated files use standard AMPL syntax, but the structure follows this app's trajectory-optimization schema. URDF import fills the AMPL robot table for supported joint and inertial fields; you can edit those rows before submitting.
+      </p>
+    </section>
+
     <!-- Step 1: GRID -->
-    <section class="wiz-card" data-step="0" id="gridStep">
+    <section class="wiz-card hide" data-step="1" id="gridStep">
       <h3 class="step-title">Grid</h3>
 
       <div class="g3 wiz-row">
@@ -385,7 +459,7 @@
 
 
     <!-- Step 2: Bézier -->
-    <section class="wiz-card hide" data-step="1">
+    <section class="wiz-card hide" data-step="2">
       <h3 class="step-title">Bézier Curve Data</h3>
 
       <div class="wiz-row g2">
@@ -427,7 +501,7 @@
     </section>
 
     <!-- Step 4: Robot params -->
-    <section class="wiz-card hide" data-step="2">
+    <section class="wiz-card hide" data-step="3">
       <div class="btn-help-wrapper">
         <h3 class="step-title">Robot Parameters</h3>
         <button class="btn btn-help" data-type="robot" title="Help">❔</button>
@@ -487,7 +561,7 @@
     </section>
 
     <!-- Step 5: Constraint params -->
-    <section class="wiz-card hide" data-step="3">
+    <section class="wiz-card hide" data-step="4">
       <div class="btn-help-wrapper">
         <h3 class="step-title">Constraint Parameters</h3>
         <button class="btn btn-help" data-type="constraint" title="Help">❔</button>
@@ -536,7 +610,7 @@
     </section>
 
     <!-- Step 6: Runge–Kutta -->
-    <section class="wiz-card hide" data-step="4">
+    <section class="wiz-card hide" data-step="5">
       <h3 class="step-title">Runge–Kutta Method (Butcher Table)</h3>
       <div id="rungeKuttaContainer">
         <div class="btn-row">
@@ -600,7 +674,7 @@
     </section>
 
     <!-- Step 3: q, v, t, u -->
-    <section class="wiz-card hide" data-step="5">
+    <section class="wiz-card hide" data-step="6">
       <div class="btn-help-wrapper">
         <h3 class="step-title">Seed Variables</h3>
         <button class="btn btn-help" data-type="seed" title="Help">❔</button>
@@ -707,7 +781,7 @@
     </section>
 
     <!-- Step 7: Custom -->
-    <section class="wiz-card hide" data-step="6">
+    <section class="wiz-card hide" data-step="7">
       <h3 class="step-title">Custom Snippets</h3>
       <div class="wiz-row">
         <div>
@@ -726,48 +800,59 @@
     </section>
 
     <!-- Step 7: Solver choice -->
-    <section class="wiz-card hide" data-step="7">
+    <section class="wiz-card hide" data-step="8">
       <h3 class="step-title">Solver</h3>
+<<<<<<< Updated upstream
       <p class="muted">Pick a NEOS-hosted solver. The corresponding <code>option solver &lt;name&gt;;</code> line will be added to <code>test.run</code>.</p>
+=======
+      <p class="muted">Pick one of the 32 NEOS solvers currently exposed for <code>AMPL</code> input. The selected name is written into the <code>.run</code> preview as <code>option solver &lt;name&gt;;</code>.</p>
+>>>>>>> Stashed changes
       <div class="wiz-row g2">
         <div>
           <label class="label" for="neosSolver">NEOS solver</label>
           <select id="neosSolver" class="mono" style="width:100%;padding:8px;">
-            <optgroup label="Nonlinear — continuous">
-              <option value="ipopt" selected>Ipopt — interior-point, NLP (recommended)</option>
-              <option value="knitro">KNITRO — NLP / MINLP</option>
-              <option value="conopt">CONOPT — large constrained NLP</option>
-              <option value="snopt">SNOPT — sparse SQP NLP</option>
-              <option value="filter">filterMPEC / filterSQP</option>
-              <option value="loqo">LOQO — interior-point NLP</option>
-              <option value="minos">MINOS — reduced-gradient NLP</option>
-              <option value="lancelot">LANCELOT — augmented Lagrangian</option>
+            <optgroup label="Continuous / nonlinear">
+              <option value="Ipopt" selected>Ipopt — NLP interior-point (recommended)</option>
+              <option value="KNITRO">KNITRO — NLP / MINLP</option>
+              <option value="CONOPT">CONOPT — large constrained NLP</option>
+              <option value="SNOPT">SNOPT — sparse SQP NLP</option>
+              <option value="MINOS">MINOS — reduced-gradient NLP</option>
+              <option value="LOQO">LOQO — interior-point NLP</option>
+              <option value="LANCELOT">LANCELOT — augmented Lagrangian</option>
+              <option value="L-BFGS-B">L-BFGS-B — bound-constrained NLP</option>
+              <option value="OOQP">OOQP — quadratic programming</option>
+              <option value="filter">filter — NLP</option>
             </optgroup>
-            <optgroup label="Mixed-integer nonlinear">
-              <option value="bonmin">Bonmin — open-source MINLP</option>
-              <option value="couenne">Couenne — global MINLP</option>
-              <option value="baron">BARON — global MINLP</option>
-              <option value="scip">SCIP — MINLP / MILP</option>
-              <option value="dicopt">DICOPT — MINLP</option>
-              <option value="alphaecp">AlphaECP — MINLP</option>
+            <optgroup label="Mixed-integer / global">
+              <option value="Bonmin">Bonmin — MINLP</option>
+              <option value="COUENNE">COUENNE — global MINLP</option>
+              <option value="Baron">Baron — global MINLP</option>
+              <option value="SCIP">SCIP — MINLP / MILP</option>
+              <option value="FilMINT">FilMINT — MINLP</option>
+              <option value="MINLP">MINLP — mixed-integer nonlinear</option>
+              <option value="LINDOGlobal">LINDOGlobal — global optimization</option>
+              <option value="LGO">LGO — global optimization</option>
+              <option value="PGAPack">PGAPack — genetic algorithm</option>
+              <option value="PSwarm">PSwarm — particle swarm</option>
+              <option value="RAPOSa">RAPOSa — global optimization</option>
             </optgroup>
             <optgroup label="Linear / mixed-integer linear">
-              <option value="cplex">CPLEX — LP / MILP / QP</option>
-              <option value="gurobi">Gurobi — LP / MILP / QP</option>
-              <option value="xpress">Xpress — LP / MILP</option>
-              <option value="cbc">Cbc — open-source MILP</option>
-              <option value="clp">Clp — open-source LP</option>
-              <option value="mosek">MOSEK — LP / QP / SOCP / SDP</option>
-              <option value="gurobi-nonlinear">Gurobi Non-Linear</option>
+              <option value="CPLEX">CPLEX — LP / MILP / QP</option>
+              <option value="Gurobi">Gurobi — LP / MILP / QP</option>
+              <option value="FICO-Xpress">FICO-Xpress — LP / MILP</option>
+              <option value="Cbc">Cbc — open-source MILP</option>
+              <option value="HIGHS">HIGHS — LP / MILP</option>
+              <option value="COPT">COPT — LP / MILP / conic</option>
+              <option value="MOSEK">MOSEK — LP / QP / SOCP / SDP</option>
+              <option value="MINTO">MINTO — mixed-integer linear</option>
             </optgroup>
             <optgroup label="Complementarity / semidefinite / other">
-              <option value="path">PATH — complementarity (MCP)</option>
-              <option value="sdpa">SDPA — semidefinite</option>
-              <option value="csdp">CSDP — semidefinite</option>
-              <option value="lrambo">LRAMBO</option>
+              <option value="PATH">PATH — complementarity (MCP)</option>
+              <option value="filterMPEC">filterMPEC — MPEC</option>
+              <option value="MUSCOD-II">MUSCOD-II — optimal control</option>
             </optgroup>
           </select>
-          <p class="muted">Default: <strong>Ipopt</strong> — suitable for the large, sparse NLP produced by this wizard.</p>
+          <p class="muted">The backend still verifies the selected solver against NEOS before submission.</p>
         </div>
         <div>
           <label class="label">Extra solver options (optional)</label>
@@ -778,7 +863,7 @@
     </section>
 
     <!-- Step 8: Review & Submit -->
-    <section class="wiz-card hide" data-step="8">
+    <section class="wiz-card hide" data-step="9">
       <h3 class="step-title">Review</h3>
       <div class="wiz-row g3">
         <div>
@@ -862,7 +947,7 @@
 
   <script>
 /* ====================== Wizard core ====================== */
-const STEPS = ['Grid', 'Bézier', 'Robot', 'Constraint', 'RK', 'q/v/t/u', 'Custom', 'Solver', 'Review'];
+const STEPS = ['Intro', 'Grid', 'Bézier', 'Robot', 'Constraint', 'RK', 'q/v/t/u', 'Custom', 'Solver', 'Review'];
 let cur = 0;
 const qs  = s => document.querySelector(s);
 const qsa = s => Array.from(document.querySelectorAll(s));
@@ -872,7 +957,7 @@ const stepsEl = qs('#steps');
 STEPS.forEach((_, i) => {
   const d = document.createElement('div');
   d.className = 'step-dot' + (i===0?' active':'');
-  d.textContent = i+1;
+  d.textContent = i===0 ? '0' : i;
   d.addEventListener('click', () => {
     if (i <= cur) {
       showStep(i);
@@ -924,7 +1009,7 @@ qs('#gridStep').parentElement.addEventListener('input', (event) => {
 
 // Define custom validation rules for each step index. Return true if valid, or an error object if invalid.
 const stepValidators = {
-  0: (container) => {
+  1: (container) => {
     const gridMaxInput = container.querySelector('#gridMax');
     const maxLimit = Number(gridMaxInput.value); 
     
@@ -1015,10 +1100,10 @@ const stepValidators = {
 
     return true;
   },
-  1: (container) => {
+  2: (container) => {
     return true;
   },
-  4: (container) => {
+  5: (container) => {
     // Fetch gridMax value safely
     const gridMaxInput = document.querySelector('#gridMax');
     const maxLimit = gridMaxInput ? Number(gridMaxInput.value) : Infinity;
@@ -1075,7 +1160,7 @@ const stepValidators = {
 
     return true;
   },
-  5: (container) => {
+  6: (container) => {
     const gridMaxInput = document.querySelector('#gridMax');
     const maxCols = gridMaxInput ? Number(gridMaxInput.value) : Infinity;
     
