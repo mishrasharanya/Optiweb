@@ -2681,10 +2681,10 @@ function buildDat() {
   .map(row => {
     const pre = row.querySelector('.pim-pre')?.value.trim();
     const post = row.querySelector('.pim-post')?.value.trim();
-    return (pre && post) ? `${pre},${post}` : '';
+    return (pre && post) ? `(${pre}, ${post})` : '';
   })
   .filter(pair => pair !== '')
-  .join('; ');
+  .join(' ');
   const lbls = qs('#bezLbls').value.trim().split(/\s+/).filter(Boolean);
   const sgSets = qs('#bezSubgridSets').value.split(',').map(s => s.trim());
 
