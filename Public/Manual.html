@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <title>AMPL Playground - Builder (Wizard)</title>
   <link rel="stylesheet" href="styles.css" />
+  <script src="https://cloudflare.com"></script>
   <style>
     /* Wizard visuals (dark theme-friendly) */
     .wizard { max-width: 1100px; margin: 0 auto; }
@@ -944,7 +945,10 @@
     </div>
   </div>
 
-  <script>
+  <script type="module">
+    import { submitNeosJob, getNeosResults, downloadJobZip } from './neosClient.js';
+    const selectionMap = new Map();
+    let nq = undefined;
 /* ====================== Wizard core ====================== */
 const STEPS = ['Intro', 'Grid', 'Bézier', 'Robot', 'Constraint', 'RK', 'q/v/t/u', 'Custom', 'Solver', 'Review'];
 let cur = 0;
@@ -1366,7 +1370,7 @@ const uploadSchemas = {
     }
   }
 };
-nq = undefined;
+
 function handleFileUpload(file, allowedType) {
   const reader = new FileReader();
   reader.onload = function(e) {
@@ -2647,7 +2651,7 @@ function collectRobot(){
   Array.from(body.children).forEach((tr,rowIdx)=>{
     const inputs = Array.from(tr.querySelectorAll('input'));
     const vals = inputs.map(inp=>{
-      trimmedInput = inp.value.trim();
+      const trimmedInput = inp.value.trim();
       return Number.isInteger(Number(trimmedInput)) ? `${trimmedInput}.` : trimmedInput;
     });
     rows.push({row: rowIdx+1, vals});
@@ -2659,7 +2663,7 @@ function collectConstraint(){
   Array.from(body.children).forEach((tr,rowIdx)=>{
     const inputs = Array.from(tr.querySelectorAll('input'));
     const vals = inputs.map(inp=>{
-      trimmedInput = inp.value.trim();
+      const trimmedInput = inp.value.trim();
       return Number.isInteger(Number(trimmedInput)) ? `${trimmedInput}.` : trimmedInput;
     });
     rows.push({row: rowIdx+1, vals});
@@ -2756,7 +2760,6 @@ function fmtRKBlocks(method, tag, gridMax){
   return out;
 }
 
-const selectionMap = new Map();
 /* ====================== Build previews ====================== */
 function buildDat() {
   const gm = parseInt(qs('#gridMax').value, 10) || 1;
@@ -3515,14 +3518,7 @@ async function submitToNeos() {
     throw new Error('Please enter a valid email address for NEOS.');
   }
 
-  const neosResp = await fetch('/submit-neos', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, dat, mod, run })
-  });
-
-  const data = await neosResp.json();
-  if (!neosResp.ok) throw new Error(data.details || data.error || 'NEOS submit failed');
+  const data = await submitNeosJob({ email, mod, dat, run });
 
   const jobNumber = data.jobNumber;
   const password = data.password;
@@ -3544,16 +3540,7 @@ async function submitToNeos() {
   while (status !== 'Done') {
     await new Promise(resolve => setTimeout(resolve, 5000));
 
-    const resultResp = await fetch('/neos-results', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ jobNumber, password })
-    });
-
-    const resultData = await resultResp.json();
-    if (!resultResp.ok) {
-      throw new Error(resultData.details || resultData.error || 'Could not fetch NEOS results');
-    }
+    const resultData = await getNeosResults(jobNumber, password);
 
     status = resultData.status;
 
@@ -3723,26 +3710,8 @@ if (btnDownloadZip) {
     }
 
     try {
-      const response = await fetch('/download-zip', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ jobNumber: currentJobNumber })
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.details || error.error || 'Could not download results.');
-      }
-
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `optiweb-job-${currentJobNumber}.zip`;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      URL.revokeObjectURL(url);
+      await downloadJobZip(currentJobNumber);
+      console.log("ZIP archive successfully generated and downloaded!");
     } catch (err) {
       console.error(err);
       qs('#neosResponse').textContent = 'Error: ' + err.message;

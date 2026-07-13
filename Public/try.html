@@ -122,6 +122,7 @@
 
   <script type="module">
     import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.185.1/build/three.module.js';
+    import { submitNeosJob, getNeosResults } from './neosClient.js';
 
     const cases = {
       moving: {
@@ -506,18 +507,12 @@
       serverResponse.textContent = 'Preparing the selected example for NEOS...';
 
       try {
-        const submitResponse = await fetch('/submit-neos', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email,
-            dat: datText.value,
-            mod: modText.value,
-            run: runText.value
-          })
+        const job = await submitNeosJob({
+          email,
+          dat: datText.value,
+          mod: modText.value,
+          run: runText.value
         });
-        const job = await submitResponse.json();
-        if (!submitResponse.ok) throw new Error(job.details || job.error);
 
         currentJobNumber = job.jobNumber;
         serverResponse.textContent =
@@ -536,13 +531,7 @@
         let result;
         do {
           await new Promise(resolve => setTimeout(resolve, 5000));
-          const response = await fetch('/neos-results', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ jobNumber: job.jobNumber, password: job.password })
-          });
-          result = await response.json();
-          if (!response.ok) throw new Error(result.details || result.error);
+          result = await getNeosResults(job.jobNumber, job.password);
           latestNeosResult = result;
 
           serverResponse.textContent =

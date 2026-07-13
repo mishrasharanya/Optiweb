@@ -115,7 +115,9 @@
     </section>
   </main>
 
-  <script>
+  <script type="module">
+    import { submitNeosJob, getNeosResults } from './neosClient.js';
+
     function setTabFromHash() {
       const hash = location.hash || '#upload';
 
@@ -330,22 +332,12 @@
       btnSubmit.disabled = true;
 
       try {
-        const neosResp = await fetch('/submit-neos', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email,
-            dat,
-            mod,
-            run
-          })
+        const submitData = await submitNeosJob({
+          email,
+          dat,
+          mod,
+          run
         });
-
-        const submitData = await neosResp.json();
-
-        if (!neosResp.ok) {
-          throw new Error(submitData.details || submitData.error || 'NEOS submit failed');
-        }
 
         const jobNumber = submitData.jobNumber;
         const password = submitData.password;
@@ -367,17 +359,7 @@
         while (status !== 'Done') {
           await new Promise(resolve => setTimeout(resolve, 5000));
 
-          const resultResp = await fetch('/neos-results', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ jobNumber, password })
-          });
-
-          const resultData = await resultResp.json();
-
-          if (!resultResp.ok) {
-            throw new Error(resultData.error || resultData.details || 'Could not fetch NEOS results');
-          }
+          const resultData = await getNeosResults(jobNumber, password);
 
           status = resultData.status;
           latestNeosResult = resultData;
@@ -400,7 +382,6 @@
         }
 
         neosResultsReady = true;
-
         serverResponse.textContent += '\nJob complete. Results ZIP is ready to download.\n';
 
       } catch (err) {
