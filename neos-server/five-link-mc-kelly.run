@@ -1,0 +1,43 @@
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#* settings
+#----------- options
+option presolve_eps 1e-5;
+
+option ipopt_options 'print_timing_statistics=yes print_level=3';
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#* settings!
+
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#* fivelinkmin test
+#----------- gait problem
+problem FIVELINKTEST :
+  UTOT,
+  t, q, v, a, u,
+  EOM,
+  TPI,
+  ODE_hK,
+  ODE_DEFQ, ODE_COLQ, ODE_DEFV, ODE_COLV,
+  ODE_DEFTIME, ODE_COLTIME, ODE_DEFSTEP,
+  T0, TF,
+  XT, U,
+  STANCE_KNEE_EXTENSION, SWING_KNEE_EXTENSION,
+  SWING_PRE_POSX, SWING_PRE_POSY, SWING_PRE_VELY, SWING_POST_VELY,
+  GAITX, QPLUS, CONSV_ANG_MOM
+;
+
+#----------- solve
+solve FIVELINKTEST;
+if solve_result != 'solved' then {
+  print 'failed!', 'FIVELINKTEST', '--', FIVELINKTEST.result, '--',  FIVELINKTEST.message;
+}
+
+#print {j in 1.._nvars : match(_varname[j], '^x\[') > 0} : j, _varname[j], _var[j];
+#print {j in 1.._nvars : match(_varname[j], '^t\[') > 0} : j, _varname[j], _var[j];
+#print {j in 1.._nvars : match(_varname[j], '^u\[') > 0} : j, _varname[j], _var[j];
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#* fivelinkmin test!
+
+#- print stats
+print 'AMPL', _ampl_elapsed_time, _ampl_system_time, _ampl_user_time, _ampl_time;
+  # wall time = _ampl_elapsed_time + _solve_elapsed_time
+print 'SOLVE', _solve_elapsed_time, _solve_system_time, _solve_user_time, _solve_time;
+print 'VARS', _nvars, _snvars;
+print 'CONS', _ncons, _sncons;
+print 'OBJ', UTOT;
+print 'STATUS', solve_result, solve_result_num, solve_exitcode, solve_message;

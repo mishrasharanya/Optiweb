@@ -1,0 +1,49 @@
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#* settings
+#----------- options
+option presolve_eps 1e-14;
+
+option ipopt_options 'print_timing_statistics=yes print_level=3';
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#* settings!
+
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#* car test
+#----------- car problem
+problem CARTEST :
+  TIME,
+  t, q, v, a, u, f, I,
+  g_des, gdot_des, gddot_des,
+  CONA, EOM,
+  TPI, IME, POSTQ, POSTV,
+  ODE_hK,
+  ODE_DEFSTEP,
+  ODE_DEFQ, ODE_COLQ, ODE_DEFV, ODE_COLV,
+  ODE_DEFTIME, ODE_COLTIME,
+  t, q, v,
+  uL, uR,
+  ODE_hK,
+  ODE_DEFQ, ODE_COLQ,
+  ODE_DEFTIME, ODE_COLTIME, ODE_DEFSTEP,
+  T0, Q0, QF, TF,
+  UL_LIM, UR_LIM,
+  VX, VY, WZ
+;
+
+#----------- solve
+solve CARTEST;
+if solve_result != 'solved' then {
+  print 'failed!', 'CARTEST', '--', CARTEST.result, '--',  CARTEST.message;
+}
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#* car test!
+
+#print {j in 1.._nvars : match(_varname[j], '^x\[') > 0} : j, _varname[j], _var[j];
+#print {j in 1.._nvars : match(_varname[j], '^t\[') > 0} : j, _varname[j], _var[j];
+#print {j in 1.._nvars : match(_varname[j], '^uL\[') > 0} : j, _varname[j], _var[j];
+#print {j in 1.._nvars : match(_varname[j], '^uR\[') > 0} : j, _varname[j], _var[j];
+
+#- print stats
+print 'AMPL', _ampl_elapsed_time, _ampl_system_time, _ampl_user_time, _ampl_time;
+  # wall time = _ampl_elapsed_time + _solve_elapsed_time
+print 'SOLVE', _solve_elapsed_time, _solve_system_time, _solve_user_time, _solve_time;
+print 'VARS', _nvars, _snvars;
+print 'CONS', _ncons, _sncons;
+print 'OBJ', TIME;
+print 'STATUS', solve_result, solve_result_num, solve_exitcode, solve_message;
