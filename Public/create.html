@@ -5,6 +5,7 @@
   <title>AMPL Playground — Create</title>
   <link rel="stylesheet" href="styles.css" />
   <script defer src="app.js"></script>
+  <script src="https://cloudflare.com"></script>
 </head>
 
 <body class="page">
@@ -113,7 +114,9 @@
     </section>
   </main>
 
-  <script>
+  <script type="module">
+    import { submitNeosJob, getNeosResults, downloadJobZip } from './neosClient.js';
+
     function setTabFromHash() {
       const hash = location.hash || '#upload';
 
@@ -272,29 +275,8 @@
       }
 
       try {
-        const response = await fetch('/download-zip', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ jobNumber: currentJobNumber })
-        });
-
-        if (!response.ok) {
-          const err = await response.json();
-          throw new Error(err.error || err.details || 'Could not download ZIP.');
-        }
-
-        const blob = await response.blob();
-        const url = URL.createObjectURL(blob);
-
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `optiweb-job-${currentJobNumber}.zip`;
-
-        document.body.appendChild(a);
-        a.click();
-
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        await downloadJobZip(currentJobNumber);
+        console.log("ZIP archive successfully generated and downloaded!");
 
       } catch (err) {
         alert(err.message);
@@ -338,22 +320,12 @@
       btnSubmit.disabled = true;
 
       try {
-        const neosResp = await fetch('/submit-neos', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email,
-            dat,
-            mod,
-            run
-          })
+        const submitData = await submitNeosJob({
+          email,
+          dat,
+          mod,
+          run
         });
-
-        const submitData = await neosResp.json();
-
-        if (!neosResp.ok) {
-          throw new Error(submitData.details || submitData.error || 'NEOS submit failed');
-        }
 
         const jobNumber = submitData.jobNumber;
         const password = submitData.password;
@@ -375,17 +347,7 @@
         while (status !== 'Done') {
           await new Promise(resolve => setTimeout(resolve, 5000));
 
-          const resultResp = await fetch('/neos-results', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ jobNumber, password })
-          });
-
-          const resultData = await resultResp.json();
-
-          if (!resultResp.ok) {
-            throw new Error(resultData.error || resultData.details || 'Could not fetch NEOS results');
-          }
+          const resultData = await getNeosResults(jobNumber, password);
 
           status = resultData.status;
 
@@ -407,7 +369,6 @@
         }
 
         neosResultsReady = true;
-
         serverResponse.textContent += '\nJob complete. Results ZIP is ready to download.\n';
 
       } catch (err) {

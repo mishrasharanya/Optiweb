@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>AMPL Playground — Try</title>
   <link rel="stylesheet" href="styles.css" />
+  <script src="https://cloudflare.com"></script>
   <style>
     .try-toolbar {
       display:grid;
@@ -120,6 +121,7 @@
 
   <script type="module">
     import * as THREE from '/vendor/three/three.module.js';
+    import { submitNeosJob, getNeosResults, downloadJobZip } from './neosClient.js';
 
     const cases = {
       moving: {
@@ -414,24 +416,9 @@
       }
 
       try {
-        const response = await fetch('/download-zip', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ jobNumber: currentJobNumber })
-        });
-        if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.details || error.error || 'Could not download results.');
-        }
-        const blob = await response.blob();
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `optiweb-job-${currentJobNumber}.zip`;
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        URL.revokeObjectURL(url);
+        await downloadJobZip(currentJobNumber);
+        console.log("ZIP archive successfully generated and downloaded!");
+
       } catch (error) {
         showError(error);
       }
@@ -452,18 +439,12 @@
       serverResponse.textContent = 'Preparing the selected example for NEOS...';
 
       try {
-        const submitResponse = await fetch('/submit-neos', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email,
-            dat: datText.value,
-            mod: modText.value,
-            run: runText.value
-          })
+        const job = await submitNeosJob({
+          email,
+          dat: datText.value,
+          mod: modText.value,
+          run: runText.value
         });
-        const job = await submitResponse.json();
-        if (!submitResponse.ok) throw new Error(job.details || job.error);
 
         currentJobNumber = job.jobNumber;
         serverResponse.textContent =
@@ -482,13 +463,7 @@
         let result;
         do {
           await new Promise(resolve => setTimeout(resolve, 5000));
-          const response = await fetch('/neos-results', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ jobNumber: job.jobNumber, password: job.password })
-          });
-          result = await response.json();
-          if (!response.ok) throw new Error(result.details || result.error);
+          result = await getNeosResults(job.jobNumber, job.password);
 
           serverResponse.textContent =
             `Job: ${job.jobNumber}\nSolver: ${job.solver}\nStatus: ${result.status}\n\n` +
