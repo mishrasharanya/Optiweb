@@ -1,6 +1,7 @@
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#* settings
 #----------- options
 option presolve_eps 1e-5;
+option solver ipopt;
 
 option ipopt_options 'print_timing_statistics=yes print_level=3';
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#* settings!
@@ -27,6 +28,11 @@ solve FIVELINKTEST;
 if solve_result != 'solved' then {
   print 'failed!', 'FIVELINKTEST', '--', FIVELINKTEST.result, '--',  FIVELINKTEST.message;
 }
+
+printf "TRAJECTORY_BEGIN\n";
+printf {i in GRID[0]} "t[%s] %.16g\n", i, t[i];
+printf {j in Q, i in GRID[0]} "q[%s,%s] %.16g\n", j, i, q[j,i];
+printf "TRAJECTORY_END\n";
 
 #print {j in 1.._nvars : match(_varname[j], '^x\[') > 0} : j, _varname[j], _var[j];
 #print {j in 1.._nvars : match(_varname[j], '^t\[') > 0} : j, _varname[j], _var[j];

@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>AMPL Playground — Try</title>
   <link rel="stylesheet" href="styles.css" />
+  <script defer src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script defer src="clientZip.js"></script>
   <style>
     .try-toolbar {
       display:grid;
@@ -119,22 +121,22 @@
   </main>
 
   <script type="module">
-    import * as THREE from '/vendor/three/three.module.js';
+    import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.185.1/build/three.module.js';
 
     const cases = {
       moving: {
         title: 'Moving block',
-        base: '/demos/moving/test',
+        base: 'demos/moving/test',
         dof: 1
       },
       cart: {
         title: 'Cart-pole',
-        base: '/examples/neos/cart-pendulum-utot',
+        base: 'demos/cart/test',
         dof: 2
       },
       five: {
         title: 'Five-linked robot',
-        base: '/examples/neos/five-link-mc-kelly',
+        base: 'demos/five/test',
         dof: 5
       }
     };
@@ -166,6 +168,7 @@
     let visual = {};
     let currentJobNumber = null;
     let neosResultsReady = false;
+    let latestNeosResult = null;
 
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0xf5f7fb);
@@ -317,10 +320,67 @@
       }));
     }
 
+    function parseSolverTrajectory(output, dof) {
+      const text = String(output || '');
+      const block = text.match(/TRAJECTORY_BEGIN([\s\S]*?)TRAJECTORY_END/i)?.[1] || text;
+
+      const times = new Map();
+      const qByIndex = new Map();
+      const numericIndex = value => {
+        const number = Number(value);
+        return Number.isFinite(number) ? number : value;
+      };
+
+      for (const line of block.split(/\r?\n/)) {
+        const match = line.match(/^\s*(?:\d+\s+)?(q|t)\[([^\]]+)\]\s+([-+.\deE]+)\s*$/i);
+        if (!match) continue;
+
+        const [, kind, rawIndexes, rawValue] = match;
+        const value = Number(rawValue);
+        if (!Number.isFinite(value)) continue;
+
+        const indexes = rawIndexes.split(',').map(part => part.trim());
+        if (kind.toLowerCase() === 't') {
+          times.set(indexes[0], value);
+          continue;
+        }
+
+        const component = Number(indexes[0]) - 1;
+        const gridIndex = indexes[1];
+        if (!Number.isInteger(component) || component < 0 || component >= dof || !gridIndex) continue;
+
+        const row = qByIndex.get(gridIndex) || Array.from({ length: dof }, () => 0);
+        row[component] = value;
+        qByIndex.set(gridIndex, row);
+      }
+
+      return [...qByIndex.entries()]
+        .sort(([left], [right]) => {
+          const a = numericIndex(left);
+          const b = numericIndex(right);
+          if (typeof a === 'number' && typeof b === 'number') return a - b;
+          return String(left).localeCompare(String(right));
+        })
+        .map(([index, q], order) => ({
+          time: times.get(index) ?? order,
+          q
+        }));
+    }
+
+    function combinedNeosText(result) {
+      return [
+        result?.output,
+        result?.amplOutput,
+        result?.resultsTxt,
+        result?.jobResults,
+        result?.jobOut
+      ].filter(Boolean).join('\n\n');
+    }
+
     function setFrames(nextFrames, source) {
       const validFrames = nextFrames.filter(frame => frame.q.every(Number.isFinite));
       if (!validFrames.length) {
-        vizStatus.textContent = `No seed trajectory was found in ${source}.`;
+        vizStatus.textContent = `No trajectory was found in ${source}.`;
         pausedProgress = 0;
         if (frames.length) updateVisual(frames[0].q);
         return false;
@@ -354,6 +414,7 @@
       setFrames(parseSeed(datText.value, config.dof), 'the example seed');
       currentJobNumber = null;
       neosResultsReady = false;
+      latestNeosResult = null;
       neosResponse.textContent = '';
       serverResponse.textContent = 'Example loaded. Preview the seed trajectory or run the files on NEOS.';
     }
@@ -414,24 +475,16 @@
       }
 
       try {
-        const response = await fetch('/download-zip', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ jobNumber: currentJobNumber })
+        await window.OptiWebZip.downloadNeosZip({
+          jobNumber: currentJobNumber,
+          dat: datText.value,
+          mod: modText.value,
+          run: runText.value,
+          neosOutput: combinedNeosText(latestNeosResult),
+          jobOut: latestNeosResult?.jobOut || '',
+          emailStatus: latestNeosResult?.emailStatus || '',
+          summary: neosResponse.textContent
         });
-        if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.details || error.error || 'Could not download results.');
-        }
-        const blob = await response.blob();
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `optiweb-job-${currentJobNumber}.zip`;
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        URL.revokeObjectURL(url);
       } catch (error) {
         showError(error);
       }
@@ -448,6 +501,7 @@
       btnRun.textContent = 'Submitting...';
       currentJobNumber = null;
       neosResultsReady = false;
+      latestNeosResult = null;
       neosResponse.textContent = '';
       serverResponse.textContent = 'Preparing the selected example for NEOS...';
 
@@ -468,7 +522,7 @@
         currentJobNumber = job.jobNumber;
         serverResponse.textContent =
           `Submitted successfully\nJob: ${job.jobNumber}\nSolver: ${job.solver}\nStatus: Waiting\n\n` +
-          `The Three.js animation stays on the .dat seed trajectory.`;
+          `The Three.js animation will update if NEOS returns a trajectory block.`;
         neosResponse.textContent =
           `NEOS Job Information\n\n` +
           `Email      : ${email}\n` +
@@ -489,10 +543,11 @@
           });
           result = await response.json();
           if (!response.ok) throw new Error(result.details || result.error);
+          latestNeosResult = result;
 
           serverResponse.textContent =
             `Job: ${job.jobNumber}\nSolver: ${job.solver}\nStatus: ${result.status}\n\n` +
-            `The Three.js animation stays on the .dat seed trajectory.`;
+            `The Three.js animation will update if NEOS returns a trajectory block.`;
           neosResponse.textContent =
             `NEOS Job Information\n\n` +
             `Email      : ${email}\n` +
@@ -503,12 +558,22 @@
             `Password   : ${job.password}\n` +
             `Status     : ${result.status}\n\n` +
             `===== NEOS Output =====\n${result.output || 'Waiting for output...'}\n\n` +
+            `===== AMPL Output =====\n${result.amplOutput || 'AMPL output not available yet'}\n\n` +
+            `===== results.txt =====\n${result.resultsTxt || 'results.txt not available yet'}\n\n` +
+            `===== job.results =====\n${result.jobResults || 'job.results not available yet'}\n\n` +
             `===== job.out =====\n${result.jobOut || 'job.out not available yet'}\n\n` +
             `===== Email Status =====\n${result.emailStatus || 'Email status not available yet'}`;
         } while (result.status !== 'Done');
 
+        const optimizedFrames = parseSolverTrajectory(
+          combinedNeosText(result),
+          cases[demoCase.value].dof
+        );
+        const optimizedLoaded = setFrames(optimizedFrames, 'the optimized NEOS solution');
         neosResultsReady = true;
-        serverResponse.textContent += '\nNEOS job complete. Results ZIP is ready to download.';
+        serverResponse.textContent += optimizedLoaded
+          ? '\nNEOS job complete. Optimized trajectory loaded. Results ZIP is ready to download.'
+          : '\nNEOS job complete. Results ZIP is ready; seed trajectory remains because no trajectory block was returned.';
       } catch (error) {
         showError(error);
       } finally {

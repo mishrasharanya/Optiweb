@@ -5,6 +5,8 @@
   <title>AMPL Playground — Create</title>
   <link rel="stylesheet" href="styles.css" />
   <script defer src="app.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script defer src="clientZip.js"></script>
 </head>
 
 <body class="page">
@@ -166,6 +168,7 @@
 
     let currentJobNumber = null;
     let neosResultsReady = false;
+    let latestNeosResult = null;
 
     const read = file => new Promise(resolve => {
       if (!file) {
@@ -258,6 +261,7 @@
 
       currentJobNumber = null;
       neosResultsReady = false;
+      latestNeosResult = null;
     });
 
     btnDownloadZip.addEventListener('click', async () => {
@@ -272,29 +276,16 @@
       }
 
       try {
-        const response = await fetch('/download-zip', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ jobNumber: currentJobNumber })
+        await window.OptiWebZip.downloadNeosZip({
+          jobNumber: currentJobNumber,
+          dat: datText.value,
+          mod: modText.value,
+          run: runText.value,
+          neosOutput: latestNeosResult?.output || '',
+          jobOut: latestNeosResult?.jobOut || '',
+          emailStatus: latestNeosResult?.emailStatus || '',
+          summary: neosResponse.textContent
         });
-
-        if (!response.ok) {
-          const err = await response.json();
-          throw new Error(err.error || err.details || 'Could not download ZIP.');
-        }
-
-        const blob = await response.blob();
-        const url = URL.createObjectURL(blob);
-
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `optiweb-job-${currentJobNumber}.zip`;
-
-        document.body.appendChild(a);
-        a.click();
-
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
 
       } catch (err) {
         alert(err.message);
@@ -311,6 +302,7 @@
       neosResponse.textContent = '';
       currentJobNumber = null;
       neosResultsReady = false;
+      latestNeosResult = null;
 
       if (!dat || !mod || !run) {
         serverResponse.textContent = 'Please provide all three files: .dat, .mod, and .run.\n';
@@ -388,6 +380,7 @@
           }
 
           status = resultData.status;
+          latestNeosResult = resultData;
 
           neosResponse.textContent =
             `NEOS Job Information\n\n` +
