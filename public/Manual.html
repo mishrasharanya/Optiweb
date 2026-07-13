@@ -2290,7 +2290,7 @@ function addRobotRow(row = null){
   tr.innerHTML = tds.join('');
   body.appendChild(tr);
 }
-qs('#btnAddRobot').addEventListener('click', () => addRobotRow(row = null));
+qs('#btnAddRobot').addEventListener('click', () => addRobotRow(null));
 
 /* ====================== URDF toggle + importer (unchanged logic) ====================== */
 function splitTokens(str, n = 3, fill = '0') {
@@ -2390,7 +2390,7 @@ function addConstraintRow(row = null){
   tr.innerHTML = tds.join('');
   body.appendChild(tr);
 }
-qs('#btnAddConstraint').addEventListener('click', () => addConstraintRow(row = null));
+qs('#btnAddConstraint').addEventListener('click', () => addConstraintRow(null));
 
 /* ====================== Runge Kutta ===================================== */
 let currentRKPanel = null;
@@ -3741,6 +3741,11 @@ if (btnSaveSubmit) {
 } else {
   console.error('btnSaveSubmit button not found');
 }
+window.addRKPanel = addRKPanel;
+window.removeRKPanel = removeRKPanel;
+window.addRKRow = addRKRow;
+window.delRKRow = delRKRow;
+window.updateTableIndex = updateTableIndex;
 </script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"7f7b0fd8732c4326aae4b9d58d5c514a","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body>
