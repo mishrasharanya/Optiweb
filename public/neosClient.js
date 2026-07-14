@@ -1,10 +1,10 @@
-export function isValidEmail(email) {
+function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
 const NEOS_XMLRPC_URL = "https://neos-server.org:3333";
 
-export function cleanRunFile(runText) {
+function cleanRunFile(runText) {
   return String(runText || "")
     .split(/\r?\n/)
     .filter(line => {
@@ -19,20 +19,20 @@ export function cleanRunFile(runText) {
     .join("\n");
 }
 
-export function extractSolverFromRun(runText) {
+function extractSolverFromRun(runText) {
   const matches = [...String(runText || "").matchAll(/option\s+solver\s+([A-Za-z0-9_+-]+)\s*;/gi)];
   if (!matches.length) return null;
   return matches[matches.length - 1][1].trim().toUpperCase();
 }
 
-export function xmlEscape(value) {
+function xmlEscape(value) {
   return String(value)
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
 }
 
-export async function neosXmlRpc(methodName, params = []) {
+async function neosXmlRpc(methodName, params = []) {
   const xmlParams = params.map(param => {
     if (Number.isInteger(param)) {
       return `<param><value><int>${param}</int></value></param>`;
@@ -79,9 +79,9 @@ export async function neosXmlRpc(methodName, params = []) {
   return text;
 }
 
-export const jobs = new Map();
+const jobs = new Map();
 
-export async function safeGetOutputFile(jobNumber, password, filename) {
+async function safeGetOutputFile(jobNumber, password, filename) {
   try {
     const file = await neosXmlRpc("getOutputFile", [
       Number(jobNumber),
@@ -95,7 +95,7 @@ export async function safeGetOutputFile(jobNumber, password, filename) {
   }
 }
 
-export function cleanUsefulOutput(text) {
+function cleanUsefulOutput(text) {
   const value = String(text || "").trim();
 
   if (!value) return "";
@@ -110,7 +110,7 @@ export function cleanUsefulOutput(text) {
   return value;
 }
 
-export function chooseBestOutput({ resultsTxt, jobResults, amplOutput, jobOut }) {
+function chooseBestOutput({ resultsTxt, jobResults, amplOutput, jobOut }) {
   const candidates = [
     cleanUsefulOutput(amplOutput),
     cleanUsefulOutput(resultsTxt),
@@ -121,7 +121,7 @@ export function chooseBestOutput({ resultsTxt, jobResults, amplOutput, jobOut })
   return candidates.find(Boolean) || "No solver output was returned by NEOS.";
 }
 
-export async function findNeosSolverInfo(solverName) {
+async function findNeosSolverInfo(solverName) {
   const raw = await neosXmlRpc("listAllSolvers", []);
   const lines = Array.isArray(raw) ? raw : String(raw).split(/\r?\n/);
   const solverUpper = String(solverName || "").toUpperCase();
@@ -144,7 +144,7 @@ export async function findNeosSolverInfo(solverName) {
   return matches[0] || null;
 }
 
-export async function submitNeosJob({ email, mod, dat, run }) {
+async function submitNeosJob({ email, mod, dat, run }) {
   const cleanEmail = String(email || "").trim();
 
   if (!cleanEmail) {
@@ -229,7 +229,7 @@ export async function submitNeosJob({ email, mod, dat, run }) {
   };
 }
 
-export async function getNeosJobStatus(jobNumber, password) {
+async function getNeosJobStatus(jobNumber, password) {
   if (!jobNumber || !password) {
     throw new Error("Job number and password are required.");
   }
@@ -238,7 +238,7 @@ export async function getNeosJobStatus(jobNumber, password) {
   return status;
 }
 
-export async function getNeosResults(jobNumber, password) {
+async function getNeosResults(jobNumber, password) {
   if (!jobNumber || !password) {
     throw new Error("Job number and password are required.");
   }
@@ -310,7 +310,7 @@ export async function getNeosResults(jobNumber, password) {
   };
 }
 
-export async function downloadJobZip(jobNumber) {
+async function downloadJobZip(jobNumber) {
   if (!jobNumber) {
     throw new Error("Job number is required.");
   }
@@ -345,3 +345,7 @@ export async function downloadJobZip(jobNumber) {
   
   return { success: true };
 }
+
+window.submitNeosJob = submitNeosJob;
+window.getNeosResults = getNeosResults;
+window.downloadJobZip = downloadJobZip;

@@ -7,6 +7,7 @@
   <script defer src="app.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   <script defer src="clientZip.js"></script>
+  <script defer src="neosClient.js"></script>
 </head>
 
 <body class="page">
@@ -115,8 +116,7 @@
     </section>
   </main>
 
-  <script type="module">
-    import { submitNeosJob, getNeosResults } from './neosClient.js';
+  <script>
 
     function setTabFromHash() {
       const hash = location.hash || '#upload';
@@ -332,7 +332,7 @@
       btnSubmit.disabled = true;
 
       try {
-        const submitData = await submitNeosJob({
+        const submitData = await window.submitNeosJob({
           email,
           dat,
           mod,
@@ -359,7 +359,7 @@
         while (status !== 'Done') {
           await new Promise(resolve => setTimeout(resolve, 5000));
 
-          const resultData = await getNeosResults(jobNumber, password);
+          const resultData = await window.getNeosResults(jobNumber, password);
 
           status = resultData.status;
           latestNeosResult = resultData;
