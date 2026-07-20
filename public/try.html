@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="styles.css" />
   <script defer src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   <script defer src="clientZip.js"></script>
+  <script defer src="neosClient.js"></script>
   <style>
     .try-toolbar {
       display:grid;
@@ -120,9 +121,8 @@
     <pre id="neosResponse" class="card mono run-status" style="margin-top:12px; white-space:pre-wrap;"></pre>
   </main>
 
-  <script type="module">
+  <script>
     import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.185.1/build/three.module.js';
-    import { submitNeosJob, getNeosResults } from './neosClient.js';
 
     const cases = {
       moving: {
@@ -507,7 +507,7 @@
       serverResponse.textContent = 'Preparing the selected example for NEOS...';
 
       try {
-        const job = await submitNeosJob({
+        const job = await window.submitNeosJob({
           email,
           dat: datText.value,
           mod: modText.value,
@@ -531,7 +531,7 @@
         let result;
         do {
           await new Promise(resolve => setTimeout(resolve, 5000));
-          result = await getNeosResults(job.jobNumber, job.password);
+          result = await window.getNeosResults(job.jobNumber, job.password);
           latestNeosResult = result;
 
           serverResponse.textContent =

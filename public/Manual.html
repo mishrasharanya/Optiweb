@@ -5,6 +5,7 @@
   <title>AMPL Playground - Builder (Wizard)</title>
   <link rel="stylesheet" href="styles.css" />
   <script src="https://cloudflare.com"></script>
+  <script defer src="neosClient.js"></script>
   <style>
     /* Wizard visuals (dark theme-friendly) */
     .wizard { max-width: 1100px; margin: 0 auto; }
@@ -945,8 +946,7 @@
     </div>
   </div>
 
-  <script type="module">
-    import { submitNeosJob, getNeosResults, downloadJobZip } from './neosClient.js';
+  <script>
     const selectionMap = new Map();
     let nq = undefined;
 /* ====================== Wizard core ====================== */
@@ -3518,7 +3518,7 @@ async function submitToNeos() {
     throw new Error('Please enter a valid email address for NEOS.');
   }
 
-  const data = await submitNeosJob({ email, mod, dat, run });
+  const data = await window.submitNeosJob({ email, mod, dat, run });
 
   const jobNumber = data.jobNumber;
   const password = data.password;
@@ -3540,7 +3540,7 @@ async function submitToNeos() {
   while (status !== 'Done') {
     await new Promise(resolve => setTimeout(resolve, 5000));
 
-    const resultData = await getNeosResults(jobNumber, password);
+    const resultData = await window.getNeosResults(jobNumber, password);
 
     status = resultData.status;
 
@@ -3710,7 +3710,7 @@ if (btnDownloadZip) {
     }
 
     try {
-      await downloadJobZip(currentJobNumber);
+      await window.downloadJobZip(currentJobNumber);
       console.log("ZIP archive successfully generated and downloaded!");
     } catch (err) {
       console.error(err);
@@ -3741,11 +3741,6 @@ if (btnSaveSubmit) {
 } else {
   console.error('btnSaveSubmit button not found');
 }
-window.addRKPanel = addRKPanel;
-window.removeRKPanel = removeRKPanel;
-window.addRKRow = addRKRow;
-window.delRKRow = delRKRow;
-window.updateTableIndex = updateTableIndex;
 </script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"7f7b0fd8732c4326aae4b9d58d5c514a","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body>
