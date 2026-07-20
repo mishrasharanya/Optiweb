@@ -804,45 +804,85 @@
     <!-- Step 7: Solver choice -->
     <section class="wiz-card hide" data-step="8">
       <h3 class="step-title">Solver</h3>
-      <p class="muted">Pick a NEOS-hosted AMPL solver. The selected solver name is written into the <code>.run</code> preview as <code>option solver &lt;name&gt;;</code>; the NEOS submission helper resolves the matching problem type/category.</p>
+      <p class="muted">Pick a NEOS-hosted AMPL solver. Solvers are grouped by NEOS problem type for readability, with mixed-integer and global optimization kept separate. The selected solver name is written into the <code>.run</code> preview as <code>option solver &lt;name&gt;;</code>.</p>
       <div class="wiz-row g2">
         <div>
           <label class="label" for="neosSolver">NEOS solver</label>
           <select id="neosSolver" class="mono" style="width:100%;padding:8px;">
-            <option value="BARON">BARON</option>
-            <option value="Bonmin">Bonmin</option>
-            <option value="Cbc">Cbc</option>
-            <option value="CONOPT">CONOPT</option>
-            <option value="COPT">COPT</option>
-            <option value="Couenne">Couenne</option>
-            <option value="CPLEX">CPLEX</option>
-            <option value="FICO-Xpress">FICO-Xpress</option>
-            <option value="FilMINT">FilMINT</option>
-            <option value="filter">filter</option>
-            <option value="filterMPEC">filterMPEC</option>
-            <option value="Gurobi">Gurobi</option>
-            <option value="HiGHS">HiGHS</option>
-            <option value="Ipopt" selected>Ipopt</option>
-            <option value="KNITRO">KNITRO</option>
-            <option value="L-BFGS-B">L-BFGS-B</option>
-            <option value="LANCELOT">LANCELOT</option>
-            <option value="LGO">LGO</option>
-            <option value="LINDOGlobal">LINDOGlobal</option>
-            <option value="LOQO">LOQO</option>
-            <option value="MINLP">MINLP</option>
-            <option value="MINOS">MINOS</option>
-            <option value="MINTO">MINTO</option>
-            <option value="MOSEK">MOSEK</option>
-            <option value="MUSCOD-II">MUSCOD-II</option>
-            <option value="OOQP">OOQP</option>
-            <option value="PATH">PATH</option>
-            <option value="PGAPack">PGAPack</option>
-            <option value="PSwarm">PSwarm</option>
-            <option value="RAPOSa">RAPOSa</option>
-            <option value="SCIP">SCIP</option>
-            <option value="SNOPT">SNOPT</option>
+            <optgroup label="Bound constrained optimization">
+              <option value="L-BFGS-B">L-BFGS-B</option>
+            </optgroup>
+            <optgroup label="Nonlinearly constrained optimization">
+              <option value="CONOPT">CONOPT</option>
+              <option value="filter">filter</option>
+              <option value="Gurobi">Gurobi</option>
+              <option value="Ipopt" selected>Ipopt</option>
+              <option value="KNITRO">KNITRO</option>
+              <option value="LANCELOT">LANCELOT</option>
+              <option value="LOQO">LOQO</option>
+              <option value="MINOS">MINOS</option>
+              <option value="SNOPT">SNOPT</option>
+            </optgroup>
+            <optgroup label="Global optimization">
+              <option value="BARON">BARON</option>
+              <option value="Couenne">Couenne</option>
+              <option value="Gurobi">Gurobi</option>
+              <option value="LGO">LGO</option>
+              <option value="LINDOGlobal">LINDOGlobal</option>
+              <option value="PGAPack">PGAPack</option>
+              <option value="PSwarm">PSwarm</option>
+              <option value="RAPOSa">RAPOSa</option>
+              <option value="SCIP">SCIP</option>
+            </optgroup>
+            <optgroup label="Linear programming">
+              <option value="COPT">COPT</option>
+              <option value="CPLEX">CPLEX</option>
+              <option value="FICO-Xpress">FICO-Xpress</option>
+              <option value="Gurobi">Gurobi</option>
+              <option value="HiGHS">HiGHS</option>
+              <option value="MOSEK">MOSEK</option>
+              <option value="OOQP">OOQP</option>
+              <option value="SCIP">SCIP</option>
+            </optgroup>
+            <optgroup label="Mixed integer linear programming">
+              <option value="Cbc">Cbc</option>
+              <option value="COPT">COPT</option>
+              <option value="CPLEX">CPLEX</option>
+              <option value="FICO-Xpress">FICO-Xpress</option>
+              <option value="Gurobi">Gurobi</option>
+              <option value="HiGHS">HiGHS</option>
+              <option value="MINTO">MINTO</option>
+              <option value="MOSEK">MOSEK</option>
+              <option value="RAPOSa">RAPOSa</option>
+              <option value="SCIP">SCIP</option>
+            </optgroup>
+            <optgroup label="Mixed integer nonlinearly constrained optimization">
+              <option value="BARON">BARON</option>
+              <option value="Bonmin">Bonmin</option>
+              <option value="Couenne">Couenne</option>
+              <option value="FilMINT">FilMINT</option>
+              <option value="Gurobi">Gurobi</option>
+              <option value="KNITRO">KNITRO</option>
+              <option value="LINDOGlobal">LINDOGlobal</option>
+              <option value="MINLP">MINLP</option>
+              <option value="SCIP">SCIP</option>
+            </optgroup>
+            <optgroup label="Second order conic programming">
+              <option value="COPT">COPT</option>
+              <option value="CPLEX">CPLEX</option>
+              <option value="FICO-Xpress">FICO-Xpress</option>
+              <option value="Gurobi">Gurobi</option>
+              <option value="MOSEK">MOSEK</option>
+            </optgroup>
+            <optgroup label="Complementarity / MPEC / optimal control">
+              <option value="filterMPEC">filterMPEC</option>
+              <option value="Gurobi">Gurobi</option>
+              <option value="KNITRO">KNITRO</option>
+              <option value="MUSCOD-II">MUSCOD-II</option>
+              <option value="PATH">PATH</option>
+            </optgroup>
           </select>
-          <p class="muted">This list contains distinct NEOS solvers exposed for AMPL input; categories are resolved during submission.</p>
+          <p class="muted">Some solvers appear in multiple groups on NEOS. The group helps choose a solver; the submission helper resolves the matching NEOS category.</p>
         </div>
         <div>
           <label class="label">Extra solver options (optional)</label>
