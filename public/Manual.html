@@ -804,55 +804,45 @@
     <!-- Step 7: Solver choice -->
     <section class="wiz-card hide" data-step="8">
       <h3 class="step-title">Solver</h3>
-      <p class="muted">Pick a NEOS-hosted solver. The corresponding <code>option solver &lt;name&gt;;</code> line will be added to the <code>.run</code> preview.</p>
-
-      <p class="muted">Pick one of the 32 NEOS solvers currently exposed for <code>AMPL</code> input. The selected name is written into the <code>.run</code> preview as <code>option solver &lt;name&gt;;</code>.</p>
+      <p class="muted">Pick a NEOS-hosted AMPL solver. The selected solver name is written into the <code>.run</code> preview as <code>option solver &lt;name&gt;;</code>; the NEOS submission helper resolves the matching problem type/category.</p>
       <div class="wiz-row g2">
         <div>
           <label class="label" for="neosSolver">NEOS solver</label>
           <select id="neosSolver" class="mono" style="width:100%;padding:8px;">
-            <optgroup label="Continuous / nonlinear">
-              <option value="Ipopt" selected>Ipopt — NLP interior-point (recommended)</option>
-              <option value="KNITRO">KNITRO — NLP / MINLP</option>
-              <option value="CONOPT">CONOPT — large constrained NLP</option>
-              <option value="SNOPT">SNOPT — sparse SQP NLP</option>
-              <option value="MINOS">MINOS — reduced-gradient NLP</option>
-              <option value="LOQO">LOQO — interior-point NLP</option>
-              <option value="LANCELOT">LANCELOT — augmented Lagrangian</option>
-              <option value="L-BFGS-B">L-BFGS-B — bound-constrained NLP</option>
-              <option value="OOQP">OOQP — quadratic programming</option>
-              <option value="filter">filter — NLP</option>
-            </optgroup>
-            <optgroup label="Mixed-integer / global">
-              <option value="Bonmin">Bonmin — MINLP</option>
-              <option value="COUENNE">COUENNE — global MINLP</option>
-              <option value="Baron">Baron — global MINLP</option>
-              <option value="SCIP">SCIP — MINLP / MILP</option>
-              <option value="FilMINT">FilMINT — MINLP</option>
-              <option value="MINLP">MINLP — mixed-integer nonlinear</option>
-              <option value="LINDOGlobal">LINDOGlobal — global optimization</option>
-              <option value="LGO">LGO — global optimization</option>
-              <option value="PGAPack">PGAPack — genetic algorithm</option>
-              <option value="PSwarm">PSwarm — particle swarm</option>
-              <option value="RAPOSa">RAPOSa — global optimization</option>
-            </optgroup>
-            <optgroup label="Linear / mixed-integer linear">
-              <option value="CPLEX">CPLEX — LP / MILP / QP</option>
-              <option value="Gurobi">Gurobi — LP / MILP / QP</option>
-              <option value="FICO-Xpress">FICO-Xpress — LP / MILP</option>
-              <option value="Cbc">Cbc — open-source MILP</option>
-              <option value="HIGHS">HIGHS — LP / MILP</option>
-              <option value="COPT">COPT — LP / MILP / conic</option>
-              <option value="MOSEK">MOSEK — LP / QP / SOCP / SDP</option>
-              <option value="MINTO">MINTO — mixed-integer linear</option>
-            </optgroup>
-            <optgroup label="Complementarity / semidefinite / other">
-              <option value="PATH">PATH — complementarity (MCP)</option>
-              <option value="filterMPEC">filterMPEC — MPEC</option>
-              <option value="MUSCOD-II">MUSCOD-II — optimal control</option>
-            </optgroup>
+            <option value="BARON">BARON</option>
+            <option value="Bonmin">Bonmin</option>
+            <option value="Cbc">Cbc</option>
+            <option value="CONOPT">CONOPT</option>
+            <option value="COPT">COPT</option>
+            <option value="Couenne">Couenne</option>
+            <option value="CPLEX">CPLEX</option>
+            <option value="FICO-Xpress">FICO-Xpress</option>
+            <option value="FilMINT">FilMINT</option>
+            <option value="filter">filter</option>
+            <option value="filterMPEC">filterMPEC</option>
+            <option value="Gurobi">Gurobi</option>
+            <option value="HiGHS">HiGHS</option>
+            <option value="Ipopt" selected>Ipopt</option>
+            <option value="KNITRO">KNITRO</option>
+            <option value="L-BFGS-B">L-BFGS-B</option>
+            <option value="LANCELOT">LANCELOT</option>
+            <option value="LGO">LGO</option>
+            <option value="LINDOGlobal">LINDOGlobal</option>
+            <option value="LOQO">LOQO</option>
+            <option value="MINLP">MINLP</option>
+            <option value="MINOS">MINOS</option>
+            <option value="MINTO">MINTO</option>
+            <option value="MOSEK">MOSEK</option>
+            <option value="MUSCOD-II">MUSCOD-II</option>
+            <option value="OOQP">OOQP</option>
+            <option value="PATH">PATH</option>
+            <option value="PGAPack">PGAPack</option>
+            <option value="PSwarm">PSwarm</option>
+            <option value="RAPOSa">RAPOSa</option>
+            <option value="SCIP">SCIP</option>
+            <option value="SNOPT">SNOPT</option>
           </select>
-          <p class="muted">The backend still verifies the selected solver against NEOS before submission.</p>
+          <p class="muted">This list contains distinct NEOS solvers exposed for AMPL input; categories are resolved during submission.</p>
         </div>
         <div>
           <label class="label">Extra solver options (optional)</label>
