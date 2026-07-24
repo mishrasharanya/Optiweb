@@ -26,7 +26,7 @@
     </div>
 
     <section id="upload" class="tab-panel card active">
-      <h3>Upload .dat / .mod / .run</h3>
+      <h3>Upload .mod / .dat / .run</h3>
 
       <p class="muted">
         Your <code>.run</code> file should include a solver line such as
@@ -35,15 +35,6 @@
       </p>
 
       <div class="grid-3">
-        <div class="drop-zone" id="datZone">
-          <div class="label">.dat File</div>
-          <div class="drop-title">Drag & Drop</div>
-          <div class="drop-subtitle">or choose a file</div>
-          <button type="button" class="btn choose-btn">Choose File</button>
-          <input id="datFile" class="hidden-file-input" type="file" accept=".dat,text/plain" />
-          <div class="muted" id="datMeta"></div>
-        </div>
-
         <div class="drop-zone" id="modZone">
           <div class="label">.mod File</div>
           <div class="drop-title">Drag & Drop</div>
@@ -51,6 +42,15 @@
           <button type="button" class="btn choose-btn">Choose File</button>
           <input id="modFile" class="hidden-file-input" type="file" accept=".mod,text/plain" />
           <div class="muted" id="modMeta"></div>
+        </div>
+
+        <div class="drop-zone" id="datZone">
+          <div class="label">.dat File</div>
+          <div class="drop-title">Drag & Drop</div>
+          <div class="drop-subtitle">or choose a file</div>
+          <button type="button" class="btn choose-btn">Choose File</button>
+          <input id="datFile" class="hidden-file-input" type="file" accept=".dat,text/plain" />
+          <div class="muted" id="datMeta"></div>
         </div>
 
         <div class="drop-zone" id="runZone">
@@ -65,13 +65,13 @@
 
       <div class="grid-3" style="margin-top:1rem">
         <div>
-          <label class="label">.dat preview</label>
-          <textarea id="datText"></textarea>
+          <label class="label">.mod preview</label>
+          <textarea id="modText"></textarea>
         </div>
 
         <div>
-          <label class="label">.mod preview</label>
-          <textarea id="modText"></textarea>
+          <label class="label">.dat preview</label>
+          <textarea id="datText"></textarea>
         </div>
 
         <div>
@@ -104,8 +104,8 @@
         <div>
           <h3>Manual builder</h3>
           <p>
-            Use the interactive form to generate <code>.dat</code>, preview
-            <code>.mod</code>/<code>.run</code>, and submit to NEOS.
+            Use the interactive form to generate <code>.mod</code>, preview
+            <code>.dat</code>/<code>.run</code>, and submit to NEOS.
           </p>
         </div>
 
@@ -187,6 +187,24 @@
       reader.readAsText(file);
     });
 
+    const uploadFileTypes = {
+      datFile: [".dat"],
+      modFile: [".mod"],
+      runFile: [".run"]
+    };
+
+    function validateUploadFileType(file, inputId) {
+      const allowedExtensions = uploadFileTypes[inputId] || [];
+      const fileName = String(file?.name || "").toLowerCase();
+      const isAllowed = allowedExtensions.some(extension => fileName.endsWith(extension));
+
+      if (!isAllowed) {
+        alert(`Unsupported file type. Please choose a ${allowedExtensions.join(" or ")} file.`);
+      }
+
+      return isAllowed;
+    }
+
     function setupDropZone(zoneId, inputId) {
       const zone = document.getElementById(zoneId);
       const input = document.getElementById(inputId);
@@ -216,6 +234,9 @@
 
         if (!e.dataTransfer.files.length) return;
 
+        const file = e.dataTransfer.files[0];
+        if (!validateUploadFileType(file, inputId)) return;
+
         input.files = e.dataTransfer.files;
         input.dispatchEvent(new Event('change'));
       });
@@ -227,18 +248,30 @@
 
     datFile.addEventListener('change', async () => {
       const file = datFile.files[0];
+      if (file && !validateUploadFileType(file, 'datFile')) {
+        datFile.value = '';
+        return;
+      }
       datText.value = await read(file);
       datMeta.textContent = file ? `Loaded: ${file.name} (${datText.value.length} chars)` : '';
     });
 
     modFile.addEventListener('change', async () => {
       const file = modFile.files[0];
+      if (file && !validateUploadFileType(file, 'modFile')) {
+        modFile.value = '';
+        return;
+      }
       modText.value = await read(file);
       modMeta.textContent = file ? `Loaded: ${file.name} (${modText.value.length} chars)` : '';
     });
 
     runFile.addEventListener('change', async () => {
       const file = runFile.files[0];
+      if (file && !validateUploadFileType(file, 'runFile')) {
+        runFile.value = '';
+        return;
+      }
       runText.value = await read(file);
       runMeta.textContent = file ? `Loaded: ${file.name} (${runText.value.length} chars)` : '';
     });
@@ -307,8 +340,8 @@
       latestNeosResult = null;
 
       if (!dat || !mod || !run) {
-        serverResponse.textContent = 'Please provide all three files: .dat, .mod, and .run.\n';
-        alert('Please provide all three files: .dat, .mod, and .run.');
+        serverResponse.textContent = 'Please provide all three files: .mod, .dat, and .run.\n';
+        alert('Please provide all three files: .mod, .dat, and .run.');
         return;
       }
 

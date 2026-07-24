@@ -330,6 +330,22 @@
     }
     .input-error { border-color: #dc3545 !important; outline-color: #dc3545 !important; }
     .error-text { color: #dc3545; font-size: 0.85rem; margin-top: 0.25rem; display: block; }
+
+    .wiz-card[data-step="2"] table {
+      table-layout: fixed;
+    }
+
+    .wiz-card[data-step="2"] td input.small {
+      width: min(180px, 70%);
+      min-width: 96px;
+      text-align: center;
+      box-sizing: border-box;
+    }
+
+    .wiz-card[data-step="2"] th,
+    .wiz-card[data-step="2"] td {
+      padding: 12px 10px;
+    }
   </style>
 </head>
 <body class="page">
@@ -337,7 +353,7 @@
     <div class="container">
       <a class="back" href="index.html">← Home</a>
       <h1>Manual Builder - Wizard</h1>
-      <p class="subtitle">Fill the steps, preview <code>.dat</code>/<code>.mod</code>/<code>.run</code>, and submit.</p>
+      <p class="subtitle">Fill the steps, preview <code>.mod</code>/<code>.dat</code>/<code>.run</code>, and submit.</p>
     </div>
   </header>
 
@@ -354,12 +370,12 @@
 
       <div class="intro-grid">
         <div class="intro-item">
-          <strong>.dat</strong>
-          <p class="muted">Numerical data: grid, seed trajectory, robot table, constraints, RK method, PIM, and optional extra data.</p>
-        </div>
-        <div class="intro-item">
           <strong>.mod</strong>
           <p class="muted">AMPL model: variables, dynamics, constraints, objective, and optional custom model snippets.</p>
+        </div>
+        <div class="intro-item">
+          <strong>.dat</strong>
+          <p class="muted">Numerical data: grid, seed trajectory, robot table, constraints, RK method, PIM, and optional extra data.</p>
         </div>
         <div class="intro-item">
           <strong>.run</strong>
@@ -375,7 +391,7 @@
         <div><strong>4. Constraints</strong><br><span class="muted">Define physical, virtual, or force constraint rows.</span></div>
         <div><strong>5. RK</strong><br><span class="muted">Choose a Runge-Kutta preset or enter a custom tableau.</span></div>
         <div><strong>6. q/v/t/u</strong><br><span class="muted">Provide the seed trajectory for states, controls, and time.</span></div>
-        <div><strong>7. Custom</strong><br><span class="muted">Append extra .dat, .mod, or .run snippets when needed.</span></div>
+        <div><strong>7. Custom</strong><br><span class="muted">Append extra .mod, .dat, or .run snippets when needed.</span></div>
         <div><strong>8. Solver</strong><br><span class="muted">Pick one of the supported NEOS AMPL solvers.</span></div>
         <div><strong>9. Review</strong><br><span class="muted">Inspect generated files, submit to NEOS, and download results.</span></div>
       </div>
@@ -498,8 +514,8 @@
         <button class="btn" id="btnGenerateBez">🎨 Generate Curve</button>
       </div>
 
-      <canvas id="bezierCanvas" width="600" height="300"
-        style="margin-top:10px; background:#1e1e1e; border-radius:8px; width:100%;"></canvas>
+      <canvas id="bezierCanvas" width="600" height="480"
+        style="margin-top:10px; background:#1e1e1e; border-radius:8px; width:100%; height:min(520px, 58vh);"></canvas>
     </section>
 
     <!-- Step 4: Robot params -->
@@ -571,7 +587,7 @@
       
       <div class="upload-zone" data-allowed="constraint">
         <p>Drag & Drop a constraint file here or click to upload</p>
-        <input type="file" hidden />
+        <input type="file" accept=".dat,.txt" hidden />
       </div>
 
       <div class="btn-download-wrapper btn-row">
@@ -684,7 +700,7 @@
 
       <div class="upload-zone" data-allowed="seed">
         <p>Drag & Drop a seed file here or click to upload</p>
-        <input type="file" hidden />
+        <input type="file" accept=".dat,.txt" hidden />
       </div>
 
       <div class="btn-download-wrapper btn-row">
@@ -787,12 +803,12 @@
       <h3 class="step-title">Custom Snippets</h3>
       <div class="wiz-row">
         <div>
-          <label class="label">Extra .dat snippet (appended at end)</label>
-          <textarea id="datExtra" rows="6" class="mono" placeholder="# your extra data blocks…"></textarea>
-        </div>
-        <div>
           <label class="label">Custom .mod</label>
           <textarea id="modCustomCode" rows="6" class="mono" placeholder="Enter custom .mod code here…"></textarea>
+        </div>
+        <div>
+          <label class="label">Extra .dat snippet (appended at end)</label>
+          <textarea id="datExtra" rows="6" class="mono" placeholder="# your extra data blocks…"></textarea>
         </div>
         <div>
           <label class="label">Extra .run snippet (appended)</label>
@@ -897,12 +913,12 @@
       <h3 class="step-title">Review</h3>
       <div class="wiz-row g3">
         <div>
-          <label class="label">.dat preview</label>
-          <textarea id="preview" rows="16" class="mono"></textarea>
-        </div>
-        <div>
           <label class="label">.mod preview</label>
           <textarea id="modPreview" rows="16" class="mono"></textarea>
+        </div>
+        <div>
+          <label class="label">.dat preview</label>
+          <textarea id="preview" rows="16" class="mono"></textarea>
         </div>
         <div>
           <label class="label">.run preview</label>
@@ -1357,14 +1373,41 @@ function createUploadZone(zone, allowedType) {
     e.preventDefault();
     zone.classList.remove("dragover");
     const file = e.dataTransfer.files[0];
-    if (file) handleFileUpload(file, allowedType);
+    if (file) {
+      if (!validateUploadFileType(file, allowedType)) return;
+      handleFileUpload(file, allowedType);
+    }
     input.value = "";
   });
   input.addEventListener("change", () => {
     const file = input.files[0];
-    if (file) handleFileUpload(file, allowedType);
+    if (file) {
+      if (!validateUploadFileType(file, allowedType)) {
+        input.value = "";
+        return;
+      }
+      handleFileUpload(file, allowedType);
+    }
     input.value = "";
   });
+}
+
+const uploadFileTypes = {
+  robot: [".urdf", ".dat", ".txt", ".mod"],
+  constraint: [".dat", ".txt"],
+  seed: [".dat", ".txt"]
+};
+
+function validateUploadFileType(file, allowedType) {
+  const allowedExtensions = uploadFileTypes[allowedType] || [];
+  const fileName = String(file?.name || "").toLowerCase();
+  const isAllowed = allowedExtensions.some(extension => fileName.endsWith(extension));
+
+  if (!isAllowed) {
+    alert(`Unsupported file type for ${allowedType} upload. Please use: ${allowedExtensions.join(", ")}`);
+  }
+
+  return isAllowed;
 }
 
 const uploadSchemas = {

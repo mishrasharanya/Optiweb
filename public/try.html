@@ -6,6 +6,8 @@
   <title>AMPL Playground — Try</title>
   <link rel="stylesheet" href="styles.css" />
   <script defer src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.min.js"></script>
+  <script src="demoData.js"></script>
   <script defer src="clientZip.js"></script>
   <script defer src="neosClient.js"></script>
   <style>
@@ -87,12 +89,12 @@
 
       <div class="grid-3 try-files" style="margin-top:1rem;">
         <div>
-          <label class="label">.dat</label>
-          <textarea id="datText" readonly></textarea>
-        </div>
-        <div>
           <label class="label">.mod</label>
           <textarea id="modText" readonly></textarea>
+        </div>
+        <div>
+          <label class="label">.dat</label>
+          <textarea id="datText" readonly></textarea>
         </div>
         <div>
           <label class="label">.run</label>
@@ -121,9 +123,7 @@
     <pre id="neosResponse" class="card mono run-status" style="margin-top:12px; white-space:pre-wrap;"></pre>
   </main>
 
-  <script type="module">
-    import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.185.1/build/three.module.js';
-
+  <script>
     const cases = {
       moving: {
         title: 'Moving block',
@@ -172,15 +172,15 @@
     let latestNeosResult = null;
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xf5f7fb);
+    scene.background = new THREE.Color(0x17202a);
     const camera = new THREE.OrthographicCamera(-4.5, 4.5, 3.2, -3.2, 0.1, 100);
     camera.position.set(0, 1.5, 10);
     camera.lookAt(0, 0.5, 0);
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     host.appendChild(renderer.domElement);
-    scene.add(new THREE.HemisphereLight(0xffffff, 0x64748b, 2.2));
-    const light = new THREE.DirectionalLight(0xffffff, 2);
+    scene.add(new THREE.HemisphereLight(0xcbd5e1, 0x0f172a, 1.25));
+    const light = new THREE.DirectionalLight(0xe2e8f0, 1.1);
     light.position.set(3, 6, 8);
     scene.add(light);
 
@@ -204,10 +204,10 @@
     }
 
     function material(color) {
-      return new THREE.MeshStandardMaterial({ color, roughness: 0.65 });
+      return new THREE.MeshStandardMaterial({ color, roughness: 0.78, metalness: 0.02 });
     }
 
-    function makeLink(length = 1, color = 0x2563eb) {
+    function makeLink(length = 1, color = 0x7891a8) {
       const link = new THREE.Mesh(
         new THREE.CylinderGeometry(0.07, 0.07, length, 16),
         material(color)
@@ -228,21 +228,21 @@
 
     function buildScene(type) {
       clearVisual();
-      visual.root.add(new THREE.GridHelper(9, 18, 0x94a3b8, 0xd8dee9));
+      visual.root.add(new THREE.GridHelper(9, 18, 0x475569, 0x263241));
 
       if (type === 'moving') {
-        visual.block = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.6, 0.6), material(0xf97316));
+        visual.block = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.6, 0.6), material(0x8aa0b3));
         visual.block.position.y = 0.3;
         visual.root.add(visual.block);
       } else if (type === 'cart') {
         visual.cart = new THREE.Group();
-        const body = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.42, 0.7), material(0x2563eb));
+        const body = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.42, 0.7), material(0x6f8fb3));
         body.position.y = 0.45;
         visual.cart.add(body);
         for (const x of [-0.38, 0.38]) {
           const wheel = new THREE.Mesh(
             new THREE.CylinderGeometry(0.18, 0.18, 0.16, 20),
-            material(0x1f2937)
+            material(0x111827)
           );
           wheel.rotation.x = Math.PI / 2;
           wheel.position.set(x, 0.18, 0.38);
@@ -250,18 +250,18 @@
         }
         visual.pivot = new THREE.Group();
         visual.pivot.position.y = 0.7;
-        const rod = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.055, 1.8, 16), material(0xef4444));
+        const rod = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.055, 1.8, 16), material(0xb97979));
         rod.position.y = 0.9;
         visual.pivot.add(rod);
-        const bob = new THREE.Mesh(new THREE.SphereGeometry(0.17, 24, 16), material(0xf59e0b));
+        const bob = new THREE.Mesh(new THREE.SphereGeometry(0.17, 24, 16), material(0xc49a5a));
         bob.position.y = 1.8;
         visual.pivot.add(bob);
         visual.cart.add(visual.pivot);
         visual.root.add(visual.cart);
       } else {
-        visual.links = [makeLink(), makeLink(), makeLink(), makeLink(), makeLink(0.9, 0xf97316)];
+        visual.links = [makeLink(), makeLink(), makeLink(), makeLink(), makeLink(0.9, 0xa0896e)];
         visual.joints = Array.from({ length: 5 }, () => {
-          const joint = new THREE.Mesh(new THREE.SphereGeometry(0.1, 18, 12), material(0x111827));
+          const joint = new THREE.Mesh(new THREE.SphereGeometry(0.1, 18, 12), material(0xd1d5db));
           visual.root.add(joint);
           return joint;
         });
@@ -397,21 +397,29 @@
       return true;
     }
 
-    async function loadExample() {
-      cancelAnimationFrame(animationFrame);
-      const config = cases[demoCase.value];
-      vizTitle.textContent = config.title;
-      vizStatus.textContent = 'Loading example files...';
-      const [datResponse, modResponse, runResponse] = await Promise.all(
+    async function loadExampleFiles(config, key) {
+      const bundled = window.OptiwebDemoData?.[key];
+      if (bundled?.dat && bundled?.mod && bundled?.run) {
+        return [bundled.dat, bundled.mod, bundled.run];
+      }
+
+      const responses = await Promise.all(
         ['dat', 'mod', 'run'].map(extension => fetch(`${config.base}.${extension}`))
       );
-      if (![datResponse, modResponse, runResponse].every(response => response.ok)) {
+      if (!responses.every(response => response.ok)) {
         throw new Error('Could not load one or more example files.');
       }
-      [datText.value, modText.value, runText.value] = await Promise.all([
-        datResponse.text(), modResponse.text(), runResponse.text()
-      ]);
-      buildScene(demoCase.value);
+      return Promise.all(responses.map(response => response.text()));
+    }
+
+    async function loadExample() {
+      cancelAnimationFrame(animationFrame);
+      const caseKey = demoCase.value;
+      const config = cases[caseKey];
+      vizTitle.textContent = config.title;
+      vizStatus.textContent = 'Loading example files...';
+      [datText.value, modText.value, runText.value] = await loadExampleFiles(config, caseKey);
+      buildScene(caseKey);
       frames = [];
       setFrames(parseSeed(datText.value, config.dof), 'the example seed');
       currentJobNumber = null;
