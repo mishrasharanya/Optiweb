@@ -1241,7 +1241,7 @@ const stepValidators = {
       // --- RULE 2: Validate Column Counts (0 to gridMax) ---
       if (headerRow) {
         const colCount = headerRow.querySelectorAll('th').length - 1;
-        if (colCount < 0 || colCount > maxCols) {
+        if (colCount < 0 || colCount > maxCols+1) {
           return {
             element: headerRow,
             message: `Table ${type.toUpperCase()} columns must be between 0 and ${maxCols} (GRID_MAX).`
@@ -2102,7 +2102,7 @@ function addColumn(which){
     const maxColsAllowed = gridMax + 1; 
     
     if (colsNow >= maxColsAllowed) {
-      alert(`Cannot add column. The maximum column limit of ${gridMax} (GRID_MAX) has been reached for table ${which.toUpperCase()}.`);
+      alert(`Cannot add column. The maximum column limit of ${gridMax} (GRID_MAX) has been reached for table ${which}.`);
       return;
     }
   }
