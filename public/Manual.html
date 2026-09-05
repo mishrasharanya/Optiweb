@@ -411,8 +411,9 @@
           <input type="number" id="gridMax" value="29" min="0" required />
         </div>
         <div>
-          <label class="label" for="gravity">Gravity (spat_ag[5])</label>
-          <input type="number" id="gravity" value="9.81" step="0.01" required />
+          <label class="label" for="gravityVector">Gravity vector (spat_ag[1..6])</label>
+          <input type="text" id="gravityVector" value="0 0 0 0 0 9.81" required />
+          <p class="muted">Six space-separated components, for example <code>0 0 0 0 0 9.81</code>.</p>
         </div>
       </div>
 
@@ -497,7 +498,7 @@
       <div class="muted">Columns: <code>DER</code>, <code>CP_ROW</code>, <code>CP_COL</code></div>
       <table id="bezTable">
         <thead>
-          <tr><th>Index</th><th>DER</th><th>CP_ROW</th><th>CP_COL</th><th>—</th></tr>
+          <tr><th>Index</th><th>DER</th><th>CP_ROW</th><th>CP_COL</th><th>-</th></tr>
         </thead>
         <tbody></tbody>
       </table>
@@ -505,7 +506,7 @@
 
       <h4 style="margin-top:12px;">param bez_subgrid := [*,*,:] : BEG END :=</h4>
       <table id="bezSGTable">
-        <thead><tr><th>LBL</th><th>IDX</th><th>BEG</th><th>END</th><th>—</th></tr></thead>
+        <thead><tr><th>LBL</th><th>IDX</th><th>BEG</th><th>END</th><th>-</th></tr></thead>
         <tbody></tbody>
       </table>
       <div class="btn-row"><button class="btn" id="btnAddBezSG">+ Row</button></div>
@@ -534,10 +535,22 @@
       </div>
 
       <div class="btn-download-wrapper btn-row">
-        <button class="btn btn-manual" data-target="robotManual">Enter Manually</button>
+        <div>
+          <button class="btn btn-paste" data-type="robot">Paste Code</button>
+          <button class="btn btn-manual" data-target="robotManual">Enter Manually</button>
+        </div>
         <div>
           <button class="btn btn-clear" data-type="robot">Clear</button>
           <button class="btn btn-download" data-type="robot">Download</button>
+        </div>
+      </div>
+
+      <div class="paste-section hide" data-type="robot">
+        <label class="label" for="robotPaste">Paste AMPL robot data or URDF</label>
+        <textarea id="robotPaste" rows="10" class="mono" placeholder="Paste param robot := ... ; or a complete &lt;robot&gt;...&lt;/robot&gt; document"></textarea>
+        <div class="btn-row">
+          <button type="button" class="btn btn--primary btn-import-paste" data-type="robot">Validate &amp; Import</button>
+          <button type="button" class="btn btn-cancel-paste" data-type="robot">Cancel</button>
         </div>
       </div>
 
@@ -591,10 +604,22 @@
       </div>
 
       <div class="btn-download-wrapper btn-row">
-        <button class="btn btn-manual" data-target="constraintManual">Enter Manually</button>
+        <div>
+          <button class="btn btn-paste" data-type="constraint">Paste Code</button>
+          <button class="btn btn-manual" data-target="constraintManual">Enter Manually</button>
+        </div>
         <div>
           <button class="btn btn-clear" data-type="constraint">Clear</button>
           <button class="btn btn-download" data-type="constraint">Download</button>
+        </div>
+      </div>
+
+      <div class="paste-section hide" data-type="constraint">
+        <label class="label" for="constraintPaste">Paste AMPL constraint data</label>
+        <textarea id="constraintPaste" rows="10" class="mono" placeholder="Paste param constraint := ... ;"></textarea>
+        <div class="btn-row">
+          <button type="button" class="btn btn--primary btn-import-paste" data-type="constraint">Validate &amp; Import</button>
+          <button type="button" class="btn btn-cancel-paste" data-type="constraint">Cancel</button>
         </div>
       </div>
 
@@ -658,12 +683,12 @@
           <option value="">None</option>
           <option value="HERM_SIMP">Hermite-Simpson</option>
           <option value="TRAP">Trapezoidal</option>
-          <option value="rk2">RK2 — midpoint</option>
+          <option value="rk2">RK2 - midpoint</option>
           <option value="heun3">Heun’s RK3</option>
           <option value="kutta3">Kutta’s RK3 (3/8)</option>
           <option value="ralston3">Ralston RK3</option>
-          <option value="rk4">RK4 — classic</option>
-          <option value="rk4_38">RK4 — 3/8 rule</option>
+          <option value="rk4">RK4 - classic</option>
+          <option value="rk4_38">RK4 - 3/8 rule</option>
         </select>
       </div>
 
@@ -689,6 +714,18 @@
         <code>param ODE_bK</code>, <code>param ODE_cK</code>, and 
         <code>set ODE_SUBGRID[&lt;tag&gt;]</code>.
       </p>
+
+      <div class="btn-row">
+        <button type="button" class="btn btn-paste" data-type="rk">Paste Tableau</button>
+      </div>
+      <div class="paste-section hide" data-type="rk">
+        <label class="label" for="rkPaste">Paste AMPL Runge–Kutta tableau</label>
+        <textarea id="rkPaste" rows="14" class="mono" placeholder="Paste set ODE_SOLVERS, ODE_K, ODE_AK, ODE_bK, ODE_cK, and ODE_SUBGRID"></textarea>
+        <div class="btn-row">
+          <button type="button" class="btn btn--primary" id="btnImportRKPaste">Validate &amp; Import</button>
+          <button type="button" class="btn btn-cancel-paste" data-type="rk">Cancel</button>
+        </div>
+      </div>
     </section>
 
     <!-- Step 3: q, v, t, u -->
@@ -704,8 +741,20 @@
       </div>
 
       <div class="btn-download-wrapper btn-row">
-        <button class="btn btn-manual" data-target="seedManual">Enter Manually</button>
+        <div>
+          <button class="btn btn-paste" data-type="seed">Paste Code</button>
+          <button class="btn btn-manual" data-target="seedManual">Enter Manually</button>
+        </div>
         <button class="btn btn-download" data-type="seed">Download</button>
+      </div>
+
+      <div class="paste-section hide" data-type="seed">
+        <label class="label" for="seedPaste">Paste AMPL seed data</label>
+        <textarea id="seedPaste" rows="10" class="mono" placeholder="Paste var q := ... ; var v := ... ; var u := ... ; var t := ... ;"></textarea>
+        <div class="btn-row">
+          <button type="button" class="btn btn--primary btn-import-paste" data-type="seed">Validate &amp; Import</button>
+          <button type="button" class="btn btn-cancel-paste" data-type="seed">Cancel</button>
+        </div>
       </div>
 
       <div id="seedManual" class="manual-section hide">
@@ -1061,6 +1110,15 @@ const stepValidators = {
   1: (container) => {
     const gridMaxInput = container.querySelector('#gridMax');
     const maxLimit = Number(gridMaxInput.value); 
+    const gravityInput = container.querySelector('#gravityVector');
+    const gravityValues = gravityInput.value.trim().split(/\s+/);
+
+    if (gravityValues.length !== 6 || gravityValues.some(value => !Number.isFinite(Number(value)))) {
+      return {
+        element: gravityInput,
+        message: "Gravity must contain exactly six numeric components."
+      };
+    }
     
     // 1. Validate multiple pairs in the new pimSet table rows
     const pimRows = container.querySelectorAll('#pimSetBody tr');
@@ -1211,12 +1269,11 @@ const stepValidators = {
   },
   6: (container) => {
     const gridMaxInput = document.querySelector('#gridMax');
-    const maxCols = gridMaxInput ? Number(gridMaxInput.value) : Infinity;
-    
+    const expectedGridRows = gridMaxInput ? Number(gridMaxInput.value) + 1 : Infinity;
     const nqLimit = typeof nq !== 'undefined' ? Number(nq) : Infinity;
-    const gridmaxLimit = maxCols;
 
     const tablesToValidate = ['q', 'v', 'u', 't'];
+    const matrixColumnCounts = {};
 
     for (let type of tablesToValidate) {
       const tbody = container.querySelector(`#${type}Body`);
@@ -1227,10 +1284,10 @@ const stepValidators = {
       const rows = tbody.querySelectorAll('tr');
       
       const isTableT = (type === 't');
-      const maxRowsAllowed = isTableT ? gridmaxLimit+1 : nqLimit;
-      const labelText = isTableT ? 'gridmax' : 'degree of freedom';
+      const maxRowsAllowed = expectedGridRows;
+      const labelText = 'GRID_MAX + 1';
       
-      // --- RULE 1: Validate Total Row Count (Max: nq + 1) ---
+      // q/v/u/t rows represent grid points.
       if (rows.length > maxRowsAllowed) {
         return {
           element: tbody,
@@ -1238,13 +1295,14 @@ const stepValidators = {
         };
       }
 
-      // --- RULE 2: Validate Column Counts (0 to gridMax) ---
-      if (headerRow) {
-        const colCount = headerRow.querySelectorAll('th').length - 1;
-        if (colCount < 0 || colCount > maxCols) {
+      // q/v/u columns represent generalized coordinates.
+      if (headerRow && !isTableT) {
+        const colCount = headerRow.querySelectorAll('th[data-col]').length;
+        if (rows.length) matrixColumnCounts[type] = colCount;
+        if (Number.isFinite(nqLimit) && colCount > nqLimit) {
           return {
             element: headerRow,
-            message: `Table ${type.toUpperCase()} columns must be between 0 and ${maxCols} (GRID_MAX).`
+            message: `Table ${type.toUpperCase()} cannot have more than ${nqLimit} columns (nq).`
           };
         }
       }
@@ -1266,8 +1324,8 @@ const stepValidators = {
             message: `Index field in table ${type.toUpperCase()} cannot be empty.` 
           };
         }
-        const startIndex = isTableT ? 0 : 1;
-        const endIndex = isTableT ? maxRowsAllowed-1 : maxRowsAllowed;
+        const startIndex = 0;
+        const endIndex = maxRowsAllowed - 1;
         if (isNaN(indexNum) || !Number.isInteger(indexNum) || indexNum < startIndex || indexNum > endIndex) {
           return { 
             element: indexInput, 
@@ -1285,6 +1343,24 @@ const stepValidators = {
         seenIndexes.add(indexNum);
       }
     }
+
+    const populatedColumnCounts = Object.values(matrixColumnCounts);
+    if (populatedColumnCounts.length > 1 && new Set(populatedColumnCounts).size !== 1) {
+      return {
+        element: container.querySelector('#qHeader'),
+        message: "Populated Q, V, and U seed matrices must use the same nq column count."
+      };
+    }
+
+    const inferredNq = matrixColumnCounts.q || populatedColumnCounts[0];
+    const robotRows = document.querySelectorAll('#robotBody tr').length;
+    if (inferredNq && robotRows && inferredNq !== robotRows) {
+      return {
+        element: container.querySelector('#qHeader'),
+        message: `Seed data has ${inferredNq} coordinates, but robot data has ${robotRows} rows.`
+      };
+    }
+
     return true;
   }
 };
@@ -1447,69 +1523,233 @@ const uploadSchemas = {
 function handleFileUpload(file, allowedType) {
   const reader = new FileReader();
   reader.onload = function(e) {
-    const text = e.target.result;
-    
-    /* Handle URDF before AMPL parsing */
-    if (allowedType === "robot") {
-      const type = detectRobotFileType(file, text);
-      if (type === "urdf") {
-        showManualSection("robot");
-        importURDF(text);
-        return;
-      }
-      if (type === "unknown") {
-        alert("Unsupported robot file format. Upload URDF or AMPL robot file.");
-        return;
-      }
-    }
-
-    /* AMPL pipeline */
-    const parsed = parseWizardFile(text);
-    const result = validateParsedFile(parsed, allowedType);
-
-    if (!result.valid) {
-      alert(result.error);
-      return;
-    }
-
-    if (allowedType === "seed") {
-      showManualSection("seed");
-      populateTable("q", parsed.q.data);
-      populateTable("v", parsed.v.data);
-      populateTable("u", parsed.u.data);
-      populateTable("t", parsed.t);
-    }
-
-    if (allowedType === "robot") {
-      showManualSection("robot");
-      nq = parsed.nq;
-      populateTable("robot", parsed.robot.data);
-    }
-
-    if (allowedType === "constraint") {
-      showManualSection("constraint");
-      populateTable("constraint", parsed.constraint.data);
-    }
+    importWizardText(e.target.result, allowedType, file);
   };
 
   reader.readAsText(file);
+}
 
-  function showManualSection(type) {
-    const zone = document.querySelector(`.upload-zone[data-allowed="${type}"]`);
-    const step = zone.closest(".wiz-card");
-    const manual = step.querySelector(".manual-section");
-    if (manual) manual.classList.remove("hide");
+function showManualSection(type) {
+  const zone = document.querySelector(`.upload-zone[data-allowed="${type}"]`);
+  const step = zone?.closest(".wiz-card");
+  const manual = step?.querySelector(".manual-section");
+  if (manual) manual.classList.remove("hide");
+}
+
+function importWizardText(text, allowedType, source = null) {
+  if (!String(text || "").trim()) {
+    alert(`Paste ${allowedType} content before importing.`);
+    return false;
   }
+
+  /* Handle URDF before AMPL parsing */
+  if (allowedType === "robot") {
+    const type = detectRobotFileType(source, text);
+    if (type === "urdf") {
+      showManualSection("robot");
+      importURDF(text);
+      return true;
+    }
+    if (type === "unknown") {
+      alert("Unsupported robot content. Paste URDF or AMPL robot data.");
+      return false;
+    }
+  }
+
+  /* Shared AMPL pipeline for uploaded and pasted content */
+  const parsed = parseWizardFile(text);
+  const result = validateParsedFile(parsed, allowedType);
+
+  if (!result.valid) {
+    alert(result.error);
+    return false;
+  }
+
+  showManualSection(allowedType);
+
+  if (allowedType === "seed") {
+    const matrixNames = ["q", "v", "u"];
+    const matrixColumns = matrixNames.map(name => parsed[name].data[0]?.length || 0);
+    const matrixRows = matrixNames.map(name => parsed[name].data.length);
+    const inferredNq = matrixColumns[0];
+    const inferredGridRows = parsed.t.length;
+
+    if (!inferredNq || new Set(matrixColumns).size !== 1) {
+      alert("Q, V, and U must have the same non-zero number of coordinate columns.");
+      return false;
+    }
+    if (new Set([...matrixRows, inferredGridRows]).size !== 1) {
+      alert("Q, V, U, and T must contain the same number of grid rows.");
+      return false;
+    }
+
+    const robotRows = document.querySelectorAll("#robotBody tr").length;
+    if (robotRows && robotRows !== inferredNq) {
+      alert(`Seed data has ${inferredNq} coordinates, but robot data has ${robotRows} rows.`);
+      return false;
+    }
+
+    nq = inferredNq;
+    qs("#gridMax").value = inferredGridRows - 1;
+
+    matrixNames.forEach(name => {
+      qs(`#${name}Body`).innerHTML = "";
+      while (countDataCols(name) > 1) delColumn(name);
+    });
+    qs("#tBody").innerHTML = "";
+
+    populateTable("q", parsed.q.data);
+    populateTable("v", parsed.v.data);
+    populateTable("u", parsed.u.data);
+    populateTable("t", parsed.t);
+    updateGridViz();
+    alert(`Imported seed data: ${inferredGridRows} grid rows × ${inferredNq} coordinates.`);
+  }
+
+  if (allowedType === "robot") {
+    nq = Number.isFinite(parsed.nq) ? parsed.nq : parsed.robot.data.length;
+    qs("#robotBody").innerHTML = "";
+    populateTable("robot", parsed.robot.data);
+    alert(`Imported robot data: ${parsed.robot.data.length} rows.`);
+  }
+
+  if (allowedType === "constraint") {
+    qs("#constraintBody").innerHTML = "";
+    populateTable("constraint", parsed.constraint.data);
+    alert(`Imported constraint data: ${parsed.constraint.data.length} rows.`);
+  }
+
+  return true;
 }
 
 function detectRobotFileType(file, text) {
-  const name = file.name.toLowerCase();
+  const name = String(file?.name || "").toLowerCase();
   if (name.endsWith(".urdf")) return "urdf";
   const t = text.trim();
   if (t.includes("<robot")) return "urdf";
   if (/param\s+robot\s*:=/i.test(t)) return "ampl";
   return "unknown";
 }
+
+document.querySelectorAll(".btn-paste").forEach(button => {
+  button.addEventListener("click", () => {
+    const type = button.dataset.type;
+    const panel = document.querySelector(`.paste-section[data-type="${type}"]`);
+    panel?.classList.toggle("hide");
+    if (panel && !panel.classList.contains("hide")) {
+      panel.querySelector("textarea")?.focus();
+    }
+  });
+});
+
+document.querySelectorAll(".btn-cancel-paste").forEach(button => {
+  button.addEventListener("click", () => {
+    document.querySelector(`.paste-section[data-type="${button.dataset.type}"]`)?.classList.add("hide");
+  });
+});
+
+document.querySelectorAll(".btn-import-paste").forEach(button => {
+  button.addEventListener("click", () => {
+    const type = button.dataset.type;
+    const panel = document.querySelector(`.paste-section[data-type="${type}"]`);
+    const text = panel?.querySelector("textarea")?.value || "";
+    if (importWizardText(text, type)) {
+      panel?.classList.add("hide");
+    }
+  });
+});
+
+function parseRKTableau(text) {
+  const source = String(text || "").replace(/#[^\n]*/g, " ");
+  const solverMatch = source.match(/set\s+ODE_SOLVERS\s*:=\s*([A-Za-z_]\w*)\s*;/i);
+  const tag = solverMatch?.[1];
+  if (!tag) throw new Error("Missing: set ODE_SOLVERS := <tag>;");
+
+  const escapedTag = tag.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const kMatch = source.match(new RegExp(`param\\s+ODE_K\\s*:=\\s*\\[\\*\\]\\s*${escapedTag}\\s+(\\d+(?:\\.\\d*)?)\\s*;`, "i"));
+  const s = Number(kMatch?.[1]);
+  if (!Number.isInteger(s) || s < 1) throw new Error("Missing or invalid ODE_K stage count.");
+
+  const readMatrixBlock = (name, nextName) => {
+    const pattern = new RegExp(`param\\s+${name}\\s*:=([\\s\\S]*?)(?=param\\s+${nextName}\\s*:=)`, "i");
+    return source.match(pattern)?.[1] || "";
+  };
+  const aBlock = readMatrixBlock("ODE_AK", "ODE_bK");
+  const bBlock = readMatrixBlock("ODE_bK", "ODE_cK");
+  const cBlock = source.match(/param\s+ODE_cK\s*:=([\s\S]*?)(?=set\s+ODE_SUBGRID)/i)?.[1] || "";
+
+  const numericRows = block => block
+    .split(/\r?\n/)
+    .map(line => line.trim().replace(/;$/, ""))
+    .filter(line => /^\d+(?:\.\d*)?\s+[-+.\d]/.test(line))
+    .map(line => line.split(/\s+/).map(Number));
+
+  const aRows = numericRows(aBlock);
+  if (aRows.length !== s || aRows.some(row => row.length !== s + 1 || row.some(Number.isNaN))) {
+    throw new Error(`ODE_AK must contain ${s} rows with ${s} values per row.`);
+  }
+
+  const readTaggedVector = (block, name) => {
+    const row = block.split(/\r?\n/)
+      .map(line => line.trim().replace(/;$/, ""))
+      .find(line => new RegExp(`^${escapedTag}\\s+`, "i").test(line));
+    const values = row?.split(/\s+/).slice(1).map(Number) || [];
+    if (values.length !== s || values.some(Number.isNaN)) {
+      throw new Error(`${name} must contain ${s} values for ${tag}.`);
+    }
+    return values;
+  };
+
+  const subgridMatch = source.match(new RegExp(`set\\s+ODE_SUBGRID\\s*\\[\\s*${escapedTag}\\s*\\]\\s*:=\\s*\\(\\s*(\\d+)\\s*,\\s*(\\d+)\\s*\\)\\s*;`, "i"));
+  if (!subgridMatch) throw new Error(`Missing ODE_SUBGRID[${tag}] range.`);
+
+  return {
+    tag,
+    s,
+    A: aRows.map(row => row.slice(1)),
+    b: readTaggedVector(bBlock, "ODE_bK"),
+    c: readTaggedVector(cBlock, "ODE_cK"),
+    subgrid: [Number(subgridMatch[1]), Number(subgridMatch[2])]
+  };
+}
+
+function importRKTableau(text) {
+  const rk = parseRKTableau(text);
+  if (rk.subgrid[0] !== 0) {
+    throw new Error("The wizard currently requires the RK subgrid to start at 0.");
+  }
+
+  qs('#rkTag').value = rk.tag;
+  qs('#rkMethod').value = "";
+  qs('#numStages').value = rk.s;
+  qs('#gridMax').value = rk.subgrid[1];
+  renderTableau();
+
+  rk.c.forEach((value, i) => {
+    qs(`.cVal[data-i="${i + 1}"]`).value = value;
+  });
+  rk.A.forEach((row, i) => row.forEach((value, j) => {
+    qs(`.aVal[data-i="${i + 1}"][data-j="${j + 1}"]`).value = value;
+  }));
+  rk.b.forEach((value, j) => {
+    qs(`.bVal[data-j="${j + 1}"]`).value = value;
+  });
+
+  const customRadio = qs('input[name="rkMode"][value="custom"]');
+  customRadio.checked = true;
+  qs('#rkPresetBlock').classList.add('hide');
+  return rk;
+}
+
+qs('#btnImportRKPaste')?.addEventListener('click', () => {
+  try {
+    const rk = importRKTableau(qs('#rkPaste').value);
+    qs('.paste-section[data-type="rk"]').classList.add('hide');
+    alert(`Imported ${rk.s}-stage tableau "${rk.tag}" with subgrid (${rk.subgrid.join(", ")}).`);
+  } catch (error) {
+    alert(`Could not import tableau: ${error.message}`);
+  }
+});
 
 function parseWizardFile(text) {
   /* Split lines, trim, remove empty lines and comment lines */
@@ -2021,7 +2261,7 @@ function countDataCols(which){
   if (!header) return 1;
   const dataColThs = header.querySelectorAll('th[data-col]');
   if (dataColThs.length) return dataColThs.length;
-  // fallback: old structure "Index | [control th] | (—)" -> dataCols = ths.length - 2
+  // fallback: old structure "Index | [control th] | (-)" -> dataCols = ths.length - 2
   const ths = header.querySelectorAll('th');
   return Math.max(1, ths.length - 2);
 }
@@ -2035,12 +2275,9 @@ function addRow(which, row = null){
   let maxRowsAllowed = Infinity;
   let limitMessage = '';
 
-  if (['q', 'v', 'u'].includes(which)) {
-    maxRowsAllowed = typeof nq !== 'undefined' ? Number(nq) : Infinity;
-    limitMessage = `${maxRowsAllowed} (degree of freedom)`;
-  } else if (which === 't') {
+  if (['q', 'v', 'u', 't'].includes(which)) {
     maxRowsAllowed = typeof gridMax !== 'undefined' ? Number(gridMax) + 1 : Infinity;
-    limitMessage = `${Number(gridMax)} (gridmax)`;
+    limitMessage = `${maxRowsAllowed} (GRID_MAX + 1)`;
   }
 
   if (currentRowsCount >= maxRowsAllowed) {
@@ -2048,7 +2285,7 @@ function addRow(which, row = null){
     return;
   }
   
-  const idx = (which === 't') ? currentRowsCount : currentRowsCount + 1;
+  const idx = currentRowsCount;
   const tr = document.createElement('tr');
 
   if (which === 't') {
@@ -2073,15 +2310,16 @@ function updateTableIndex(tableBody) {
   let body = typeof tableBody === 'string' ? document.getElementById(tableBody) : tableBody;
   if (!body) return;
   let rows = Array.from(body.getElementsByTagName('tr'));
+  const zeroBased = ['qBody', 'vBody', 'uBody', 'tBody'].includes(body.id);
 
   rows.forEach((row, i) => {
     let indexCell = row.querySelector('.rowIndex');
     if (indexCell) {
       // Check if the target element is an input box or a plain text container
       if (indexCell.tagName === 'INPUT') {
-        indexCell.value = i + 1;
+        indexCell.value = zeroBased ? i : i + 1;
       } else {
-        indexCell.textContent = i + 1;
+        indexCell.textContent = zeroBased ? i : i + 1;
       }
     }
   });
@@ -2096,13 +2334,11 @@ function addColumn(which){
 
   const validLimitTables = ['q', 'u', 'v'];
   if (validLimitTables.includes(which)) {
-    const gridMaxInput = document.querySelector('#gridMax');
-    const gridMax = gridMaxInput ? Number(gridMaxInput.value) : Infinity;
     const colsNow = countDataCols(which);
-    const maxColsAllowed = gridMax + 1; 
+    const maxColsAllowed = typeof nq !== 'undefined' ? Number(nq) : Infinity;
     
     if (colsNow >= maxColsAllowed) {
-      alert(`Cannot add column. The maximum column limit of ${gridMax} (GRID_MAX) has been reached for table ${which.toUpperCase()}.`);
+      alert(`Cannot add column. The maximum column limit of ${maxColsAllowed} (nq) has been reached for table ${which.toUpperCase()}.`);
       return;
     }
   }
@@ -2481,12 +2717,12 @@ function addRKPanel() {
       <select class="rk-method-select">
         <option value="HERM_SIMP">Hermite-Simpson</option>
         <option value="TRAP">Trapezoidal</option>
-        <option value="rk2">RK2 — midpoint</option>
+        <option value="rk2">RK2 - midpoint</option>
         <option value="heun3">Heun’s RK3</option>
         <option value="kutta3">Kutta’s RK3 (3/8)</option>
         <option value="ralston3">Ralston RK3</option>
-        <option value="rk4">RK4 — classic</option>
-        <option value="rk4_38">RK4 — 3/8 rule</option>
+        <option value="rk4">RK4 - classic</option>
+        <option value="rk4_38">RK4 - 3/8 rule</option>
         <option value="custom">Custom</option>
       </select>
 
@@ -2687,7 +2923,7 @@ document.querySelectorAll('input[name="rkMode"]').forEach(r => {
   r.addEventListener('change', e => {
     const mode = e.target.value;
     document.getElementById('rkPresetBlock').classList.toggle('hide', mode !== 'preset');
-    document.getElementById('rkCustomBlock').classList.toggle('hide', mode !== 'custom');
+    document.getElementById('rkCustomBlock')?.classList.toggle('hide', mode !== 'custom');
   });
 });
 
@@ -2836,7 +3072,7 @@ function fmtRKBlocks(method, tag, gridMax){
 /* ====================== Build previews ====================== */
 function buildDat() {
   const gm = parseInt(qs('#gridMax').value, 10) || 1;
-  const g = parseFloat(qs('#gravity').value) || 0;
+  const gravityValues = qs('#gravityVector').value.trim().split(/\s+/).map(Number);
   const pimTxt = Array.from(document.querySelectorAll('#pimSetBody tr'))
   .map(row => {
     const pre = row.querySelector('.pim-pre')?.value.trim();
@@ -2896,7 +3132,11 @@ function buildDat() {
   selectionMap.set("RK", hasRK);
   selectionMap.set("q/v/t/u", hasSeed);
 
-  const nqInfer = (qRows[0]?.vals?.length || 1);
+  const nqInfer = qRows[0]?.vals?.length
+    || vRows[0]?.vals?.length
+    || uRows[0]?.vals?.length
+    || robotRows.length
+    || 1;
   let dat = '';
 
   // ---------- Grid ----------
@@ -2904,7 +3144,7 @@ function buildDat() {
   if (hasGrid) {
     dat += `${fmtGridBlock(gm, gridSubphasesRows)}\n`;
   } else {
-    dat += `# (skipped) no subphases provided by the user — fill the Grid step to emit this block\n`
+    dat += `# (skipped) no subphases provided by the user; fill the Grid step to emit this block\n`
         +  `# param GRID_MAX := <int>;\n`
         +  `# set SUBPHASES := <labels...>;\n`
         +  `# param subphases := [*,:] :PHASE BEG END := ... ;\n\n`;
@@ -2918,7 +3158,7 @@ function buildDat() {
     dat += hasT ? `${fmtVectorBlock('t', tRows)}\n` : `# (skipped) no t seed provided\n# var t := [*] ... ;\n\n`;
     dat += hasU ? `${fmtMatrixBlock('u', uRows)}\n` : `# (skipped) no u seed provided\n# var u := [:,*] ... ;\n\n`;
   } else {
-    dat += `# (skipped) no q/v/t/u seed provided — fill the q/v/t/u step to emit this block\n`
+    dat += `# (skipped) no q/v/t/u seed provided; fill the q/v/t/u step to emit this block\n`
         +  `# var q := [:,*] ... ;\n# var v := [:,*] ... ;\n# var t := [*] ... ;\n# var u := [:,*] ... ;\n\n`;
   }
 
@@ -2935,7 +3175,7 @@ function buildDat() {
   if (hasRobot) {
     dat += `${fmtRobotBlock(robotRows)}\n`;
   } else {
-    dat += `# (skipped) no robot data provided — upload URDF/AMPL or fill the Robot step\n`
+    dat += `# (skipped) no robot data provided; upload URDF/AMPL or fill the Robot step\n`
         +  `# param robot := [*,:] :PARENT S_RX ... IYZ := ... ;\n\n`;
   }
 
@@ -2944,12 +3184,16 @@ function buildDat() {
   if (hasConstr) {
     dat += `${fmtConstraintBlock(constraintRows)}\n`;
   } else {
-    dat += `# (skipped) no constraints provided — fill the Constraint step to emit this block\n`
-        +  `# param nr := 0.;\n# param constraint := [*,:] :PHASE TYPE ROW BODY ... F_O := ... ;\n\n`;
+    dat += `param nr := 0.;\nparam constraint;\n\n`;
   }
 
-  // ---------- Gravity (always emitted: tiny, harmless, depends only on g) ----------
-  dat += `# M and b (spatial gravity)\nparam spat_ag := [*]\n1   0.\n2   0.\n3   0.\n4   0.\n5   ${g}\n6   0.;\n\n`;
+  // ---------- Spatial gravity ----------
+  dat += `# M and b (spatial gravity)\nparam spat_ag := [*]\n`;
+  gravityValues.forEach((value, index) => {
+    const formatted = Number.isInteger(value) ? `${value}.` : value;
+    dat += `${index + 1}   ${formatted}${index === 5 ? ';' : ''}\n`;
+  });
+  dat += `\n`;
 
   // ---------- PIM / eom ----------
   dat += `# eom\n`;
@@ -3000,7 +3244,7 @@ function buildDat() {
 
     dat += `set ODE_SUBGRID[${rkTag}] := (0, ${gm});\n\n`;
   } else {
-    dat += `# (skipped) no Runge–Kutta tableau provided — pick a preset or fill the custom Butcher tableau\n`
+    dat += `# (skipped) no Runge–Kutta tableau provided; pick a preset or fill the custom Butcher tableau\n`
         +  `# set ODE_SOLVERS := RK;\n`
         +  `# param ODE_K := [*]  RK <stages>.;\n`
         +  `# param ODE_AK := [RK,*,:] ... ;\n`
@@ -3017,7 +3261,7 @@ function buildDat() {
   if (activeModules.length) {
     dat += `set MOD_MODULES := ${activeModules.join(' ')};\n\n`;
   } else {
-    dat += `# (skipped) no ODE/PIM modules active — declaring an empty MOD_MODULES set\n`
+    dat += `# (skipped) no ODE/PIM modules active; declaring an empty MOD_MODULES set\n`
         +  `set MOD_MODULES := ;\n\n`;
   }
 
@@ -3026,7 +3270,7 @@ function buildDat() {
   if (hasBez) {
     dat += `${fmtBezierBlocks(lbls, bezRows, sgSets, bezSgRows)}\n`;
   } else {
-    dat += `# (skipped) no Bézier data provided — add labels, control-point rows, or subgrid ranges\n`
+    dat += `# (skipped) no Bézier data provided; add labels, control-point rows, or subgrid ranges\n`
         +  `# set BEZ_LBLS := <labels>;\n`
         +  `# param bez := [*,:] :DER CP_ROW CP_COL := ... ;\n`
         +  `# set BEZ_SUBGRID[<lbl>] := <n>;\n`
@@ -3131,7 +3375,7 @@ set SPAT_TREE_K {i1 in SPAT_L[0]} ordered = {i1} union (union {i2 in SPAT_TREE_P
 param nr >= 0 integer; # total number of constraints across all phases
 set R = 1..nr; # constraints
 
-set CON_IDX  ordered = {'PHASE', 'TYPE', 'ROW', 'BODY', 'R_RX', 'R_RY', 'R_RZ', 'R_PX', 'R_PY', 'R_PZ', 'F_RX', 'F_RY', 'F_RZ', 'F_PX', 'F_PY', 'F_PZ', 'F_TH'};
+set CON_IDX  ordered = {'PHASE', 'TYPE', 'ROW', 'BODY', 'R_RX', 'R_RY', 'R_RZ', 'R_PX', 'R_PY', 'R_PZ', 'F_RX', 'F_RY', 'F_RZ', 'F_PX', 'F_PY', 'F_PZ', 'F_TH', 'F_O'};
 param constraint {R, CON_IDX} symbolic;
 
 #----------- indices for physical and virtual constraints
@@ -3504,7 +3748,6 @@ function buildRun(){
   const used       = k => selectionMap.get(k) === true;
   const hasRK      = used("RK");
   const hasConstr  = used("Constraint");
-  const hasSeed    = used("q/v/t/u");
   const hasPIM = Array.from(document.querySelectorAll('#pimSetBody tr')).some(row => {
     const preVal = row.querySelector('.pim-pre')?.value.trim();
     const postVal = row.querySelector('.pim-post')?.value.trim();
@@ -3544,15 +3787,6 @@ function buildRun(){
       run += `if solve_result != 'solved' then {\n`;
       run += `  print 'failed!', 'BLOCKTEST', '--', BLOCKTEST.result, '--',  BLOCKTEST.message;\n`;
       run += `}\n\n`;
-
-  // ---------- result dump (only if seed vars exist) ----------
-  if (hasSeed) {
-    run += `print {j in 1.._nvars : match(_varname[j], '^q\\\\[') > 0} : j, _varname[j], _var[j] > test.out;\n`;
-    run += `print {j in 1.._nvars : match(_varname[j], '^t\\\\[') > 0} : j, _varname[j], _var[j] >> test.out;\n`;
-    run += `print {j in 1.._nvars : match(_varname[j], '^u\\\\[') > 0} : j, _varname[j], _var[j] >> test.out;\n`;
-    run += `close test.out;\n`;
-  }
-  run += `option send_email yes;`;
 
   const extra = qs('#runExtra').value.trim();
   if (extra) run += `\n\n# extra run\n${extra}\n`;
@@ -3701,7 +3935,7 @@ function updateGridViz() {
     gridBar.appendChild(seg);
 
     const line = document.createElement('div');
-    line.innerHTML = `<span class="dot" style="background:${color}"></span><strong>${r.label}</strong> — ${r.beg} → ${r.end}`;
+    line.innerHTML = `<span class="dot" style="background:${color}"></span><strong>${r.label}</strong>: ${r.beg} → ${r.end}`;
     gridLegend.appendChild(line);
   });
 }
